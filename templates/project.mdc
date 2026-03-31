@@ -1,0 +1,34 @@
+---
+description: Project identity, entry points, key commands, and documentation index
+alwaysApply: true
+---
+
+# [Your Project Name]
+
+[One-sentence description of what this project does, what stack it uses, and how it's deployed.]
+
+## Entry Points
+
+- **API / Backend**: `[path to main entry point]`
+- **Frontend**: `[path to frontend source]` (if applicable)
+- **Config**: `[path to config module]`
+- **Database**: [database type and how it's accessed]
+
+## Key Commands
+
+- **Run**: `[command to start the dev server]`
+- **Test**: `[command to run tests]`
+- **Lint**: `[command to run linter]`
+- **Build**: `[command to build for production]` (if applicable)
+
+## Package Managers
+
+- **[Language]**: `[package manager]` (`[dependency file]`)
+
+## Documentation Index
+
+- [Topic]: `docs/[filename].md`
+
+## Rule Maintenance
+
+If you encounter a rule in `.cursor/rules/` that references a file path, convention, or pattern that no longer exists in the codebase, flag it to the user.

@@ -1,0 +1,38 @@
+---
+description: Branch strategy, deployment safety, and approval-gated operations
+alwaysApply: true
+---
+
+# Git Workflow
+
+## Branch Strategy
+
+- [Describe your branching model: trunk-based, gitflow, feature branches, etc.]
+- [Where to branch from, where to merge]
+- [What triggers deployments]
+
+## Forbidden Operations
+
+- NEVER push directly to `main` (or your production branch)
+- NEVER force push to any shared branch
+- NEVER run `git reset --hard` on shared branches
+- NEVER skip CI hooks (`--no-verify`)
+
+## Commit Messages
+
+[Your commit message convention. Example:]
+Use conventional style: `feat:`, `fix:`, `docs:`, `ci:`, `refactor:`, `test:`, `chore:`
+
+## Safe Operations (No Approval Needed)
+
+- Read any file, run tests, run lint
+- Edit application code on a feature branch
+- [Any other safe operations specific to your project]
+
+## Approval-Gated Operations
+
+- Creating commits (agent drafts, human reviews)
+- Pushing to branches that trigger deployments
+- Running migrations or database operations
+- Modifying CI/CD workflows
+- [Any other gated operations specific to your project]

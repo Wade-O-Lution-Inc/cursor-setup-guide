@@ -1,0 +1,142 @@
+# Rules
+
+Rules are `.mdc` files in `.cursor/rules/` that provide persistent context to the AI agent. They load automatically at the start of every session.
+
+## Anatomy of a Rule
+
+```markdown
+---
+description: One-line summary of what this rule covers
+alwaysApply: true
+---
+
+# Human-Readable Title
+
+Content goes here. Keep it concise — every token competes for context window space.
+```
+
+### Frontmatter Fields
+
+| Field | Required | Values | Purpose |
+|-------|----------|--------|---------|
+| `description` | Yes | Short string | Helps the agent decide if the rule is relevant |
+| `alwaysApply` | No | `true` / `false` | If `true`, loaded every session. If `false`, loaded only when the description matches the task |
+
+**Use `alwaysApply: true` for most rules.** The overhead is small and the benefit of consistent behavior outweighs the token cost. Reserve `alwaysApply: false` for niche rules that only matter in rare scenarios.
+
+## The Core Rules
+
+### 1. `project.mdc` — Project Identity
+
+This is the single most important rule. It tells the agent what the project is, where things live, and how to run it. Without this, the agent spends time exploring your repo structure every session.
+
+**What to include:**
+- One-sentence project description
+- Entry points (main files, where routers/controllers/models live)
+- Key commands (run, test, lint, build, deploy)
+- Package managers and dependency files
+- Documentation index (point to existing docs the agent can read when needed)
+
+**What NOT to include:**
+- Detailed architecture (put that in `docs/` and link to it)
+- Long explanations of business logic
+
+**Template:** [templates/project.mdc](templates/project.mdc)
+
+**Real example** (from `meeting_notes_workflow`):
+
+```markdown
+---
+description: Project identity, entry points, key commands, and documentation index
+alwaysApply: true
+---
+
+# Meeting Notes Workflow
+
+FastAPI + React knowledge base platform. Ingests meetings from Fireflies,
+enriches with Claude, syncs to HubSpot/Slack/Notion.
+
+## Entry Points
+
+- **API server**: `app/main.py` (FastAPI, routers in `app/routers/`)
+- **Frontend**: `frontend/src/` (React + Vite + Tailwind/DaisyUI)
+- **Config**: `app/config.py` (Pydantic settings from `.env`)
+
+## Key Commands
+
+- **Run backend**: `uvicorn app.main:app --reload --port 8000`
+- **Run tests**: `python -m pytest tests/ -x -q`
+- **Lint**: `ruff check`
+
+## Documentation Index
+
+- Architecture: `docs/ARCHITECTURE.md`
+- API Reference: `docs/API_REFERENCE.md`
+```
+
+### 2. `code-style.mdc` — Language Conventions
+
+Prevents the agent from writing code in a style that doesn't match your project. Focus on the conventions that are **non-obvious** or **project-specific** — don't repeat language defaults the agent already knows.
+
+**Good items to include:**
+- Where business logic lives vs. where route handlers live
+- Import conventions specific to your project
+- Testing patterns (framework, fixture location, mock strategy)
+- Framework-specific patterns (state management, API client conventions)
+
+**Bad items to include:**
+- "Use camelCase for JavaScript variables" (the agent knows this)
+- "Add docstrings to functions" (generic advice, not project-specific)
+
+**Template:** [templates/code-style.mdc](templates/code-style.mdc)
+
+### 3. `environment.mdc` — Secret Safety
+
+This is a **safety guardrail**. It tells the agent what it must never touch and how configuration works in your project.
+
+**Must include:**
+- Files the agent must never read or display (`.env`, credential files)
+- How config flows (environment variables, config files, Pydantic settings, etc.)
+- How to add a new configuration value (the step-by-step)
+
+**Template:** [templates/environment.mdc](templates/environment.mdc)
+
+### 4. `git-workflow.mdc` — Deployment Safety
+
+Another safety guardrail. Tells the agent your branching strategy and what operations require human approval.
+
+**Key sections:**
+- Branch strategy (where to branch from, where to merge)
+- Forbidden operations (force push, direct push to main, etc.)
+- What the agent can do without asking (read, test, lint)
+- What requires approval (commit, push, deploy, run scripts)
+
+**Template:** [templates/git-workflow.mdc](templates/git-workflow.mdc)
+
+## Domain-Specific Rules
+
+Beyond the core four, add rules for any domain where the agent consistently needs guidance:
+
+| Rule | When to Add |
+|------|------------|
+| `database.mdc` | You have migration conventions, schema patterns, or safety rules for DB changes |
+| `integrations.mdc` | You connect to external APIs and want the agent to follow established patterns |
+| `security.mdc` | You have auth, RBAC, or data sensitivity policies |
+| `testing.mdc` | Your test patterns are complex enough to warrant their own rule |
+
+## Writing Tips
+
+1. **Be concise.** Every line competes for context window space. Bullet points > paragraphs.
+2. **Be specific.** "Use `app/errors.AppError`" beats "Use the custom error hierarchy."
+3. **Use NEVER/ALWAYS for safety rules.** The agent respects strong directives.
+4. **Link to docs instead of inlining.** Point to `docs/ARCHITECTURE.md` rather than pasting architecture into the rule.
+5. **Add a maintenance clause.** Tell the agent to flag stale references:
+
+```markdown
+## Rule Maintenance
+
+If you encounter a rule that references a file path or convention that no longer
+exists in the codebase, flag it to the user.
+```
+
+This keeps rules accurate as the codebase evolves without scheduled maintenance.

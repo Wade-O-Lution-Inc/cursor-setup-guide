@@ -1,0 +1,26 @@
+---
+description: Code conventions and patterns for this project
+alwaysApply: true
+---
+
+# Code Conventions
+
+## [Primary Language]
+
+- [Language version, linter, formatter, line length]
+- [Where business logic lives vs. where route handlers/controllers live]
+- [Database access pattern]
+- [Error handling pattern]
+- [Import conventions specific to this project]
+
+## [Frontend / Secondary Language] (if applicable)
+
+- [Framework + build tool + CSS approach]
+- [API client pattern]
+- [State management approach]
+
+## Testing
+
+- [Test framework, directory, runner command]
+- [Mock strategy (what's mocked, what's real)]
+- [Fixture/helper location]

@@ -1,0 +1,31 @@
+---
+description: Secret safety, config patterns, and environment boundaries
+alwaysApply: true
+---
+
+# Environment and Config Safety
+
+## Secret Protection
+
+- NEVER read, modify, display, or reference contents of `.env` — it contains real secrets
+- NEVER hardcode API keys, URLs, or credentials in application code
+- NEVER commit `.env` or any file containing secrets
+
+## Configuration Pattern
+
+[Describe how config flows in your project. Example:]
+
+All external configuration flows through `[config module]`.
+
+To add a new setting:
+1. Add a field to the config with a sensible default
+2. Add the variable to `.env.example` with documentation comments
+3. Reference it in code via the config module
+
+## Environments
+
+- **Local dev**: [how it works]
+- **Staging**: [how it deploys, what triggers it]
+- **Production**: [how it deploys, what triggers it]
+
+Agents must not assume which environment is active. Behavior differences are driven entirely by configuration.
