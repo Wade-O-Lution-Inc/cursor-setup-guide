@@ -1,0 +1,19 @@
+{
+  "hooks": [
+    {
+      "event": "beforeSubmitPrompt",
+      "script": ".cursor/hooks/detect-secrets.sh",
+      "description": "Scan prompts for leaked API keys and secrets"
+    },
+    {
+      "event": "beforeShellExecution",
+      "script": ".cursor/hooks/block-no-verify.sh",
+      "description": "Prevent --no-verify in git commands"
+    },
+    {
+      "event": "beforeTabFileRead",
+      "script": ".cursor/hooks/block-sensitive-reads.sh",
+      "description": "Block reading .env, .key, .pem, and credential files"
+    }
+  ]
+}

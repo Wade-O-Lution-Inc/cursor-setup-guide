@@ -1,0 +1,70 @@
+---
+description: Testing conventions — AAA pattern, naming, conftest usage, pytest markers.
+alwaysApply: true
+---
+
+# Testing Conventions
+
+## Test Structure: Arrange-Act-Assert (AAA)
+
+Every test follows three clear phases:
+
+```python
+def test_feature_scenario_expected_outcome():
+    # Arrange
+    input_data = create_test_data()
+
+    # Act
+    result = function_under_test(input_data)
+
+    # Assert
+    assert result.status == "success"
+    assert result.value is not None
+```
+
+## Naming Convention
+
+```
+test_<unit>_<scenario>_<expected_outcome>
+```
+
+Examples:
+- `test_search_with_date_filter_returns_filtered_results`
+- `test_create_user_without_email_raises_validation_error`
+- `test_webhook_with_invalid_signature_returns_401`
+
+## Pytest Markers
+
+```python
+@pytest.mark.slow          # Tests that take > 5s
+@pytest.mark.integration   # Tests that need real services
+@pytest.mark.unit          # Fast, isolated tests (default)
+```
+
+## What to Test
+
+- **Always test**: Business logic, data transformations, error paths
+- **Usually test**: API endpoints (via TestClient), search/ranking logic
+- **Sometimes test**: Integration with mocked external services
+- **Never test**: Third-party library internals, exact log messages
+
+## When Adding a Feature
+
+1. Write at least one happy-path test
+2. Write at least one error/edge-case test
+3. Run lint and tests before committing
+
+## Customize Below
+
+Add your project's specific testing patterns:
+
+```
+## Conftest Patterns
+- [describe your conftest.py fixtures]
+
+## File Organization
+tests/
+├── conftest.py
+├── test_[module].py
+└── data/              # Test fixtures
+```

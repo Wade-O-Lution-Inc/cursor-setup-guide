@@ -1,0 +1,48 @@
+---
+description: Security response protocol — stop-and-report when security issues are found.
+alwaysApply: true
+---
+
+# Security Response Protocol
+
+## If You Discover a Security Issue: STOP
+
+When you encounter any of the following during coding, refactoring, or reviewing:
+
+1. **Hardcoded secrets** (API keys, tokens, passwords, connection strings)
+2. **SQL injection vectors** (unsanitized user input in queries)
+3. **Code injection** (`eval()`, `exec()`, `subprocess.run(shell=True)` with user input)
+4. **Authentication bypass** (missing auth middleware on protected routes)
+5. **Overly permissive CORS** (wildcard origins in production)
+6. **Sensitive data in logs** (PII, tokens, full request bodies)
+
+**Protocol:**
+1. STOP all current work immediately
+2. Report the finding to the user with file path, line number, and severity
+3. If CRITICAL (secrets, injection, auth bypass): fix it before continuing any other task
+4. If HIGH (logging, CORS): flag it and offer to fix
+5. If MEDIUM (best-practice violation): note it in the PR description
+
+## Patterns That Are Always Wrong
+
+```python
+# NEVER do these:
+os.environ["SECRET_KEY"] = "hardcoded-value"
+subprocess.run(f"command {user_input}", shell=True)
+cursor.execute(f"SELECT * FROM users WHERE id = '{user_id}'")
+eval(llm_output)
+```
+
+## Customize Below
+
+Add your project's specific secret patterns, auth middleware names, and safe patterns:
+
+```
+## Secrets in This Codebase
+- All secrets are in [your secret manager] — never in code or .env files
+- Config values flow through [your config file/pattern]
+
+## Safe Patterns Already in Use
+- [your auth middleware pattern]
+- [your parameterized query pattern]
+```

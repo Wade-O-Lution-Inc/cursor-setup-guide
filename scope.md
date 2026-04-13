@@ -8,6 +8,8 @@ Rules and skills can live in two places. Choosing the right scope avoids duplica
 your-repo/.cursor/
 ├── rules/
 ├── skills/
+├── hooks/         # Hook enforcement scripts
+├── hooks.json     # Hook event → script mapping
 ├── mcp.json
 └── settings.json
 ```
@@ -19,6 +21,7 @@ Use for anything specific to this codebase that any contributor (human or AI) sh
 - Project structure and entry points
 - Code conventions and patterns
 - Safety guardrails (secrets, git workflow, deployment)
+- Hard enforcement hooks (secret detection, command blocking, file read blocking)
 - Multi-step procedures (migrations, integrations, releases)
 - MCP connections to the app's own services
 

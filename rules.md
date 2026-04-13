@@ -113,16 +113,63 @@ Another safety guardrail. Tells the agent your branching strategy and what opera
 
 **Template:** [templates/git-workflow.mdc](templates/git-workflow.mdc)
 
-## Domain-Specific Rules
+### 5. `security-protocol.mdc` — Security Response Protocol
 
-Beyond the core four, add rules for any domain where the agent consistently needs guidance:
+Establishes a stop-and-report protocol when the agent encounters security issues during coding or review. Instead of silently continuing, the agent stops work, reports the finding with severity, and fixes critical issues before proceeding.
+
+**What to include:**
+- The specific patterns that trigger a stop (hardcoded secrets, injection, auth bypass)
+- Severity levels and what action each level requires
+- Your project's safe patterns (parameterized queries, auth middleware, config patterns)
+- Patterns that are always wrong in your codebase
+
+**Template:** [templates/security-protocol.mdc](templates/security-protocol.mdc)
+
+**Real example** (from `meeting_notes_workflow`):
+
+```markdown
+---
+description: Security response protocol — stop-and-report when security issues are found.
+alwaysApply: true
+---
+
+# Security Response Protocol
+
+## If You Discover a Security Issue: STOP
+
+1. **Hardcoded secrets** → STOP, fix immediately
+2. **SQL injection** → STOP, fix immediately
+3. **Missing auth** → Flag and offer to fix
+4. **Sensitive data in logs** → Note in PR description
+
+## Safe Patterns Already in Use
+- `settings.anthropic_api_key` (from Doppler via env var)
+- `db.rpc("function_name", params)` (parameterized Supabase RPCs)
+- `Depends(require_user_auth)` on all user-facing routes
+```
+
+### 6. `testing-conventions.mdc` — Testing Patterns
+
+Keeps tests consistent across the team and AI agents. Without this, the agent writes tests in random styles — sometimes using mocks, sometimes not, with inconsistent naming and structure.
+
+**What to include:**
+- Test structure pattern (Arrange-Act-Assert is recommended)
+- Naming convention for test functions
+- Pytest markers and when to use them
+- What to test vs. what not to test
+- Your conftest patterns and fixture conventions
+
+**Template:** [templates/testing-conventions.mdc](templates/testing-conventions.mdc)
+
+## Additional Domain Rules
+
+Beyond the core six, add rules for any domain where the agent consistently needs guidance:
 
 | Rule | When to Add |
 |------|------------|
 | `database.mdc` | You have migration conventions, schema patterns, or safety rules for DB changes |
 | `integrations.mdc` | You connect to external APIs and want the agent to follow established patterns |
-| `security.mdc` | You have auth, RBAC, or data sensitivity policies |
-| `testing.mdc` | Your test patterns are complex enough to warrant their own rule |
+| `deployment.mdc` | Your deploy pipeline has specific service boundaries or trigger rules |
 
 ## Writing Tips
 
