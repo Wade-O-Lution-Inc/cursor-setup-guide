@@ -150,6 +150,45 @@ Run `terraform plan`. Do NOT apply without human approval.
 
 This skill is shorter because the task is more straightforward. The key value is the boundary: "do NOT apply without human approval."
 
+### Search-First Development Skill
+
+From `meeting_notes_workflow` — a decision matrix that prevents the agent from reinventing existing functionality:
+
+```markdown
+---
+name: search-first
+description: >-
+  Adopt / Extend / Compose / Build decision matrix. Use before writing any
+  custom code to check if existing solutions handle the requirement.
+---
+
+# Search-First: Adopt / Extend / Compose / Build
+
+## Decision Matrix (top-to-bottom, stop at first match)
+
+### Level 1: ADOPT — Use what exists verbatim
+Search existing services, database functions, config flags.
+
+### Level 2: EXTEND — Add to an existing module
+Feature fits naturally, < 50 lines of new code, no interface change.
+
+### Level 3: COMPOSE — Wire existing services together
+Feature needs data from 2+ services, a thin orchestrator suffices.
+
+### Level 4: BUILD — Create new module
+Only when levels 1-3 don't work. Add feature flag, tests, docs.
+
+## Quick Checklist
+[ ] Searched the codebase for existing functionality
+[ ] Checked config for relevant feature flags
+[ ] Checked if an existing service can be extended
+[ ] Only then: create new module with feature flag
+```
+
+This skill is different from the procedure-oriented examples above — it's a **decision framework** rather than a step-by-step procedure. It's valuable because the agent's default behavior is to write new code, and this redirects it to check existing solutions first.
+
+**Template:** [templates/search-first-skill/SKILL.md](templates/search-first-skill/SKILL.md)
+
 ## When to Create a New Skill
 
 Create a skill when you notice:
