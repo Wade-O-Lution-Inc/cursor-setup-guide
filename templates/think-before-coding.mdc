@@ -1,0 +1,55 @@
+---
+description: Reason about the problem before writing code — understand the layer, find the pattern, then implement
+alwaysApply: true
+---
+
+# Think Before Coding
+
+Before writing any code, answer three questions:
+
+1. **Which layer does this belong in?** Route handler → Service/business logic → Data access. Don't put business logic in route handlers or DB calls in controllers.
+2. **Does a pattern already exist for this?** Find a similar feature and follow its structure before inventing something new.
+3. **What will this break?** Check callers, tests, and background jobs. A service change may affect REST endpoints, CLI tools, and workers simultaneously.
+
+## Find the Existing Pattern First
+
+Before adding something new, search for a similar feature in the codebase:
+
+- **CRUD entity**: Find an existing entity module — router handles auth/validation, service handles DB ops.
+- **Background job**: Find the existing job pattern — enqueue to a durable queue, let the worker pick it up. Don't use in-process background tasks for durable work.
+- **New config setting**: Follow the existing config pattern — add field with default, add to your secret manager or `.env.example`.
+- **New integration**: Find a similar integration — follow the same auth, error handling, and retry patterns.
+
+## Understand the Data Flow
+
+Before touching core pipelines (search, processing, sync), understand the full data flow:
+
+```
+Trigger (webhook, admin API, schedule)
+  → Job queue (database-backed for durability)
+  → Worker picks up job
+  → Service layer processes (transform, enrich, sync)
+  → Writes to database / external services
+```
+
+Don't bypass established chains. If data flows through A → B → C, don't add a shortcut from A → C unless there's a strong reason.
+
+## Check the Blast Radius
+
+Before changing a service function, check who calls it:
+
+- **Route handlers**: grep your routers directory
+- **Workers / background jobs**: grep your worker entry point
+- **Other services**: grep your services directory
+- **Tests**: grep your tests directory — what's covered and what will break
+
+A function used by both a route handler and a worker must keep the same signature for both callers.
+
+## Database Changes Need Planning
+
+Never modify database schemas ad-hoc. Think through:
+
+- Which schema or table is this change in?
+- Will existing data need backfilling?
+- Is the change additive (safe) or destructive (dangerous)?
+- Does a migration file need to be registered in a manifest?

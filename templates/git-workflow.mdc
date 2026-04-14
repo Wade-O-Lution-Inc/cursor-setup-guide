@@ -1,5 +1,5 @@
 ---
-description: Branch strategy, deployment safety, and approval-gated operations
+description: Branch strategy, deployment safety, multi-agent coordination, and approval-gated operations
 alwaysApply: true
 ---
 
@@ -11,6 +11,16 @@ alwaysApply: true
 - [Where to branch from, where to merge]
 - [What triggers deployments]
 
+## Branch Naming
+
+All branches follow the pattern `<namespace>/<scope>-<short-description>`:
+
+| Namespace | Who creates it | Example |
+|-----------|---------------|---------|
+| `cursor/` | Cursor Cloud Agent | `cursor/fix-chat-latency-a1b2` |
+| `feature/` | Human or planned work | `feature/document-ingestion` |
+| `fix/` | Human bugfix | `fix/embedding-timeout` |
+
 ## Forbidden Operations
 
 - NEVER push directly to `main` (or your production branch)
@@ -18,10 +28,41 @@ alwaysApply: true
 - NEVER run `git reset --hard` on shared branches
 - NEVER skip CI hooks (`--no-verify`)
 
+## Multi-Agent Coordination
+
+When multiple agents or humans work on the same repo simultaneously:
+
+1. **One concern per branch.** A branch fixes a bug OR adds a feature OR refactors — not all three.
+2. **Minimize cross-cutting changes.** If a task requires edits across many directories, break it into separate branches or get explicit approval.
+3. **Shared files — extra caution.** Frequently-edited files (config, route registration, dependency files) cause merge conflicts. Make the smallest possible change and isolate it in its own commit.
+4. **Check for prior work.** Before starting, search open PRs for overlapping changes to avoid duplicate effort.
+
 ## Commit Messages
 
-[Your commit message convention. Example:]
 Use conventional style: `feat:`, `fix:`, `docs:`, `ci:`, `refactor:`, `test:`, `chore:`
+
+Scope is optional but encouraged: `feat(chat): add streaming token counter`
+
+## PR Discipline
+
+1. **Title** follows the same conventional-commit format as the primary commit.
+2. **Description** must include: what changed, why, and any testing done.
+3. **Small PRs** — target < 400 lines changed. If larger, explain why.
+4. **Self-contained** — every PR must leave CI green.
+
+## Merge Strategy
+
+- Feature PRs: **squash merge** preferred (keeps history linear)
+- Promotion merges (staging → main): **merge commit** (preserves promotion boundary)
+- Agent branches are deleted after merge.
+
+## Conflict Resolution
+
+When your branch has conflicts:
+
+1. `git fetch origin <target> && git merge origin/<target>` (prefer merge over rebase for agent branches)
+2. Resolve conflicts conservatively — when unsure, keep the target branch's version and re-apply your change on top
+3. Never silently drop someone else's changes to resolve a conflict
 
 ## Safe Operations (No Approval Needed)
 
@@ -35,4 +76,3 @@ Use conventional style: `feat:`, `fix:`, `docs:`, `ci:`, `refactor:`, `test:`, `
 - Pushing to branches that trigger deployments
 - Running migrations or database operations
 - Modifying CI/CD workflows
-- [Any other gated operations specific to your project]
