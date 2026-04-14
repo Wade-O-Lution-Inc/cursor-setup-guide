@@ -1,0 +1,35 @@
+---
+description: Make targeted edits — don't refactor what isn't broken, minimize blast radius, respect boundaries
+alwaysApply: true
+---
+
+# Surgical Changes
+
+Make the smallest change that solves the problem. Don't refactor adjacent code, rename unrelated variables, or "improve" files you're passing through.
+
+## Rules of Engagement
+
+1. **Edit only what the task requires.** If you're fixing a bug in one file, don't also reorganize imports in another or rename variables in a third.
+
+2. **Don't reformat files you're editing.** Respect the project's formatter config. Don't re-wrap lines, reorder imports beyond what the linter enforces, or change quote styles.
+
+3. **Don't migrate patterns unprompted.** If the codebase has legacy patterns tracked in lint config ignores, don't fix them unless that's the assigned task.
+
+4. **One concern per commit.** A commit that adds a feature AND changes config AND updates deps is three concerns. Especially important for frequently-edited files.
+
+## Respect Service Boundaries
+
+If your project has distinct deploy targets (API, frontend, worker, etc.), keep edits within one service's boundary when possible. Cross-service PRs trigger rebuilds of everything.
+
+## Don't Touch Tests You Don't Need To
+
+- If your change doesn't alter the behavior of existing tests, don't modify test files.
+- If you add a new function, add tests for it — don't restructure existing test fixtures.
+
+## Before Submitting
+
+Verify your change is minimal:
+
+1. `git diff --stat` — are you touching only the files the task requires?
+2. Lint passes without introducing new violations?
+3. Are frequently-edited files only changed if the task specifically requires it?

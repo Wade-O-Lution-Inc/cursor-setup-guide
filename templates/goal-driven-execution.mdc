@@ -1,0 +1,58 @@
+---
+description: Stay anchored to the task — avoid scope creep, nice-to-haves, and tangential improvements
+alwaysApply: true
+---
+
+# Goal-Driven Execution
+
+Every edit must trace back to the task. If you can't explain why a change is necessary for the stated goal, don't make it.
+
+## Before Starting
+
+1. **Restate the goal in one sentence.** If you can't, clarify with the user before writing code.
+2. **Identify the minimum set of files to touch.** Most tasks require 1–4 files. If your plan involves 8+ files, you're likely scope-creeping — re-evaluate.
+3. **Check for prior work.** Search open PRs and existing branches for overlapping changes.
+
+## Scope Traps to Avoid
+
+These are common ways agents expand scope beyond the task:
+
+- **"While I'm here" refactors.** Fixing a bug in one file does not justify reorganizing adjacent files.
+- **Upgrading dependencies.** Unless the task is "bump X", don't bump versions. Dependency changes need their own PR.
+- **Adding documentation.** Don't create new docs unless the task explicitly asks for documentation.
+- **Improving error messages.** If the task is "add endpoint X", don't also improve error messages in endpoints Y and Z.
+- **Creating abstractions for future use.** Don't add helper functions or utility modules that only your current change uses.
+
+## The Done Criteria
+
+A task is done when:
+
+1. The stated goal is achieved.
+2. **New capabilities have automated tests** (features without tests are incomplete).
+3. Existing tests still pass.
+4. Lint is clean.
+5. No unrelated files are modified.
+
+A task is NOT done when you've also:
+- Reorganized imports across multiple files
+- Added type hints to functions you didn't change
+- Created a utility module "for next time"
+- Updated rules (unless the task is about rules)
+
+### Documentation Assessment (Plan Builds)
+
+When completing a multi-step feature implementation, perform a documentation pass before declaring done:
+
+1. **Identify affected docs.** Any new service, table, endpoint, or config value likely needs mention in existing docs.
+2. **Update, don't create.** Extend existing docs with the new information. Only create a new doc if the feature introduces a genuinely new domain.
+3. **Keep indexes current.** If you create or rename a doc, update your documentation hub and any rule that references doc paths.
+4. **Update pattern references.** If the feature establishes a new pattern, add it to your "think before coding" rule so future work follows the same structure.
+5. **Don't over-document.** A few lines in the right existing doc is better than a new 200-line document.
+
+## When Scope Needs to Expand
+
+Sometimes a task genuinely requires more than expected. When that happens:
+
+1. **Stop and communicate.** Tell the user: "This also requires changing X because Y. Should I proceed?"
+2. **Keep the expansion in the same concern.** If adding a new endpoint requires a new config field, that's the same concern. If it also requires a migration, that might warrant a separate PR.
+3. **Document the dependency.** If you discover that task A can't be completed without task B, note it rather than silently doing both.

@@ -19,14 +19,18 @@ The payoff is immediate: the agent writes code that follows your patterns, avoid
 
 ```
 your-repo/
+├── AGENTS.md            # Cloud Agent VM instructions (optional)
 ├── .cursor/
 │   ├── rules/           # Always-on context and guardrails
 │   │   ├── project.mdc      # Project identity, entry points, key commands
 │   │   ├── code-style.mdc   # Language conventions, patterns, lint config
 │   │   ├── environment.mdc  # Secret safety, config patterns, environments
-│   │   ├── git-workflow.mdc  # Branch strategy, forbidden ops, approval gates
+│   │   ├── git-workflow.mdc  # Branch strategy, forbidden ops, multi-agent coordination
 │   │   ├── security-protocol.mdc  # Stop-and-report for security findings
-│   │   ├── testing-conventions.mdc # Test patterns, naming, markers
+│   │   ├── testing-conventions.mdc # Test patterns, naming, mandatory coverage
+│   │   ├── goal-driven-execution.mdc  # Scope management, done criteria
+│   │   ├── surgical-changes.mdc       # Minimal edits, service boundaries
+│   │   ├── think-before-coding.mdc    # Pattern discovery, blast radius
 │   │   └── ...               # Domain-specific rules as needed
 │   ├── skills/          # On-demand procedures for specific tasks
 │   │   ├── migration-workflow/
@@ -71,7 +75,10 @@ See [rules.md](rules.md) for detailed guidance on rules. The essentials:
 | `environment.mdc` | Secret safety, config patterns | Prevents the agent from reading `.env`, hardcoding credentials, or committing secrets |
 | `git-workflow.mdc` | Branch strategy, forbidden ops | Prevents the agent from pushing to main, force pushing, or skipping CI |
 | `security-protocol.mdc` | Stop-and-report for security issues | Ensures the agent flags hardcoded secrets, injection vectors, and auth gaps immediately |
-| `testing-conventions.mdc` | Test patterns, naming, markers | Keeps test code consistent: AAA structure, descriptive names, proper markers |
+| `testing-conventions.mdc` | Test patterns, naming, markers | Keeps test code consistent: AAA structure, descriptive names, mandatory test coverage |
+| `goal-driven-execution.mdc` | Scope management, done criteria | Prevents scope creep, "while I'm here" refactors, and unrelated changes |
+| `surgical-changes.mdc` | Minimal edits, one concern per commit | Keeps PRs small and focused, respects service boundaries |
+| `think-before-coding.mdc` | Reason before implementing | Forces pattern discovery and blast radius checks before writing code |
 | `hooks.json` + `hooks/` | Hard enforcement scripts | Blocks leaked secrets, `--no-verify`, and sensitive file reads even if rules are ignored |
 
 ## When to Add a Skill
@@ -92,6 +99,14 @@ Add hooks when rules aren't strong enough. Rules are "soft" — the agent *shoul
 Start with the three security hooks (secret detection, git safety, sensitive file blocking). They cost nothing when the agent behaves correctly and catch real mistakes when it doesn't.
 
 See [hooks.md](hooks.md) for the full guide and template scripts.
+
+## AGENTS.md — Cloud Agent Instructions
+
+If you use Cursor Cloud Agents (background agents that run in ephemeral VMs), add an `AGENTS.md` to your repo root. It tells the agent how to run your project without your local tools (Doppler, 1Password, etc.), which env vars to use with placeholder values, and any tooling quirks specific to the VM environment.
+
+This is separate from `.cursor/rules/` — rules apply to all sessions (local and cloud), while `AGENTS.md` is operational setup for cloud-only environments.
+
+See [agents.md](agents.md) for the full guide and template.
 
 ## When to Add MCP
 

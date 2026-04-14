@@ -161,9 +161,44 @@ Keeps tests consistent across the team and AI agents. Without this, the agent wr
 
 **Template:** [templates/testing-conventions.mdc](templates/testing-conventions.mdc)
 
+### 7. `goal-driven-execution.mdc` — Scope Management
+
+Prevents the agent from scope-creeping. Agents are naturally inclined to "improve" things they pass through — reformatting imports, adding type hints to unchanged functions, creating utility modules "for next time." This rule anchors every edit to the stated task and defines clear done criteria.
+
+**Key sections:**
+- Scope traps to avoid (specific anti-patterns agents fall into)
+- Done criteria (goal achieved, tests pass, lint clean, no unrelated files)
+- Documentation assessment for plan builds (when to update docs after multi-step features)
+- When and how scope should expand (stop, communicate, keep in same concern)
+
+**Template:** [templates/goal-driven-execution.mdc](templates/goal-driven-execution.mdc)
+
+### 8. `surgical-changes.mdc` — Minimal Edits
+
+Reinforces making the smallest change that solves the problem. While `goal-driven-execution.mdc` focuses on *what* to do, this rule focuses on *how* — edit only the files the task requires, don't reformat, don't migrate patterns, one concern per commit.
+
+**Key sections:**
+- Rules of engagement (edit only what's needed, don't reformat, don't migrate patterns)
+- Service boundary awareness (keep changes within one deploy target)
+- Don't touch tests you don't need to
+
+**Template:** [templates/surgical-changes.mdc](templates/surgical-changes.mdc)
+
+### 9. `think-before-coding.mdc` — Reason First
+
+Forces the agent to think about which layer a change belongs in, find existing patterns, and check the blast radius before writing any code. Without this, agents jump straight to implementation and sometimes invent new patterns when established ones already exist.
+
+**Key sections:**
+- Three questions before writing code (layer, pattern, blast radius)
+- Pattern catalog (CRUD, background jobs, config, integrations — with file references)
+- Data flow understanding
+- Database change planning
+
+**Template:** [templates/think-before-coding.mdc](templates/think-before-coding.mdc)
+
 ## Additional Domain Rules
 
-Beyond the core six, add rules for any domain where the agent consistently needs guidance:
+Beyond the core nine, add rules for any domain where the agent consistently needs guidance:
 
 | Rule | When to Add |
 |------|------------|
