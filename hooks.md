@@ -75,6 +75,17 @@ This is defense-in-depth alongside `.cursorignore` — even if a file slips past
 
 **Template:** [templates/hooks/block-sensitive-reads.sh](templates/hooks/block-sensitive-reads.sh)
 
+## Optional: workflow / orchestrator hooks
+
+Some repositories add **extra** hooks on top of the security trio — for example, scripts that observe git commands (branch policy), or run on `subagentStop` to flag mixed-concern working trees after parallel agent work.
+
+| Example script | Example event | Typical role |
+|----------------|---------------|--------------|
+| `orchestrator-pre-shell.sh` | `beforeShellExecution` | Enforce branch or staging-first policies |
+| `orchestrator-post-tool.sh` | `subagentStop` | Post-flight checks after subagents finish |
+
+These are **not** part of the default templates; copy them from a repo that maintains them, or write your own. A full **extended `hooks.json`** (security trio + orchestrator hooks) and manual stdin tests are documented in [EXAMPLES.md](EXAMPLES.md) (see the [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) reference there).
+
 ## Writing Custom Hooks
 
 Hook scripts are plain bash. The input comes on stdin:
@@ -114,4 +125,4 @@ For security-critical concerns (secrets, credential files, Git safety), use all 
 
 ## Template
 
-See [templates/hooks.json](templates/hooks.json) and the individual hook scripts in [templates/hooks/](templates/hooks/) for copy-paste starters.
+See [templates/hooks.json](templates/hooks.json) and the individual hook scripts in [templates/hooks/](templates/hooks/) for copy-paste starters. For optional extensions, see [EXAMPLES.md](EXAMPLES.md).

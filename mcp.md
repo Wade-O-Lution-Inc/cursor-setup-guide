@@ -14,7 +14,7 @@ If your app doesn't have an MCP server, you don't need `mcp.json`.
 
 ## Configuration
 
-Create `.cursor/mcp.json` in your repo:
+Create `.cursor/mcp.json` in your repo. A generic stub ships as [templates/mcp.json](templates/mcp.json).
 
 ```json
 {
@@ -33,14 +33,14 @@ Create `.cursor/mcp.json` in your repo:
 | `url` | The MCP endpoint. Usually your local dev server |
 | `type` | Transport type. `streamableHttp` for HTTP-based MCP servers |
 
-## Real Example
+## Real Example (FastAPI + FastMCP)
 
-Our knowledge base API exposes an MCP server (built with FastMCP, mounted at `/mcp` in FastAPI). The agent can search meetings, look up people and companies, and query the knowledge graph through it.
+A typical Wade-O-Lution service exposes an MCP server (e.g. FastMCP mounted at `/mcp` in FastAPI). The display name is arbitrary — examples in the wild include `integrity-kb`, `knowledge-base`, etc.
 
 ```json
 {
   "mcpServers": {
-    "integrity-kb": {
+    "knowledge-base": {
       "url": "http://localhost:8000/mcp",
       "type": "streamableHttp"
     }
@@ -48,7 +48,7 @@ Our knowledge base API exposes an MCP server (built with FastMCP, mounted at `/m
 }
 ```
 
-With this config, the agent can do things like `search_kb("quarterly revenue")` instead of constructing database queries or API calls.
+Start the backend before relying on MCP tools. More snippets: [EXAMPLES.md](EXAMPLES.md).
 
 ## MCP + Rules
 
@@ -65,12 +65,14 @@ And in your `git-workflow.mdc` or equivalent, list MCP queries as a safe operati
 ```markdown
 ## Safe Operations (No Approval Needed)
 
-- Query MCP server (read resources, `search_kb`)
+- Query MCP server (read resources, e.g. `search_kb`)
 ```
 
 ## Third-Party MCP Servers
 
-Cursor also supports MCP servers from plugins (like the Supabase plugin). These are configured in `.cursor/settings.json`:
+Cursor also supports MCP servers from Cursor **plugins**. These are configured in `.cursor/settings.json`, separate from `mcp.json`.
+
+Enable only what you need — for example Supabase:
 
 ```json
 {
@@ -82,7 +84,19 @@ Cursor also supports MCP servers from plugins (like the Supabase plugin). These 
 }
 ```
 
-Plugin MCP servers are managed by Cursor — you just enable them. They provide tools like database queries, auth management, etc. specific to that service.
+Or the Notion workspace plugin:
+
+```json
+{
+  "plugins": {
+    "notion-workspace": {
+      "enabled": true
+    }
+  }
+}
+```
+
+Plugin MCP servers are managed by Cursor; you toggle them in `settings.json`.
 
 ## Security Notes
 

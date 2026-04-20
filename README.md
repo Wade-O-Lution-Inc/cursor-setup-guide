@@ -43,11 +43,14 @@ your-repo/
 │   │   ├── block-no-verify.sh    # Prevent --no-verify in git commands
 │   │   └── block-sensitive-reads.sh  # Block reading .env, .key, .pem files
 │   ├── hooks.json       # Hook event → script mapping
-│   ├── mcp.json         # MCP server connections (optional)
-│   └── settings.json    # Cursor plugin settings (optional)
+│   ├── mcp.json         # MCP server connections (optional); see templates/mcp.json
+│   ├── settings.json    # Cursor plugin settings (optional)
+│   └── guide/           # Optional: vendored copies of this guide + team EXAMPLES.md
 ```
 
 Everything in `.cursor/` is safe to commit to git. It contains no secrets — just guidance for the AI agent that should be shared with collaborators.
+
+**Concrete snippets:** see [EXAMPLES.md](EXAMPLES.md) (extended hooks, MCP, Doppler-style commands, vendoring note).
 
 ## Quick Start for a New Repo
 
@@ -98,7 +101,7 @@ Add hooks when rules aren't strong enough. Rules are "soft" — the agent *shoul
 
 Start with the three security hooks (secret detection, git safety, sensitive file blocking). They cost nothing when the agent behaves correctly and catch real mistakes when it doesn't.
 
-See [hooks.md](hooks.md) for the full guide and template scripts.
+See [hooks.md](hooks.md) for the full guide and template scripts. Optional workflow hooks and a full extended `hooks.json` are in [EXAMPLES.md](EXAMPLES.md).
 
 ## AGENTS.md — Cloud Agent Instructions
 
@@ -112,7 +115,7 @@ See [agents.md](agents.md) for the full guide and template.
 
 Add an MCP connection when your running app exposes tools or data the agent should be able to query. For example, our knowledge base API exposes an MCP server that lets the agent search meetings, look up people, and query the knowledge graph — without writing ad-hoc database queries.
 
-See [mcp.md](mcp.md) for setup patterns.
+See [mcp.md](mcp.md) for setup patterns and [EXAMPLES.md](EXAMPLES.md) for sample `mcp.json` and plugin `settings.json` snippets.
 
 ## Global vs Project Scope
 
