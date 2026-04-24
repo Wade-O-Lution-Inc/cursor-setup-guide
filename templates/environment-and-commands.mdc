@@ -1,0 +1,83 @@
+---
+description: Environments, secret manager + CLI usage, run-command conventions, feature flags, and secret safety
+alwaysApply: true
+---
+
+# Environment and Commands
+
+This rule consolidates three concerns that used to be separate files: *environment*, *cli-operations*, and *python-uv-commands* (or the equivalent run-command conventions for your stack). Keeping them together avoids the common failure mode where the agent reads one rule and misses a crosscutting detail (like "secrets come from Doppler, run everything under `doppler run --`").
+
+## Environments
+
+List every deploy target the agent should be aware of, one line each. Example:
+
+- **Local dev** — `<secret-manager> run --` injects secrets; localhost services.
+- **Staging** — auto-deploys from `staging` branch. Secrets auto-synced from `<secret-manager>` staging config.
+- **Production** — auto-deploys when staging promotes to main. Secrets auto-synced from `<secret-manager>` production config.
+- **Any other fixed hosts** (e.g. a Mac mini, an on-prem box) — include Tailscale IP, PATH caveats, service account user.
+
+Behavior differences flow through `app/config.py` (or equivalent settings module) — never hardcode per-env values.
+
+## Secrets & Secret Manager
+
+- There is NO `.env` file in this repo. Secrets live in `<secret-manager>` under project `<project-name>` with configs `<dev/stg/prd/…>`. `.env` is in `.cursorignore` as defense-in-depth.
+- NEVER hardcode keys / URLs / IPs / credentials in app code.
+- NEVER create or commit `.env` or any file containing secret values.
+- NEVER display secret values in agent output. Confirming a key **exists** or stating non-secret metadata is fine.
+
+Use the CLI, don't defer to the user:
+
+- **Inspect config** — `<secret-manager> secrets`, `<secret-manager> secrets get NAME` (omit `--plain` when it would leak), `<secret-manager> diff`, `<secret-manager> configs`.
+- **Run anything needing secrets** — `<secret-manager> run -- <command>`.
+
+If the CLI fails with auth / "not linked", tell the user the minimal login + setup sequence once. Don't pretend values were fetched.
+
+**Adding a new setting:**
+
+1. Set the value in every config via the CLI (`<secret-manager> secrets set NEW_VAR=value`).
+2. Add a field to the settings module in application code with a sensible default.
+3. Document in `.env.example` (names only, no real values).
+4. Reference as `settings.your_setting` throughout the codebase.
+
+## Run Commands
+
+Document the **exact** invocation pattern for common operations. Agents pattern-match on these and will copy them verbatim.
+
+Examples (adapt to your stack):
+
+- `<secret-manager> run -- uv run python -m <module> …`
+- `<secret-manager> run -- uv run python -m pytest tests/ -x -q`
+- `<secret-manager> run -- uv run uvicorn app.main:app --reload --port 8000`
+- `<secret-manager> run -- npm run dev` (frontend)
+
+Note any PATH caveats: on many macOS systems `python` is not on PATH (only `python3`), so `<secret-manager> run -- python -m …` fails. Document the workaround explicitly.
+
+## Feature Flags
+
+Use the project's existing flag mechanism — typically a `bool` field on the settings module with `False` default:
+
+```python
+if settings.feature_enabled:
+    ...
+```
+
+Decouples deploy timing from activation. Add the flag to every secret-manager config as `false`, then flip selectively.
+
+## Database / Live-State CLIs
+
+If the project uses a database CLI (Supabase, `psql`, Prisma, etc.), the rule should say:
+
+- Use the CLI for project-linked operations (`supabase link`, `supabase db`, SQL against the linked project, migration status). See the matching skill.
+- Connection strings / service roles for scripts come from `<secret-manager>` — run scripts under the secret-manager wrapper so the env vars are injected.
+- If the CLI is not installed or not linked, say so and provide the minimal install/link steps. Don't fabricate live DB state.
+
+## When NOT to use the CLI
+
+- Destructive production changes without explicit user approval.
+- Commands that would print secret values into logs — use flags that avoid dumping values, or redirect.
+
+## Related Skills
+
+- `.cursor/skills/<secret-manager-skill>/SKILL.md` — secret-manager procedures.
+- `.cursor/skills/<db-cli-skill>/SKILL.md` — database CLI patterns for this repo.
+- Any other operational CLI (deployment, monitoring, integrations) should have its own skill and be listed here.

@@ -121,7 +121,7 @@ See `.cursor/skills/search-first/SKILL.md` for the development decision matrix.
 | **Tone** | Operational: "here's how to run things" | Prescriptive: "here's how to write code" |
 | **Contains** | Env vars, commands, known issues | Patterns, forbidden operations, checklists |
 
-Don't duplicate rule content in `AGENTS.md`. Instead, cross-reference: "See `.cursor/rules/git-workflow.mdc` for branching conventions."
+Don't duplicate rule content in `AGENTS.md`. Instead, cross-reference: "See `.cursor/rules/security-and-git.mdc` for branching conventions."
 
 ## Template
 
