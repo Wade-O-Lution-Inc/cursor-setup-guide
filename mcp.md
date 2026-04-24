@@ -60,7 +60,7 @@ If your app has an MCP server, mention it in `project.mdc` as an entry point so 
 - **MCP server**: `app/mcp/server.py` (FastMCP, mounted at `/mcp`)
 ```
 
-And in your `git-workflow.mdc` or equivalent, list MCP queries as a safe operation:
+And in `security-and-git.mdc` (or your equivalent git-workflow rule), list MCP queries as a safe operation:
 
 ```markdown
 ## Safe Operations (No Approval Needed)

@@ -1,6 +1,71 @@
 # Examples — concrete patterns
 
-Copy-paste-oriented snippets for Wade-O-Lution Cursor setups. Conceptual background is in [README.md](README.md), [hooks.md](hooks.md), [mcp.md](mcp.md), [rules.md](rules.md), [skills.md](skills.md), [agents.md](agents.md), and [scope.md](scope.md).
+Copy-paste-oriented snippets for Wade-O-Lution Cursor setups. Conceptual background is in [README.md](README.md), [orchestration.md](orchestration.md), [context-budget.md](context-budget.md), [hooks.md](hooks.md), [mcp.md](mcp.md), [rules.md](rules.md), [skills.md](skills.md), [agents.md](agents.md), and [scope.md](scope.md).
+
+## Canonical Example: meeting_notes_workflow
+
+The patterns in this guide are deployed in production in [`meeting_notes_workflow`](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow). The `.cursor/` tree there is a full working reference — orchestrator + consolidated specialists + glob-gated rules + hooks + skills.
+
+**Introduced by PR:** [#266 — docs(cursor): add orchestrator rule + README for .cursor/](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/pull/266)
+
+### `.cursor/` shape
+
+```
+.cursor/
+├── README.md                                  # Self-documents the orchestration layer
+├── CONTEXT_BUDGET.md                          # Before/after context-size snapshot (~50% reduction)
+├── rules/
+│   ├── 00-orchestrator.mdc                    # always-on — implicit routing
+│   ├── project.mdc                            # always-on — identity, pattern catalog, doc index
+│   ├── engineering-discipline.mdc             # always-on — think/scope/surgical/simple/done
+│   ├── environment-and-commands.mdc           # always-on — Doppler, uv run python, Supabase CLI
+│   ├── security-and-git.mdc                   # always-on — security, staging-first git, OSS intake
+│   ├── testing-conventions.mdc                # always-on — AAA, naming, conftest, markers
+│   ├── compact-handoff.mdc                    # requestable — dense operational handoff
+│   ├── deployment.mdc                         # glob-gated — Dockerfile/deploy/workflows only
+│   └── worktree-orchestrator.mdc              # glob-gated — scripts/orchestrator/** only
+├── hooks/
+│   ├── detect-secrets.sh                      # beforeSubmitPrompt
+│   ├── block-no-verify.sh                     # beforeShellExecution
+│   ├── block-sensitive-reads.sh               # beforeTabFileRead
+│   ├── orchestrator-pre-shell.sh              # beforeShellExecution (git policy)
+│   ├── orchestrator-post-tool.sh              # subagentStop (mixed-concern detection)
+│   └── refresh-compact-context.sh             # afterFileEdit + stop
+├── hooks.json
+├── skills/
+│   ├── doppler-secrets/                       # secret manager CLI
+│   ├── supabase-cli/                          # database CLI
+│   ├── fireflies-ops-cli/                     # integration ingest troubleshooting
+│   ├── grafana-deploy/                        # dashboard/alert deployment
+│   ├── perplexity-space-export/               # integration backfill
+│   ├── notion-integration/                    # plugin-gated Notion workflow
+│   ├── worktree-orchestrator/                 # multi-agent branch split
+│   ├── architecture-diagram-generator/        # mermaid + standalone diagrams
+│   └── oss-skill-security-review/             # OSS skill intake gate (paired with rule)
+└── settings.json
+```
+
+### Key properties
+
+- **9 rules** (6 always-on, 2 glob-gated, 1 requestable) down from 15 single-concern rules.
+- **~50% reduction in always-on context cost** — measured in `CONTEXT_BUDGET.md`.
+- **Operational knowledge lives in skills**, not rules. Doppler, Supabase, Grafana, Fireflies, Perplexity, worktrees, and architecture diagrams each own a skill.
+- **Hooks are low-signal.** The two orchestrator hooks emit at most one `followup_message` per event, and only when a threshold trips.
+- **`auto-context.md` is hook-generated** and gitignored. The `compact-handoff.mdc` rule reads it as authoritative repo state.
+
+### What to copy vs. what to adapt
+
+| Copy verbatim | Adapt to your project |
+|---|---|
+| `00-orchestrator.mdc` (template) | Mode list if your stack has a distinct workflow |
+| Hook scripts | Additional blocking hooks specific to your stack |
+| OSS skill intake section of `security-and-git.mdc` | Base-branch name, branch prefixes, PR target |
+| Security stop-and-report section | Project's safe patterns (`settings.*`, parameterized query helpers) |
+| Testing AAA structure | Test framework, marker names, fixture conventions |
+
+Template starters: [`templates/00-orchestrator.mdc`](templates/00-orchestrator.mdc), [`templates/engineering-discipline.mdc`](templates/engineering-discipline.mdc), [`templates/environment-and-commands.mdc`](templates/environment-and-commands.mdc), [`templates/security-and-git.mdc`](templates/security-and-git.mdc), [`templates/README-dot-cursor.md`](templates/README-dot-cursor.md).
+
+---
 
 ## 1. Extended `hooks.json` (security trio + orchestrator hooks + context refresh)
 

@@ -1,0 +1,121 @@
+---
+description: Security response protocol, git workflow for multi-agent coordination, and open-source skill intake gate
+alwaysApply: true
+---
+
+# Security & Git
+
+This rule consolidates three concerns that used to be separate files: *security-protocol*, *git-workflow*, and *open-source-skill-intake-security*. They all encode "stop and do the right thing before you write code" — keeping them together prevents the agent from following one and forgetting the other.
+
+## Security Response Protocol — STOP if you find any of these
+
+1. **Hardcoded secrets** (API keys, tokens, passwords, connection strings).
+2. **SQL injection** (unsanitized input in queries).
+3. **Code injection** (`eval()`, `exec()`, `subprocess.run(shell=True)` with user input).
+4. **Auth bypass** (missing auth dependency / middleware on user-facing routes).
+5. **Overly permissive CORS** (wildcard origins in production).
+6. **Sensitive data in logs** (PII, tokens, full request bodies).
+
+**Protocol:**
+
+1. Stop current work.
+2. Report the finding with file path, line number, severity.
+3. CRITICAL (secrets / injection / auth bypass) → fix before continuing any other task.
+4. HIGH (logging, CORS) → flag and offer to fix.
+5. MEDIUM (best-practice) → note in the PR description.
+
+**Patterns that are always wrong:**
+
+```python
+os.environ["SECRET_KEY"] = "hardcoded"
+subprocess.run(f"cmd {user_input}", shell=True)
+cursor.execute(f"SELECT * FROM users WHERE id = '{user_id}'")
+eval(llm_output)
+```
+
+**Safe patterns already in use:** list the project's canonical safe patterns so the agent has a positive reference — e.g. `settings.api_key` (from secret manager), parameterized query helpers, auth dependency on routes, the formatter catching most style issues.
+
+Secrets live in `<secret-manager>` (see `environment-and-commands.mdc`). Never create `.env` files — tests use the project's mock-fixture pattern.
+
+## Git Workflow
+
+Describe the project's actual branch model. The example below is "trunk-with-staging, multi-agent safe." Adapt to your repo.
+
+### PR target
+
+**All PRs MUST target `<base-branch>`** (e.g. `staging`), never `main` directly. The pipeline promotes `<base-branch>` → `main` automatically after CI and deploy succeed.
+
+Only exception: emergency hotfixes bypassing staging — discuss with the repo owner first.
+
+### Start-from-base workflow
+
+```
+git fetch origin
+git checkout <base-branch>
+git pull --ff-only origin <base-branch>
+git checkout -b <namespace>/<short-description>
+```
+
+### Branch naming
+
+`<namespace>/<scope>-<short-description>`:
+
+- `cursor/` — Cursor Cloud Agent (auto-named)
+- `feature/` — human or planned work
+- `fix/` — bugfix
+- `docs/` — docs only
+- `refactor/` — mechanical restructure
+- `<base-branch>`, `main` — protected; never push directly; never rebase/force-push
+
+### Scope boundaries
+
+- **One concern per branch.** Fix OR feature OR refactor — not all three.
+- **Minimize cross-cutting changes.** Edits across multiple service boundaries (backend + frontend + migrations + docs) should be split into separate branches unless explicitly approved.
+- **High-conflict files.** List them in `project.mdc`. Make the smallest possible change; isolate it in a commit by itself.
+- **Migration ordering.** Never reorder or rename migration files. The second-to-merge resolves numbering conflicts.
+
+### Commits (Conventional Commits)
+
+```
+<type>(<scope>): <description>
+
+feat(chat): add streaming token counter
+fix(embeddings): handle empty transcript gracefully
+refactor(routers): split admin routes into sub-modules
+```
+
+Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `ci`, `test`, `perf`, `style`.
+
+### PRs
+
+1. Title = conventional-commit format.
+2. Description says what / why / testing (use the PR template).
+3. **Draft by default for agents.** Mark ready-for-review only when CI passes.
+4. Target < 400 lines changed; explain if larger.
+5. Self-contained — every PR leaves CI green. No "part 1 of 3" chains where part 1 breaks tests.
+
+### Merge strategy
+
+- PRs into the base branch → **squash merge** (linear history).
+- Base branch into `main` → **merge commit** (preserves promotion boundary).
+- Agent branches deleted after merge.
+
+### Conflicts
+
+`git fetch origin <base-branch> && git merge origin/<base-branch>` — prefer merge over rebase for agent branches. Resolve conservatively; keep the target's version and reapply your change. Never silently drop another agent's changes.
+
+### Stale branches
+
+No commits for N days and no open PR → flagged for cleanup. Before starting work, check open PRs on similar topics (`gh pr list --search "<keyword>"`).
+
+## Open-Source Skill Intake Gate
+
+Before adopting any GitHub-hosted Cursor/Claude skill into this repo:
+
+1. **Provenance** — capture repo URL, default branch, latest commit SHA, license. Prefer pinned commit over floating branch. Review maintainer identity and commit signing.
+2. **Content scan** — search skill files / templates / scripts for RCE, shell injection, credential exfil, hidden network calls, inline JS exec, secret references. Reject skills that require secrets in prompts or files.
+3. **Supply chain** — if manifests exist (`package*.json`, `requirements*.txt`, `pyproject.toml`, `go.mod`), run ecosystem-appropriate vulnerability checks. If no manifests, scan bundled artifacts and external URL dependencies.
+4. **Sandboxed adoption** — import into project-local `.cursor/skills/` first, not global. Remove or replace external network dependencies unless explicitly approved. Record an adoption note: source URL, pinned SHA, scan date, risk summary, decision.
+5. **Decision policy** — *Block* (critical/high unresolved), *Conditional* (medium with mitigations), *Allow* (low risk, pinned source, no unsafe execution).
+
+Keep the full workflow in `.cursor/skills/oss-skill-security-review/SKILL.md` (or the equivalent in your repo).

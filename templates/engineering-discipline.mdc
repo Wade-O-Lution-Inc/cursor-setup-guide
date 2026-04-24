@@ -1,0 +1,74 @@
+---
+description: Think before coding, stay in scope, make surgical edits, prefer the simplest working pattern
+alwaysApply: true
+---
+
+# Engineering Discipline
+
+Every edit traces back to the stated task. Match existing patterns instead of inventing abstractions. Make the smallest change that solves the problem.
+
+This rule consolidates four concerns that used to be separate files: *think before coding*, *goal-driven execution*, *surgical changes*, and *simplicity first*. They repeated each other in practice; one consolidated rule is easier to follow and cheaper to keep loaded every session.
+
+## 1. Think First (before any edit)
+
+Answer three questions:
+
+1. **Which layer?** Route handler → service → data access. Don't put business logic in route handlers or data access in services that shouldn't own it. Match the layering this codebase already uses.
+2. **What's the existing pattern?** Find a sibling feature and follow its structure. The pattern catalog lives in `project.mdc` (add one there as patterns stabilize).
+3. **What will this break?** Grep for every caller of the function, component, or table you're touching. A shared helper used by a router AND a background job must keep one signature.
+
+Database changes need migration planning: pick the right schema, update RPCs in the migration SQL, plan a backfill if needed, and register the file in whatever ordering mechanism the project uses (manifest, numbered filename, etc.). Never reorder existing migrations.
+
+## 2. Stay in Scope
+
+Every edit must be explainable as necessary for the stated goal. Restate the goal in one sentence; if you can't, clarify with the user before writing code.
+
+Most tasks touch 1–4 files. If your plan needs 8+ files, you're likely scope-creeping — re-evaluate.
+
+**Scope traps to avoid:**
+
+- "While I'm here" refactors of adjacent modules.
+- Dependency bumps (separate PR).
+- New `.md` files or `docs/` updates unless the task requires them.
+- Improving error messages / type hints / formatting in files you're only passing through.
+- Creating "designed for reuse later" helpers that only your current change uses.
+
+**When scope genuinely needs to expand:** stop and tell the user "this also requires X because Y — should I proceed?" Don't silently expand.
+
+## 3. Surgical Edits
+
+- **Only edit what the task requires.** Fixing a bug in one file does not justify touching its neighbors.
+- **Don't reformat.** Your project already has a formatter config (`ruff`, `prettier`, etc.). Don't re-wrap lines, reorder imports, or change quote style beyond what the formatter would do on that file.
+- **Don't migrate legacy patterns unprompted.** Ignored lints are usually intentional deferrals. A tracked refactor gets its own PR.
+- **One concern per commit.** Especially for high-conflict files (list them in `project.mdc`). Two agents touching the same high-conflict file on separate branches creates merge pain out of proportion to the change size.
+- **Don't touch tests you don't need to.** If behavior is unchanged, leave existing tests alone. Add new tests for new code; don't restructure fixtures.
+
+## 4. Simplest Working Pattern
+
+Use what's already here:
+
+- Prefer the existing abstraction to a new one. If the project has a single way to access the database, write errors, register config, manage state, or style the UI, use that.
+- Don't add a new dependency when stdlib or an already-installed package solves the problem.
+- If a feature needs a switch, use the project's feature-flag mechanism (typically a boolean config field). Don't build a new flag service for one flag.
+
+Don't abstract prematurely:
+
+- **One caller?** Inline. Extract to a helper when there are ≥2 callers or the call site exceeds a reasonable size.
+- **One use of a pattern?** Don't build a framework.
+- **Match existing complexity.** If similar modules are under 100 lines, your addition probably is too.
+
+## 5. Done Criteria
+
+A task is done when:
+
+1. The stated goal is achieved.
+2. New capabilities ship with tests (see `testing-conventions.mdc`). Untested features are incomplete.
+3. Existing tests still pass.
+4. Lint is clean.
+5. No unrelated files are modified. `git diff --stat` confirms minimal blast radius.
+
+For multi-step plan builds, do a documentation pass before declaring done: extend the right existing doc rather than creating a new one. If the feature establishes a new pattern, add a line to `project.mdc`'s pattern catalog so the next agent can follow it.
+
+## Rule Maintenance
+
+If you encounter a rule that references a file, command, or convention that no longer exists, flag it to the user. Rules stay accurate by correction, not by schedule.

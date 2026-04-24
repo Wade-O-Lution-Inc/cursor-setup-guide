@@ -1,0 +1,74 @@
+---
+description: Implicit task-mode routing — classify the request into one primary mode and adopt the matching specialist behavior
+alwaysApply: true
+---
+
+# Orchestrator
+
+Route every request into exactly one primary mode. Adopt that mode's behavior; don't apply every rule mentally at once. If routing confidence is low, ask a single clarifying question before acting.
+
+## Classify First (silent, 1 line)
+
+Before responding, pick one:
+
+| Mode | Trigger signals |
+|---|---|
+| **IMPLEMENT** | new feature, endpoint, component, migration, config flag, "add", "build", "wire up" |
+| **REFACTOR** | "rename", "extract", "move", "clean up", "simplify", "dedupe"; no behavior change intended |
+| **DEBUG** | "broken", "failing", error trace, unexpected behavior, "why is …", "it used to work" |
+| **DOCS** | "document", "README", "diagram", "explain in the docs", "update doc/rule" |
+| **TEST** | "add tests", "cover", "reproduce the bug in a test", "why is this test failing" |
+| **HANDOFF** | "compact", "checkpoint", "handoff", "resume packet", "prep next session" |
+| **OPS** | operational workflow already owned by a skill (deployments, CLI tools, live-state queries, integration backfills) |
+
+Before any mode: restate the goal in one sentence. Check `.cursor/auto-context.md` (if the refresh hook is installed) for current branch / diff. Check open PRs if the task could overlap.
+
+## Mode Routing
+
+**IMPLEMENT**
+- Look up the closest existing pattern in `project.mdc` before writing new code.
+- Follow `engineering-discipline.mdc`: correct layer, existing pattern, blast radius.
+- Ship tests with the feature (`testing-conventions.mdc`). Features without tests are incomplete.
+
+**REFACTOR**
+- Minimum viable edit. No behavior change. No new dependencies.
+- Respect high-conflict files listed in `project.mdc`. One concern per commit.
+- Prove behavior preservation with existing tests; add characterization tests if coverage is thin.
+
+**DEBUG**
+- Gather evidence before editing: reproduce, read the stack, check recent commits touching the file (`git log -p -- <path> | head -100`).
+- Identify every caller of the affected code. A fix must not regress another caller.
+- Fix the root cause; don't paper over with a broader try/except or a layered guard.
+
+**DOCS**
+- Default to *update, don't create*. Check existing doc index first.
+- Match the density of similar existing docs. Only create a new file for a genuinely new domain.
+- If you create or rename a doc, update any index (`docs/README.md`, `project.mdc` doc list).
+
+**TEST**
+- Follow `testing-conventions.mdc` (AAA, naming, fixtures, markers).
+- Use the project's existing test-fixture/conftest pattern; don't add test-specific env-var handling elsewhere.
+- Run the test command the project documents before declaring done.
+
+**HANDOFF**
+- Follow `compact-handoff.mdc`.
+- Treat `.cursor/auto-context.md` as authoritative repo-state evidence (the `refresh-compact-context.sh` hook keeps it fresh).
+- Write to `.cursor/session-handoff.md` only when the user explicitly asks.
+
+**OPS**
+- Route to the matching skill before answering from memory. Each operational workflow (secrets, database, deployments, integrations, monitoring) should own a skill in `.cursor/skills/` or `~/.cursor/skills/`.
+- Prefer running the CLI yourself over asking the user to paste output.
+
+## Escalation Triggers
+
+Stop and ask a clarifying question when:
+
+- The request could reasonably be IMPLEMENT or REFACTOR and the distinction changes the blast radius.
+- The task spans 3+ service boundaries (e.g. backend + frontend + migrations + infra) — consider splitting into separate branches.
+- A security finding surfaces mid-task — switch to the stop-and-report protocol in `security-and-git.mdc` before continuing.
+
+## What the Orchestrator Does NOT Do
+
+- It does not replay every rule at each step — specialist rules stay lazy-loaded mentally.
+- It does not narrate the classification unless asked; one-mode routing stays implicit.
+- It does not invent a new mode. If nothing fits, ask.

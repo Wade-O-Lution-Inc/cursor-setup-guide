@@ -1,6 +1,8 @@
 # Rules
 
-Rules are `.mdc` files in `.cursor/rules/` that provide persistent context to the AI agent. They load automatically at the start of every session.
+Rules are `.mdc` files in `.cursor/rules/` that provide persistent context to the AI agent. They can load automatically at session start (`alwaysApply: true`), on file matches (`globs: [...]`), or on description match from the user's request (`alwaysApply: false`).
+
+This guide recommends the **orchestrator + consolidated specialists** pattern. See [orchestration.md](orchestration.md) for the routing layer and [context-budget.md](context-budget.md) for why consolidation matters.
 
 ## Anatomy of a Rule
 
@@ -8,219 +10,143 @@ Rules are `.mdc` files in `.cursor/rules/` that provide persistent context to th
 ---
 description: One-line summary of what this rule covers
 alwaysApply: true
+globs: []
 ---
 
 # Human-Readable Title
 
-Content goes here. Keep it concise — every token competes for context window space.
+Content goes here. Keep it concise — every always-on line costs tokens on every session.
 ```
 
 ### Frontmatter Fields
 
 | Field | Required | Values | Purpose |
-|-------|----------|--------|---------|
-| `description` | Yes | Short string | Helps the agent decide if the rule is relevant |
-| `alwaysApply` | No | `true` / `false` | If `true`, loaded every session. If `false`, loaded only when the description matches the task |
+|---|---|---|---|
+| `description` | Yes | Short string | Used when the rule is requestable, to match the user's phrasing |
+| `alwaysApply` | No | `true` / `false` | If `true`, loaded every session |
+| `globs` | No | Array of glob patterns | If non-empty, rule loads only when a matching file is in context |
 
-**Use `alwaysApply: true` for most rules.** The overhead is small and the benefit of consistent behavior outweighs the token cost. Reserve `alwaysApply: false` for niche rules that only matter in rare scenarios.
+**Pick the cheapest tier that works.** See [context-budget.md](context-budget.md) for tier guidance.
 
-## The Core Rules
+## Recommended Target Shape
 
-### 1. `project.mdc` — Project Identity
+A minimal, realistic set for a production repo:
 
-This is the single most important rule. It tells the agent what the project is, where things live, and how to run it. Without this, the agent spends time exploring your repo structure every session.
+| File | Scope | Purpose |
+|---|---|---|
+| `00-orchestrator.mdc` | always-on | Implicit routing from request → mode → specialist |
+| `project.mdc` | always-on | Project identity, architecture, key commands, pattern catalog, doc index |
+| `engineering-discipline.mdc` | always-on | Think-first, stay-in-scope, surgical edits, simplest-working-pattern, done criteria |
+| `environment-and-commands.mdc` | always-on | Secret manager, run commands, feature flags, secret safety |
+| `security-and-git.mdc` | always-on | Security stop-and-report, multi-agent git workflow, OSS skill intake |
+| `testing-conventions.mdc` | always-on | AAA, naming, conftest/fixtures, markers, ship-with-tests policy |
+| `compact-handoff.mdc` | requestable | Dense operational handoff when the user says `compact` / `checkpoint` |
+| `deployment.mdc` | glob-gated | Deploy/infra conventions (loads on Dockerfile / deploy/ / workflows) |
+| [domain-specific rule] | glob-gated | Loads when editing the relevant module(s) |
 
-**What to include:**
+Seven-to-nine rules total. Six always-on. The remainder glob-gated or requestable.
+
+## The Six Always-On Rules
+
+### 1. `00-orchestrator.mdc` — Implicit Routing
+
+Classifies each request into one primary mode (IMPLEMENT / REFACTOR / DEBUG / DOCS / TEST / HANDOFF / OPS) and points at the specialist rule or skill that owns that mode. The agent does **not** mentally replay every rule on every turn.
+
+See [orchestration.md](orchestration.md) for the full pattern. Template: [`templates/00-orchestrator.mdc`](templates/00-orchestrator.mdc).
+
+### 2. `project.mdc` — Project Identity
+
+The single most impactful rule. Tells the agent what the project is, where things live, and how to run it. Without this, the agent spends time exploring your repo structure every session.
+
+**Include:**
 - One-sentence project description
-- Entry points (main files, where routers/controllers/models live)
+- Entry points (main files; where routers/controllers/models live)
 - Key commands (run, test, lint, build, deploy)
-- Package managers and dependency files
-- Documentation index (point to existing docs the agent can read when needed)
+- Package manager(s) and dependency files
+- A pattern catalog: "for CRUD see X, for background jobs see Y, for integrations see Z"
+- High-conflict files (files where parallel edits cause pain)
+- Documentation index (point to `docs/`, don't inline)
 
-**What NOT to include:**
-- Detailed architecture (put that in `docs/` and link to it)
+**Don't include:**
+- Detailed architecture (put that in `docs/ARCHITECTURE.md` and link to it)
 - Long explanations of business logic
 
-**Template:** [templates/project.mdc](templates/project.mdc)
+Template: [`templates/project.mdc`](templates/project.mdc).
 
-**Real example** (from `meeting_notes_workflow`):
+### 3. `engineering-discipline.mdc` — Think / Scope / Surgical / Simple / Done
 
-```markdown
----
-description: Project identity, entry points, key commands, and documentation index
-alwaysApply: true
----
+Consolidates the old *think-before-coding*, *goal-driven-execution*, *surgical-changes*, and *simplicity-first* rules into one:
 
-# Meeting Notes Workflow
+1. **Think first** — which layer, which existing pattern, what's the blast radius.
+2. **Stay in scope** — every edit traces back to the stated task; list scope traps explicitly.
+3. **Surgical edits** — edit only what's required; don't reformat; one concern per commit.
+4. **Simplest working pattern** — use existing abstractions; don't add dependencies or abstract prematurely.
+5. **Done criteria** — goal achieved, tests ship with the feature, lint clean, no unrelated files touched.
 
-FastAPI + React knowledge base platform. Ingests meetings from Fireflies,
-enriches with Claude, syncs to HubSpot/Slack/Notion.
+Template: [`templates/engineering-discipline.mdc`](templates/engineering-discipline.mdc).
 
-## Entry Points
+### 4. `environment-and-commands.mdc` — Environments, Secret Manager, Run Commands
 
-- **API server**: `app/main.py` (FastAPI, routers in `app/routers/`)
-- **Frontend**: `frontend/src/` (React + Vite + Tailwind/DaisyUI)
-- **Config**: `app/config.py` (Pydantic settings from `.env`)
+Consolidates *environment*, *cli-operations*, and *python-uv-commands* (or the equivalent for your stack). Covers:
 
-## Key Commands
+- Every deploy target (local / staging / production / on-prem hosts).
+- Secret manager CLI patterns (`<secret-manager> run -- <command>`).
+- The exact run-command shape for tests, dev server, migrations, worker.
+- Feature flag mechanism.
+- What the agent must **never** read, display, or commit.
 
-- **Run backend**: `uvicorn app.main:app --reload --port 8000`
-- **Run tests**: `python -m pytest tests/ -x -q`
-- **Lint**: `ruff check`
+Template: [`templates/environment-and-commands.mdc`](templates/environment-and-commands.mdc).
 
-## Documentation Index
+### 5. `security-and-git.mdc` — Security, Git Workflow, OSS Skill Intake
 
-- Architecture: `docs/ARCHITECTURE.md`
-- API Reference: `docs/API_REFERENCE.md`
-```
+Consolidates *security-protocol*, *git-workflow*, and *open-source-skill-intake-security*. Covers:
 
-### 2. `code-style.mdc` — Language Conventions
+- **Security stop-and-report** for hardcoded secrets, SQL injection, auth bypass, etc.
+- **Git workflow** — PR target (`staging` vs `main`), branch naming, scope boundaries, commit conventions, PR etiquette, conflict resolution.
+- **OSS skill intake gate** — provenance, content scan, supply-chain check, sandboxed adoption, decision policy.
 
-Prevents the agent from writing code in a style that doesn't match your project. Focus on the conventions that are **non-obvious** or **project-specific** — don't repeat language defaults the agent already knows.
+Template: [`templates/security-and-git.mdc`](templates/security-and-git.mdc).
 
-**Good items to include:**
-- Where business logic lives vs. where route handlers live
-- Import conventions specific to your project
-- Testing patterns (framework, fixture location, mock strategy)
-- Framework-specific patterns (state management, API client conventions)
+### 6. `testing-conventions.mdc` — Test Patterns
 
-**Bad items to include:**
-- "Use camelCase for JavaScript variables" (the agent knows this)
-- "Add docstrings to functions" (generic advice, not project-specific)
+Keeps tests consistent across the team and AI agents. Template: [`templates/testing-conventions.mdc`](templates/testing-conventions.mdc).
 
-**Template:** [templates/code-style.mdc](templates/code-style.mdc)
+Include:
+- AAA (Arrange-Act-Assert) structure.
+- Naming convention (`test_<unit>_<scenario>_<expected_outcome>` or equivalent).
+- `conftest` / fixture conventions.
+- Pytest markers and when to use each.
+- What to test vs. what not to test.
+- Ship-with-tests policy: features without tests are incomplete.
 
-### 3. `environment.mdc` — Secret Safety
+## Glob-Gated Rules
 
-This is a **safety guardrail**. It tells the agent what it must never touch and how configuration works in your project.
+Glob-gated rules load only when a matching file is in context. Good candidates:
 
-**Must include:**
-- Files the agent must never read or display (`.env`, credential files)
-- How config flows (environment variables, config files, Pydantic settings, etc.)
-- How to add a new configuration value (the step-by-step)
+| File | Typical globs |
+|---|---|
+| `deployment.mdc` | `Dockerfile*`, `deploy/**`, `railway.json`, `.github/workflows/**` |
+| `database.mdc` | `migrations/**`, `**/schema.sql`, `scripts/migrate*` |
+| `frontend-style.mdc` | `frontend/src/**`, `**/*.tsx`, `**/*.jsx` |
+| `worktree-orchestrator.mdc` | `scripts/orchestrator/**` |
 
-**Template:** [templates/environment.mdc](templates/environment.mdc)
+## Requestable Rules
 
-### 4. `git-workflow.mdc` — Deployment Safety
+Requestable rules have `alwaysApply: false` and are pulled in when the user's request matches the description. Good candidates:
 
-Another safety guardrail. Tells the agent your branching strategy and what operations require human approval.
-
-**Key sections:**
-- Branch strategy (where to branch from, where to merge)
-- Forbidden operations (force push, direct push to main, etc.)
-- What the agent can do without asking (read, test, lint)
-- What requires approval (commit, push, deploy, run scripts)
-
-**Template:** [templates/git-workflow.mdc](templates/git-workflow.mdc)
-
-### 5. `security-protocol.mdc` — Security Response Protocol
-
-Establishes a stop-and-report protocol when the agent encounters security issues during coding or review. Instead of silently continuing, the agent stops work, reports the finding with severity, and fixes critical issues before proceeding.
-
-**What to include:**
-- The specific patterns that trigger a stop (hardcoded secrets, injection, auth bypass)
-- Severity levels and what action each level requires
-- Your project's safe patterns (parameterized queries, auth middleware, config patterns)
-- Patterns that are always wrong in your codebase
-
-**Template:** [templates/security-protocol.mdc](templates/security-protocol.mdc)
-
-**Real example** (from `meeting_notes_workflow`):
-
-```markdown
----
-description: Security response protocol — stop-and-report when security issues are found.
-alwaysApply: true
----
-
-# Security Response Protocol
-
-## If You Discover a Security Issue: STOP
-
-1. **Hardcoded secrets** → STOP, fix immediately
-2. **SQL injection** → STOP, fix immediately
-3. **Missing auth** → Flag and offer to fix
-4. **Sensitive data in logs** → Note in PR description
-
-## Safe Patterns Already in Use
-- `settings.anthropic_api_key` (from Doppler via env var)
-- `db.rpc("function_name", params)` (parameterized Supabase RPCs)
-- `Depends(require_user_auth)` on all user-facing routes
-```
-
-### 6. `testing-conventions.mdc` — Testing Patterns
-
-Keeps tests consistent across the team and AI agents. Without this, the agent writes tests in random styles — sometimes using mocks, sometimes not, with inconsistent naming and structure.
-
-**What to include:**
-- Test structure pattern (Arrange-Act-Assert is recommended)
-- Naming convention for test functions
-- Pytest markers and when to use them
-- What to test vs. what not to test
-- Your conftest patterns and fixture conventions
-
-**Template:** [templates/testing-conventions.mdc](templates/testing-conventions.mdc)
-
-### 7. `goal-driven-execution.mdc` — Scope Management
-
-Prevents the agent from scope-creeping. Agents are naturally inclined to "improve" things they pass through — reformatting imports, adding type hints to unchanged functions, creating utility modules "for next time." This rule anchors every edit to the stated task and defines clear done criteria.
-
-**Key sections:**
-- Scope traps to avoid (specific anti-patterns agents fall into)
-- Done criteria (goal achieved, tests pass, lint clean, no unrelated files)
-- Documentation assessment for plan builds (when to update docs after multi-step features)
-- When and how scope should expand (stop, communicate, keep in same concern)
-
-**Template:** [templates/goal-driven-execution.mdc](templates/goal-driven-execution.mdc)
-
-### 8. `surgical-changes.mdc` — Minimal Edits
-
-Reinforces making the smallest change that solves the problem. While `goal-driven-execution.mdc` focuses on *what* to do, this rule focuses on *how* — edit only the files the task requires, don't reformat, don't migrate patterns, one concern per commit.
-
-**Key sections:**
-- Rules of engagement (edit only what's needed, don't reformat, don't migrate patterns)
-- Service boundary awareness (keep changes within one deploy target)
-- Don't touch tests you don't need to
-
-**Template:** [templates/surgical-changes.mdc](templates/surgical-changes.mdc)
-
-### 9. `think-before-coding.mdc` — Reason First
-
-Forces the agent to think about which layer a change belongs in, find existing patterns, and check the blast radius before writing any code. Without this, agents jump straight to implementation and sometimes invent new patterns when established ones already exist.
-
-**Key sections:**
-- Three questions before writing code (layer, pattern, blast radius)
-- Pattern catalog (CRUD, background jobs, config, integrations — with file references)
-- Data flow understanding
-- Database change planning
-
-**Template:** [templates/think-before-coding.mdc](templates/think-before-coding.mdc)
-
-### 10. `compact-handoff.mdc` — Session Handoff (optional)
-
-`alwaysApply: false` — attach when the user says **compact**, **checkpoint**, **handoff**, **resume packet**, or similar. The agent reads `.cursor/auto-context.md` (if present) and outputs a short continuation packet: Goal, Current State, Files That Matter, Decisions Locked In, Open Issues, Next Exact Steps, and a pasteable **Resume Prompt**. Optionally it writes the same content to `.cursor/session-handoff.md` when asked.
-
-**Pairing:** [templates/hooks/refresh-compact-context.sh](templates/hooks/refresh-compact-context.sh) on `afterFileEdit` and `stop` keeps `auto-context.md` fresh with `git` status, diff stat, and recent commits — see the **Session handoff pattern** in [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint). You can also copy the same rule to `~/.cursor/rules/` for a machine-wide handoff format.
-
-**Template:** [templates/compact-handoff.mdc](templates/compact-handoff.mdc)
-
-## Additional Domain Rules
-
-Beyond the core ten, add rules for any domain where the agent consistently needs guidance:
-
-| Rule | When to Add |
-|------|------------|
-| `database.mdc` | You have migration conventions, schema patterns, or safety rules for DB changes |
-| `integrations.mdc` | You connect to external APIs and want the agent to follow established patterns |
-| `deployment.mdc` | Your deploy pipeline has specific service boundaries or trigger rules |
+| File | Trigger |
+|---|---|
+| `compact-handoff.mdc` | `compact`, `checkpoint`, `handoff`, `resume packet` |
+| `architecture-review.mdc` | `review the architecture`, `design audit` |
+| `security-review.mdc` | `security review`, `audit this for auth issues` |
 
 ## Writing Tips
 
-1. **Be concise.** Every line competes for context window space. Bullet points > paragraphs.
+1. **Be concise.** Every always-on line lives in every session. Bullet points > paragraphs.
 2. **Be specific.** "Use `app/errors.AppError`" beats "Use the custom error hierarchy."
 3. **Use NEVER/ALWAYS for safety rules.** The agent respects strong directives.
 4. **Link to docs instead of inlining.** Point to `docs/ARCHITECTURE.md` rather than pasting architecture into the rule.
-5. **Add a maintenance clause.** Tell the agent to flag stale references:
+5. **Add a maintenance clause.**
 
 ```markdown
 ## Rule Maintenance
@@ -229,4 +155,6 @@ If you encounter a rule that references a file path or convention that no longer
 exists in the codebase, flag it to the user.
 ```
 
-This keeps rules accurate as the codebase evolves without scheduled maintenance.
+## Legacy: The 9-Rule Pattern
+
+The original version of this guide recommended nine separate always-on rules, one per engineering concern. That shape is preserved in [`templates/legacy-9-rule-pattern/`](templates/legacy-9-rule-pattern/) for reference. The consolidated pattern above reduces context cost by roughly 50% on a real production repo — see the [canonical example](EXAMPLES.md#canonical-example-meeting_notes_workflow). Start with the consolidated shape; drop to the legacy shape only if you've tried the merged rules and found them insufficient.
