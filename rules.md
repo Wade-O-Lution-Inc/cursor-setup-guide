@@ -206,7 +206,7 @@ Forces the agent to think about which layer a change belongs in, find existing p
 
 ## Additional Domain Rules
 
-Beyond the core nine, add rules for any domain where the agent consistently needs guidance:
+Beyond the core ten, add rules for any domain where the agent consistently needs guidance:
 
 | Rule | When to Add |
 |------|------------|
