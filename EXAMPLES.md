@@ -2,9 +2,9 @@
 
 Copy-paste-oriented snippets for Wade-O-Lution Cursor setups. Conceptual background is in [README.md](README.md), [hooks.md](hooks.md), [mcp.md](mcp.md), [rules.md](rules.md), [skills.md](skills.md), [agents.md](agents.md), and [scope.md](scope.md).
 
-## 1. Extended `hooks.json` (security trio + orchestrator hooks)
+## 1. Extended `hooks.json` (security trio + orchestrator hooks + context refresh)
 
-Reference implementation: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) `.cursor/hooks.json` — includes optional scripts that enforce git workflow policy and post-subagent checks:
+Reference implementation: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) `.cursor/hooks.json` — includes optional scripts that enforce git workflow policy, post-subagent checks, and session-handoff context refresh:
 
 ```json
 {
@@ -33,6 +33,16 @@ Reference implementation: [meeting_notes_workflow](https://github.com/Wade-O-Lut
       "event": "subagentStop",
       "script": ".cursor/hooks/orchestrator-post-tool.sh",
       "description": "Detect mixed-concern working tree after agent tasks and suggest orchestrator"
+    },
+    {
+      "event": "afterFileEdit",
+      "script": ".cursor/hooks/refresh-compact-context.sh",
+      "description": "Refresh .cursor/auto-context.md after every file edit"
+    },
+    {
+      "event": "stop",
+      "script": ".cursor/hooks/refresh-compact-context.sh",
+      "description": "Refresh .cursor/auto-context.md when the agent stops"
     }
   ]
 }

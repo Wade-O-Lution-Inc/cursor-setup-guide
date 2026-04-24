@@ -4,7 +4,9 @@ Hooks are shell scripts triggered by Cursor lifecycle events. They run before th
 
 ## When to Use Hooks
 
-Add hooks when you need to enforce **hard constraints** that rules alone can't guarantee:
+Hooks come in two flavors: **blocking** hooks that gate an action and can deny it, and **observation** hooks that run as side-effects and always exit 0.
+
+### Blocking hooks — enforce hard constraints
 
 | Hook Event | Fires When | Use For |
 |------------|-----------|---------|
@@ -12,7 +14,17 @@ Add hooks when you need to enforce **hard constraints** that rules alone can't g
 | `beforeShellExecution` | Agent is about to run a shell command | Blocking dangerous commands (`--no-verify`, `rm -rf /`) |
 | `beforeTabFileRead` | Agent is about to read a file | Preventing reads of `.env`, `.key`, `.pem`, credential files |
 
-Rules tell the agent what to do. Hooks enforce what it **cannot** do, even if it tries.
+Rules tell the agent what to do. Blocking hooks enforce what it **cannot** do, even if it tries.
+
+### Observation hooks — side-effects only
+
+| Hook Event | Fires When | Use For |
+|------------|-----------|---------|
+| `afterFileEdit` | Agent finishes editing a file | Refreshing a repo-state snapshot, running linters |
+| `stop` | Agent task completes | Writing a final state snapshot, sending notifications |
+| `subagentStop` | A Task subagent finishes | Injecting a `followup_message` back into the parent agent |
+
+Observation hooks should always exit 0. They have no blocking power but are useful for keeping context files fresh.
 
 ## Configuration
 
@@ -83,8 +95,25 @@ Some repositories add **extra** hooks on top of the security trio — for exampl
 |----------------|---------------|--------------|
 | `orchestrator-pre-shell.sh` | `beforeShellExecution` | Enforce branch or staging-first policies |
 | `orchestrator-post-tool.sh` | `subagentStop` | Post-flight checks after subagents finish |
+| `refresh-compact-context.sh` | `afterFileEdit` + `stop` | Keep `.cursor/auto-context.md` fresh for session handoff |
 
-These are **not** part of the default templates; copy them from a repo that maintains them, or write your own. A full **extended `hooks.json`** (security trio + orchestrator hooks) and manual stdin tests are documented in [EXAMPLES.md](EXAMPLES.md) (see the [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) reference there).
+These are **not** part of the default templates; copy them from a repo that maintains them, or write your own. A full **extended `hooks.json`** (security trio + orchestrator hooks + context refresh) and manual stdin tests are documented in [EXAMPLES.md](EXAMPLES.md) (see the [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) reference there).
+
+## Session handoff pattern (compact / checkpoint)
+
+A lightweight approximation of Claude Code's `/compact` command can be assembled from a hook + a rule:
+
+1. **Hook** (`afterFileEdit` + `stop`): `refresh-compact-context.sh` writes `.cursor/auto-context.md` after every edit and on agent stop. The file contains the current branch, HEAD SHA, git status, diff stat, recent commits, and untracked files.
+
+2. **Rule** (`compact-handoff.mdc`): when the user says `compact`, `checkpoint`, `handoff`, or similar phrases, the agent reads `.cursor/auto-context.md` as its evidence base and produces a structured handoff covering Goal, Current State, Files That Matter, Decisions Locked In, Open Issues, Next Exact Steps, and a Resume Prompt.
+
+**Templates:** [`templates/hooks/refresh-compact-context.sh`](templates/hooks/refresh-compact-context.sh) and [`templates/compact-handoff.mdc`](templates/compact-handoff.mdc).
+
+**Invoke:** `Run compact handoff now and write the result to .cursor/session-handoff.md`
+
+**Resume next session:** `Read .cursor/session-handoff.md, verify against current git status, then continue with the Next Exact Steps`
+
+This does not reset Cursor's context window the way `/compact` does in Claude Code — what it provides is a deterministic handoff artifact with a standard invocation pattern, which is the operationally useful part.
 
 ## Writing Custom Hooks
 

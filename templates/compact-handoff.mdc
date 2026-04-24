@@ -1,0 +1,64 @@
+---
+description: Use when the user asks to compact, checkpoint, handoff, resume, summarize progress, or prepare the next session.
+globs:
+alwaysApply: false
+---
+
+# Compact Handoff
+
+Generate a compact, continuation-focused session handoff.
+
+## Trigger phrases
+
+compact · compact handoff · checkpoint · create handoff · resume packet · summarize progress · prep next session
+
+## Behavior
+
+1. Read `.cursor/auto-context.md` if it exists — treat it as authoritative repo state.
+2. Inspect current git status / diff if additional context is needed.
+3. Produce a concise handoff in the required format below.
+4. Prefer facts that let the next agent continue immediately.
+5. Omit narrative recap, repeated reasoning, and obsolete branches.
+6. If the user asks to **write or update** the handoff file, overwrite `.cursor/session-handoff.md` with the same content.
+
+## Required output format
+
+```
+# Compact Handoff
+
+## Goal
+One short paragraph on the actual task being pursued.
+
+## Current State
+- What is already done
+- What is partially done
+- What appears unresolved
+
+## Files That Matter
+- path/to/file — why it matters
+- path/to/file — why it matters
+
+## Decisions Locked In
+- Architectural or product decisions that should not be re-litigated unless asked
+- Constraints, assumptions, or conventions already chosen
+
+## Open Issues
+- Bugs, blockers, missing info, risky assumptions, failing checks, or unclear edge cases
+
+## Next Exact Steps
+1. First step
+2. Second step
+3. Third step
+
+## Resume Prompt
+One short prompt the next Cursor session can paste to continue immediately.
+```
+
+## Compression rules
+
+- Keep it dense and operational.
+- Prefer bullets over prose.
+- Preserve file paths, function names, commands, and constraints exactly.
+- Do not invent completion status.
+- Mark anything uncertain explicitly as uncertain.
+- Target roughly 250–500 words unless the user asks for more or less.
