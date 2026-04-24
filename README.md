@@ -10,7 +10,7 @@ Rules, skills, and hooks solve this by giving the agent **persistent institution
 
 - **Rules** = guardrails and context that apply automatically (like a `.editorconfig` for AI behavior)
 - **Skills** = step-by-step procedures the agent follows for specific tasks (like runbooks, but executable)
-- **Hooks** = shell scripts that enforce hard constraints by blocking actions before they happen
+- **Hooks** = shell scripts on lifecycle events — blocking hooks that deny bad actions, and optional observation hooks for side effects (e.g. refreshing a repo snapshot)
 - **MCP** = live connections to your running services the agent can query
 
 The payoff is immediate: the agent writes code that follows your patterns, avoids your known pitfalls, and knows where things live — without being told each session.
@@ -31,6 +31,7 @@ your-repo/
 │   │   ├── goal-driven-execution.mdc  # Scope management, done criteria
 │   │   ├── surgical-changes.mdc       # Minimal edits, service boundaries
 │   │   ├── think-before-coding.mdc    # Pattern discovery, blast radius
+│   │   ├── compact-handoff.mdc  # On-demand: compact / checkpoint / session handoff (optional)
 │   │   └── ...               # Domain-specific rules as needed
 │   ├── skills/          # On-demand procedures for specific tasks
 │   │   ├── migration-workflow/
@@ -38,10 +39,11 @@ your-repo/
 │   │   ├── search-first/     # Adopt/Extend/Compose/Build decision matrix
 │   │   │   └── SKILL.md
 │   │   └── ...
-│   ├── hooks/           # Hard enforcement scripts (block bad actions)
+│   ├── hooks/           # Blocking + optional observation scripts
 │   │   ├── detect-secrets.sh     # Block leaked API keys in prompts
 │   │   ├── block-no-verify.sh    # Prevent --no-verify in git commands
-│   │   └── block-sensitive-reads.sh  # Block reading .env, .key, .pem files
+│   │   ├── block-sensitive-reads.sh  # Block reading .env, .key, .pem files
+│   │   └── refresh-compact-context.sh  # Optional: refresh .cursor/auto-context.md
 │   ├── hooks.json       # Hook event → script mapping
 │   ├── mcp.json         # MCP server connections (optional); see templates/mcp.json
 │   ├── settings.json    # Cursor plugin settings (optional)
@@ -58,10 +60,11 @@ Everything in `.cursor/` is safe to commit to git. It contains no secrets — ju
 2. Edit `project.mdc` — this is the single most impactful rule
 3. Add a `code-style.mdc` if you have language conventions
 4. Add safety rules for anything the agent shouldn't touch (`environment.mdc`, `git-workflow.mdc`)
-5. Copy `templates/hooks.json` and `templates/hooks/` into `.cursor/` for hard security enforcement
+5. Copy `templates/hooks.json` and `templates/hooks/` into `.cursor/` for hard security enforcement (the template also includes optional `afterFileEdit` + `stop` entries for the compact-handoff context snapshot; remove those lines if you do not want them)
 6. Make hook scripts executable: `chmod +x .cursor/hooks/*.sh`
-7. Add skills for any multi-step procedure you find yourself repeating
-8. Commit the `.cursor/` directory to git
+7. (Optional) Copy `templates/compact-handoff.mdc` into `.cursor/rules/` if you want a standard “compact / checkpoint / handoff” output format; pair with the refresh hook or run the script manually
+8. Add skills for any multi-step procedure you find yourself repeating
+9. Commit the `.cursor/` directory to git
 
 Start small. Two or three rules plus the security hooks is plenty. Add skills as pain points emerge.
 
@@ -82,7 +85,8 @@ See [rules.md](rules.md) for detailed guidance on rules. The essentials:
 | `goal-driven-execution.mdc` | Scope management, done criteria | Prevents scope creep, "while I'm here" refactors, and unrelated changes |
 | `surgical-changes.mdc` | Minimal edits, one concern per commit | Keeps PRs small and focused, respects service boundaries |
 | `think-before-coding.mdc` | Reason before implementing | Forces pattern discovery and blast radius checks before writing code |
-| `hooks.json` + `hooks/` | Hard enforcement scripts | Blocks leaked secrets, `--no-verify`, and sensitive file reads even if rules are ignored |
+| `compact-handoff.mdc` | Session handoff on demand | Structured Goal / state / next-steps packet when the user says compact, checkpoint, or handoff; see [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint) |
+| `hooks.json` + `hooks/` | Blocking + optional observation hooks | Security trio blocks bad actions; optional refresh hook keeps `.cursor/auto-context.md` up to date for handoffs |
 
 ## When to Add a Skill
 
@@ -97,9 +101,9 @@ See [skills.md](skills.md) for the anatomy of a good skill and templates.
 
 ## When to Add Hooks
 
-Add hooks when rules aren't strong enough. Rules are "soft" — the agent *should* follow them but can slip. Hooks are "hard" — the action is physically blocked by the script.
+Add hooks when rules aren't strong enough. Rules are "soft" — the agent *should* follow them but can slip. **Blocking** hooks are "hard" — the action is physically denied by the script. **Observation** hooks (`afterFileEdit`, `stop`, `subagentStop`) run for side effects (they should always exit 0) — for example refreshing a file with current `git` state before the agent compacts a session handoff.
 
-Start with the three security hooks (secret detection, git safety, sensitive file blocking). They cost nothing when the agent behaves correctly and catch real mistakes when it doesn't.
+Start with the three security hooks (secret detection, git safety, sensitive file blocking). They cost nothing when the agent behaves correctly and catch real mistakes when it doesn't. Add the optional `refresh-compact-context.sh` entries when you use [session handoff](hooks.md#session-handoff-pattern-compact--checkpoint).
 
 See [hooks.md](hooks.md) for the full guide and template scripts. Optional workflow hooks and a full extended `hooks.json` are in [EXAMPLES.md](EXAMPLES.md).
 
@@ -123,6 +127,7 @@ See [mcp.md](mcp.md) for setup patterns and [EXAMPLES.md](EXAMPLES.md) for sampl
 |-------|----------|----------------|---------|
 | Project | `your-repo/.cursor/` | Yes | Anything specific to this codebase |
 | Global | `~/.cursor/skills/` | No | Cross-project knowledge (SSH hosts, personal workflows) |
+| Global | `~/.cursor/rules/` | No | Personal rules you want in every project (e.g. copy [templates/compact-handoff.mdc](templates/compact-handoff.mdc) for handoff formatting) |
 
 **Default to project scope.** Global skills are for things like machine connection details or personal preferences that span multiple repos. If a rule or skill is useful to anyone working on the repo, it belongs in the project.
 

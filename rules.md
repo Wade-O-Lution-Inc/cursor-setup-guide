@@ -196,6 +196,14 @@ Forces the agent to think about which layer a change belongs in, find existing p
 
 **Template:** [templates/think-before-coding.mdc](templates/think-before-coding.mdc)
 
+### 10. `compact-handoff.mdc` — Session Handoff (optional)
+
+`alwaysApply: false` — attach when the user says **compact**, **checkpoint**, **handoff**, **resume packet**, or similar. The agent reads `.cursor/auto-context.md` (if present) and outputs a short continuation packet: Goal, Current State, Files That Matter, Decisions Locked In, Open Issues, Next Exact Steps, and a pasteable **Resume Prompt**. Optionally it writes the same content to `.cursor/session-handoff.md` when asked.
+
+**Pairing:** [templates/hooks/refresh-compact-context.sh](templates/hooks/refresh-compact-context.sh) on `afterFileEdit` and `stop` keeps `auto-context.md` fresh with `git` status, diff stat, and recent commits — see the **Session handoff pattern** in [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint). You can also copy the same rule to `~/.cursor/rules/` for a machine-wide handoff format.
+
+**Template:** [templates/compact-handoff.mdc](templates/compact-handoff.mdc)
+
 ## Additional Domain Rules
 
 Beyond the core nine, add rules for any domain where the agent consistently needs guidance:

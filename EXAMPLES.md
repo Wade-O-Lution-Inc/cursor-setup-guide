@@ -150,4 +150,5 @@ Some teams copy these markdown files into **`your-repo/.cursor/guide/`** (plus a
 | Always-on agent behavior | **`.cursor/rules/*.mdc`** |
 | Multi-step runbooks | **`.cursor/skills/<skill>/SKILL.md`** |
 | Hard blocks | **`.cursor/hooks/`** + **`hooks.json`** |
+| Session handoff (compact / checkpoint) | **`.cursor/rules/compact-handoff.mdc`**, optional **`.cursor/auto-context.md`** (hook-generated) and **`.cursor/session-handoff.md`** (on explicit save) — see [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint) |
 | Organization templates | **This repo** — [cursor-setup-guide](https://github.com/Wade-O-Lution-Inc/cursor-setup-guide) |

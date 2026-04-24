@@ -32,17 +32,21 @@ If your workspace contains multiple repos (like we have `meeting_notes_workflow`
 - Rules in `repo-a/.cursor/rules/` are visible when working in `repo-b/` too
 - You don't need to duplicate shared rules — but you should keep rules repo-specific since they travel with the repo when opened solo
 
-## Global Scope (`~/.cursor/skills/`)
+## Global Scope (`~/.cursor/` — skills and rules)
 
 ```
 ~/.cursor/
 ├── skills/
 │   └── your-skill/
 │       └── SKILL.md
+├── rules/          # Optional: global .mdc rules (same format as project rules)
+│   └── ...
 └── plans/          ← Cursor-managed, don't touch
 ```
 
 **Not in any git repo. Personal to your machine.**
+
+Project rules in `your-repo/.cursor/rules/` travel with the repo. Global rules in `~/.cursor/rules/` load in every workspace — use sparingly, usually for a single personal convention (handoff format, local tooling reminders).
 
 Use for cross-project knowledge that doesn't belong in any single repo:
 
@@ -51,6 +55,7 @@ Use for cross-project knowledge that doesn't belong in any single repo:
 | SSH connection details for shared machines | Contains IPs/hostnames, relevant across repos |
 | Personal workflow preferences | Your style, not the team's |
 | Cross-project deployment procedures | Span multiple repos |
+| A rule you want in every repo | e.g. [templates/compact-handoff.mdc](templates/compact-handoff.mdc) for the same handoff format everywhere — put a copy in `~/.cursor/rules/` |
 
 ### Real Example: Mac Mini SSH
 
@@ -97,8 +102,9 @@ The global `~/.cursor/` directory also contains Cursor-managed files:
 | Path | Managed by | Safe to edit? |
 |------|-----------|---------------|
 | `~/.cursor/skills/` | You | Yes — this is where your global skills go |
+| `~/.cursor/rules/` | You | Yes — optional global rules (e.g. handoff format) |
 | `~/.cursor/plans/` | Cursor | No — auto-generated plan files |
 | `~/.cursor/plugins/` | Cursor | No — plugin cache, managed automatically |
 | `~/.cursor/skills-cursor/` | Cursor | No — built-in skills, never create files here |
 
-Only create files in `~/.cursor/skills/`. Everything else is managed by Cursor.
+Create files in `~/.cursor/skills/` and, if needed, `~/.cursor/rules/`. Everything else under `~/.cursor/` is managed by Cursor or should be left alone.
