@@ -1,0 +1,65 @@
+schema_version: "1.0"
+workflow:
+  id: "sdd-api"
+  name: "SDD API Cycle"
+  version: "1.0.0"
+  author: "Integrity"
+  description: "Full SDD cycle scoped to FastAPI service + worker; no frontend tasks"
+
+requires:
+  speckit_version: ">=0.10.0"
+  integrations:
+    any:
+      - "cursor-agent"
+
+inputs:
+  spec:
+    type: string
+    required: true
+    prompt: "Describe the API/service feature (what/why)"
+  integration:
+    type: string
+    default: "auto"
+
+steps:
+  - id: specify
+    command: speckit.specify
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: clarify
+    command: speckit.clarify
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: plan
+    command: speckit.plan
+    integration: "{{ inputs.integration }}"
+    input:
+      args: >-
+        FastAPI router + service layer only. No frontend changes.
+        pytest with conftest mocks. {{ inputs.spec }}
+
+  - id: tasks
+    command: speckit.tasks
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: analyze
+    command: speckit.analyze
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: implement
+    command: speckit.implement
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: verify
+    type: shell
+    run: "{LINT_CMD} && {TEST_CMD}"

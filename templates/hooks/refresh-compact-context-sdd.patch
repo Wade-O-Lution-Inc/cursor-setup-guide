@@ -1,0 +1,37 @@
+# Optional patch: SDD Spec Progress in auto-context
+
+Apply to `.cursor/hooks/refresh-compact-context.sh` before the closing `} > "$OUT_FILE"`.
+
+Reference implementation: [meeting_notes_workflow/.cursor/hooks/refresh-compact-context.sh](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/staging/.cursor/hooks/refresh-compact-context.sh)
+
+```bash
+  # Spec Progress (SDD) — fail-open
+  SPEC_DIR=""
+  if [[ "$BRANCH" =~ ^[0-9]{3}- ]]; then
+    PREFIX="${BRANCH%%-*}"
+    CANDIDATE="$ROOT/specs/$BRANCH"
+    if [[ -d "$CANDIDATE" ]]; then
+      SPEC_DIR="$CANDIDATE"
+    else
+      MATCH="$(find "$ROOT/specs" -maxdepth 1 -type d -name "${PREFIX}-*" 2>/dev/null | head -n 1 || true)"
+      [[ -n "$MATCH" ]] && SPEC_DIR="$MATCH"
+    fi
+  fi
+
+  if [[ -n "$SPEC_DIR" && -f "$SPEC_DIR/tasks.md" ]]; then
+    TOTAL="$(grep -cE '^- \[[ xX]\]' "$SPEC_DIR/tasks.md" 2>/dev/null || echo 0)"
+    DONE="$(grep -cE '^- \[[xX]\]' "$SPEC_DIR/tasks.md" 2>/dev/null || echo 0)"
+    echo
+    echo "## Spec Progress"
+    echo "- Feature dir: \`$SPEC_DIR\`"
+    echo "- Tasks: $DONE / $TOTAL complete"
+    [[ -f "$SPEC_DIR/spec.md" ]] && echo "- spec.md: present"
+    [[ -f "$SPEC_DIR/plan.md" ]] && echo "- plan.md: present"
+  elif [[ -n "$SPEC_DIR" ]]; then
+    echo
+    echo "## Spec Progress"
+    echo "- Feature dir: \`$SPEC_DIR\` (tasks.md not yet created)"
+  fi
+```
+
+**Note:** Spec Progress appears when the git branch matches `NNN-*` (Spec Kit convention). On `feature/*` branches, read `specs/*/tasks.md` directly until `speckit-specify` creates the numbered branch.
