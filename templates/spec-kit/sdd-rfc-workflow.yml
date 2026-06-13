@@ -1,0 +1,59 @@
+schema_version: "1.0"
+workflow:
+  id: "sdd-rfc"
+  name: "SDD RFC (Plan Only)"
+  version: "1.0.0"
+  author: "Integrity"
+  description: "Spec + plan + tasks without implement — architecture RFC"
+
+requires:
+  speckit_version: ">=0.10.0"
+  integrations:
+    any:
+      - "cursor-agent"
+
+inputs:
+  spec:
+    type: string
+    required: true
+    prompt: "Describe the feature or architecture question to RFC"
+  integration:
+    type: string
+    default: "auto"
+
+steps:
+  - id: specify
+    command: speckit.specify
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: review-spec
+    type: gate
+    message: "RFC review: approve spec before clarify/plan."
+    options: [approve, reject]
+    on_reject: abort
+
+  - id: clarify
+    command: speckit.clarify
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: plan
+    command: speckit.plan
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: tasks
+    command: speckit.tasks
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: analyze
+    command: speckit.analyze
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"

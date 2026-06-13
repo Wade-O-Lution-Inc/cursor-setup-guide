@@ -2,6 +2,8 @@
 
 How we configure Cursor's AI agent to work effectively and safely across Wade-O-Lution projects. This guide is a reference for setting up new repos with the same patterns.
 
+**Spec-Driven Development:** start with [sdd-user-guide.md](./sdd-user-guide.md), then [spec-driven-development.md](./spec-driven-development.md). Reference implementation: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
+
 ## Why Bother?
 
 Without rules and skills, every Cursor session starts from zero. The agent doesn't know your project structure, your deployment pipeline, your database conventions, or what it's not allowed to touch. You end up repeating the same corrections session after session.
@@ -86,6 +88,8 @@ See [rules.md](rules.md) for detailed guidance on rules. The essentials:
 | `surgical-changes.mdc` | Minimal edits, one concern per commit | Keeps PRs small and focused, respects service boundaries |
 | `think-before-coding.mdc` | Reason before implementing | Forces pattern discovery and blast radius checks before writing code |
 | `compact-handoff.mdc` | Session handoff on demand | Structured Goal / state / next-steps packet when the user says compact, checkpoint, or handoff; see [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint) |
+| [sdd-user-guide.md](./sdd-user-guide.md) | Spec-Driven Development quick reference | Multi-step features via Spec Kit; keep open while learning SDD |
+| [spec-driven-development.md](./spec-driven-development.md) | SDD adoption architecture | Bootstrap checklist, workflow templates, context-budget pattern |
 | `hooks.json` + `hooks/` | Blocking + optional observation hooks | Security trio blocks bad actions; optional refresh hook keeps `.cursor/auto-context.md` up to date for handoffs |
 
 ## When to Add a Skill

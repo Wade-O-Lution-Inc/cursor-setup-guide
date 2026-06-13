@@ -152,3 +152,53 @@ Some teams copy these markdown files into **`your-repo/.cursor/guide/`** (plus a
 | Hard blocks | **`.cursor/hooks/`** + **`hooks.json`** |
 | Session handoff (compact / checkpoint) | **`.cursor/rules/compact-handoff.mdc`**, optional **`.cursor/auto-context.md`** (hook-generated) and **`.cursor/session-handoff.md`** (on explicit save) — see [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint) |
 | Organization templates | **This repo** — [cursor-setup-guide](https://github.com/Wade-O-Lution-Inc/cursor-setup-guide) |
+
+## 11. Spec-Driven Development (`sdd-full`)
+
+**Keep [sdd-user-guide.md](./sdd-user-guide.md) open while learning.** Reference: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
+
+### Bootstrap
+
+```bash
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
+cd your-repo
+specify init . --integration cursor-agent --here --force --script sh
+# Copy templates/spec-kit/sdd-*-workflow.yml → .specify/workflows/
+specify workflow list
+```
+
+Full checklist: [templates/spec-kit/init-checklist.md](templates/spec-kit/init-checklist.md)
+
+### Run full cycle (terminal Mode B)
+
+```bash
+specify workflow run sdd-full \
+  -i spec="Add user-facing export for meeting summaries" \
+  -i integration=cursor-agent
+```
+
+Engine pauses at **gates** (`review-spec`, `review-plan`, `review-tasks`). While paused:
+
+```bash
+specify workflow status
+# Review specs/NNN-*/spec.md in editor
+specify workflow resume <run_id>
+```
+
+### Chat Mode A (daily default)
+
+In Cursor Agent:
+
+```
+Spec this feature: Add user-facing export for meeting summaries
+```
+
+Orchestrator SDD mode handles phase routing without terminal gates — say `I've reviewed spec.md — proceed to plan` at review points.
+
+### Resume after compact
+
+```
+Continue SDD on branch 001-export-summaries; next phase from tasks.md
+```
+
+Optional: `.cursor/auto-context.md` shows **Spec Progress** on `NNN-*` branches (see [refresh-compact-context-sdd.patch](templates/hooks/refresh-compact-context-sdd.patch)).

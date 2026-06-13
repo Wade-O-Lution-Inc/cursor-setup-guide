@@ -1,0 +1,14 @@
+---
+description: SDD phase guidance when editing specs or .specify artifacts
+alwaysApply: false
+globs: specs/**, .specify/**
+---
+
+<!-- SPECKIT START -->
+When working under `specs/` or `.specify/`, follow SDD phase order from your repo's SDD user guide:
+
+constitution → specify → clarify → plan → tasks → analyze → implement.
+
+Defer to orchestrator SDD mode for routing. Read `.specify/memory/constitution.md` for governance.
+Quality gates: `{LINT_CMD}` and `{TEST_CMD}`.
+<!-- SPECKIT END -->

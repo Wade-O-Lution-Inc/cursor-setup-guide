@@ -189,6 +189,30 @@ This skill is different from the procedure-oriented examples above — it's a **
 
 **Template:** [templates/search-first-skill/SKILL.md](templates/search-first-skill/SKILL.md)
 
+## Spec Kit managed skills vs bridge skills
+
+After `specify init --integration cursor-agent`, Spec Kit installs **managed phase skills** under `.cursor/skills/`:
+
+| Skill prefix | Purpose |
+|--------------|---------|
+| `speckit-specify` | Create branch + `spec.md` |
+| `speckit-clarify` | Resolve ambiguities before plan |
+| `speckit-plan` | Architecture / stack decisions |
+| `speckit-tasks` | Ordered `tasks.md` |
+| `speckit-analyze` | Cross-artifact consistency check |
+| `speckit-implement` | Execute tasks |
+| `speckit-taskstoissues` | GitHub issues from tasks |
+
+**Do not hand-edit** managed `speckit-*` skills — upgrade via `specify integration upgrade`.
+
+Add one **custom bridge skill** ([templates/skills/sdd-entry/SKILL.md](templates/skills/sdd-entry/SKILL.md)):
+
+- Points humans and agents to `docs/agents/SDD_USER_GUIDE.md`
+- Lists `sdd-*` workflow IDs
+- Safe to customize per repo
+
+See [spec-driven-development.md](spec-driven-development.md) and [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) reference impl.
+
 ## When to Create a New Skill
 
 Create a skill when you notice:

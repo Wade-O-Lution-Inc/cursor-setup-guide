@@ -108,3 +108,17 @@ The global `~/.cursor/` directory also contains Cursor-managed files:
 | `~/.cursor/skills-cursor/` | Cursor | No — built-in skills, never create files here |
 
 Create files in `~/.cursor/skills/` and, if needed, `~/.cursor/rules/`. Everything else under `~/.cursor/` is managed by Cursor or should be left alone.
+
+## Spec-Driven Development (SDD)
+
+| Asset | Scope | Notes |
+|-------|-------|-------|
+| `.specify/`, `specs/`, SDD docs | **Project** (git) | Ephemeral planning on feature branches |
+| `speckit-*` skills | **Project** (managed by `specify init`) | Phase procedures from Spec Kit |
+| `sdd-entry` skill | **Project** (copy from [templates/skills/sdd-entry/](templates/skills/sdd-entry/)) | Thin bridge to user guide |
+| `sdd-*` workflow YAMLs | **Project** (`.specify/workflows/`) | Copy from [templates/spec-kit/](templates/spec-kit/) |
+| `~/.specify/workflow-catalogs.yml` | **Global** (Spec Kit) | Optional; project workflows live in repo |
+
+**Do not** put SDD artifacts in global scope — they must travel with the repo. See [spec-driven-development.md](spec-driven-development.md).
+
+**Reference:** [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) is the live SDD reference implementation.

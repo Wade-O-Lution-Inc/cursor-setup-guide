@@ -1,0 +1,51 @@
+schema_version: "1.0"
+workflow:
+  id: "sdd-test-fix"
+  name: "SDD Test-Fix Loop"
+  version: "1.0.0"
+  author: "Integrity"
+  description: "Implement from tasks.md then test/fix until pytest passes (max 5 retries)"
+
+requires:
+  speckit_version: ">=0.10.0"
+  integrations:
+    any:
+      - "cursor-agent"
+
+inputs:
+  spec:
+    type: string
+    required: false
+    default: "Continue implement from tasks.md on current branch"
+    prompt: "Optional context for implement (default: continue tasks.md)"
+  integration:
+    type: string
+    default: "auto"
+
+steps:
+  - id: implement
+    command: speckit.implement
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: test
+    type: shell
+    run: "{TEST_CMD}"
+
+  - id: retry
+    type: while
+    condition: "{{ steps.test.output.exit_code != 0 }}"
+    max_iterations: 5
+    steps:
+      - id: fix
+        type: prompt
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Tests failed (exit {{ steps.test.output.exit_code }}).
+          Fix failing tests per .specify/memory/constitution.md and tasks.md.
+          Run ruff if needed.
+
+      - id: retest
+        type: shell
+        run: "{TEST_CMD}"

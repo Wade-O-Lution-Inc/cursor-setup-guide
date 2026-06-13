@@ -213,6 +213,23 @@ Beyond the core ten, add rules for any domain where the agent consistently needs
 | `database.mdc` | You have migration conventions, schema patterns, or safety rules for DB changes |
 | `integrations.mdc` | You connect to external APIs and want the agent to follow established patterns |
 | `deployment.mdc` | Your deploy pipeline has specific service boundaries or trigger rules |
+| `specify-rules.mdc` | Spec Kit SDD — glob-gated to `specs/**` and `.specify/**` only |
+
+## Glob-gated SDD rules
+
+Spec Kit can add always-on rules that bloat context. **Override pattern** (from [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow)):
+
+```markdown
+---
+description: SDD phase guidance when editing specs or .specify artifacts
+alwaysApply: false
+globs: specs/**, .specify/**
+---
+```
+
+Template: [templates/spec-kit/specify-rules-override.mdc](templates/spec-kit/specify-rules-override.mdc)
+
+SDD **routing** (~40 lines) belongs in the orchestrator — snippet: [templates/rules/sdd-orchestrator-snippet.mdc](templates/rules/sdd-orchestrator-snippet.mdc).
 
 ## Writing Tips
 
