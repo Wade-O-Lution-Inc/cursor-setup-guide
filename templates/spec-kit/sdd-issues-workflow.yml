@@ -1,47 +1,7 @@
-schema_version: "1.0"
-workflow:
-  id: "sdd-issues"
-  name: "SDD to GitHub Issues"
-  version: "1.0.0"
-  author: "Integrity"
-  description: "Specify → tasks → GitHub issues (requires gh CLI auth)"
-
-requires:
-  speckit_version: ">=0.10.0"
-  integrations:
-    any:
-      - "cursor-agent"
-
-inputs:
-  spec:
-    type: string
-    required: true
-    prompt: "Describe the feature to break into GitHub issues"
-  integration:
-    type: string
-    default: "auto"
-
-steps:
-  - id: specify
-    command: speckit.specify
-    integration: "{{ inputs.integration }}"
-    input:
-      args: "{{ inputs.spec }}"
-
-  - id: clarify
-    command: speckit.clarify
-    integration: "{{ inputs.integration }}"
-    input:
-      args: "{{ inputs.spec }}"
-
-  - id: tasks
-    command: speckit.tasks
-    integration: "{{ inputs.integration }}"
-    input:
-      args: "{{ inputs.spec }}"
-
-  - id: to-issues
-    command: speckit.taskstoissues
-    integration: "{{ inputs.integration }}"
-    input:
-      args: "{{ inputs.spec }}"
+# DEPRECATED — use sdd -i issues=true -i stop_at=tasks
+# Prefer templates/spec-kit/sdd-workflow.yml → .specify/workflows/sdd/workflow.yml
+# Keep this file only for historical links; do not install as a live workflow.
+#
+# Equivalent:
+#   specify workflow run sdd -i spec="..." -i integration=cursor-agent \
+#     # plus the flags implied by the old ID (see docs/sdd-user-guide.md)

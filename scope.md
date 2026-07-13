@@ -2,6 +2,8 @@
 
 Rules and skills can live in two places. Choosing the right scope avoids duplication and keeps sensitive info out of shared repos.
 
+**Wade-O-Lution global harness (current):** [global-env.md](./global-env.md)
+
 ## Project Scope (`.cursor/` in your repo)
 
 ```
@@ -24,52 +26,47 @@ Use for anything specific to this codebase that any contributor (human or AI) sh
 - Hard enforcement hooks (secret detection, command blocking, file read blocking)
 - Multi-step procedures (migrations, integrations, releases)
 - MCP connections to the app's own services
+- Spec Kit `.specify/` workflows (`sdd`, `sdd-remote`) and `sdd-entry`
 
 ### Multi-Root Workspaces
 
-If your workspace contains multiple repos (like we have `meeting_notes_workflow` + `Integrity_Lab`), each repo has its own `.cursor/` directory. Rules from both repos are loaded when the workspace is open. This means:
+Workspaces often include `meeting_notes_workflow` + `Integrity_Lab` + `repo-index` (and separately the platform stack). Each repo has its own `.cursor/`. The **global skill router** (`~/.cursor/hooks/workspace-skill-router.sh`) detects which repo is active and injects the right skill list — see [global-env.md](./global-env.md).
 
-- Rules in `repo-a/.cursor/rules/` are visible when working in `repo-b/` too
-- You don't need to duplicate shared rules — but you should keep rules repo-specific since they travel with the repo when opened solo
+- Rules in `repo-a/.cursor/rules/` are visible when working in `repo-b/` too in a multi-root window
+- Keep rules repo-specific so they travel when a repo is opened solo
 
-## Global Scope (`~/.cursor/` — skills and rules)
+## Global Scope (`~/.cursor/`)
 
 ```
 ~/.cursor/
-├── skills/
-│   └── your-skill/
-│       └── SKILL.md
-├── rules/          # Optional: global .mdc rules (same format as project rules)
-│   └── ...
-└── plans/          ← Cursor-managed, don't touch
+├── hooks.json + hooks/     # Skill router (beforeSubmitPrompt)
+├── rules/                  # Cross-repo alwaysApply safety rules
+├── skills/                 # Global skills + pointer stubs
+├── sdd-orchestrator-ctl/   # SDD multi-model control plane
+├── bin/                    # Helpers (e.g. archive-stale-plans.sh)
+├── plans/                  # Cursor-managed (archive, don't commit)
+├── skills-cursor/          # Built-in — never hand-edit
+├── plugins/                # Cursor-managed
+└── mcp.json                # Optional user-level MCP (keep minimal)
 ```
 
-**Not in any git repo. Personal to your machine.**
-
-Project rules in `your-repo/.cursor/rules/` travel with the repo. Global rules in `~/.cursor/rules/` load in every workspace — use sparingly, usually for a single personal convention (handoff format, local tooling reminders).
-
-Use for cross-project knowledge that doesn't belong in any single repo:
+**Not in product git.** Sync new machines from [templates/global/](./templates/global/) + a known-good copy of `sdd-orchestrator-ctl`.
 
 | Good for global scope | Why |
 |----------------------|-----|
-| SSH connection details for shared machines | Contains IPs/hostnames, relevant across repos |
-| Personal workflow preferences | Your style, not the team's |
-| Cross-project deployment procedures | Span multiple repos |
-| A rule you want in every repo | e.g. [templates/compact-handoff.mdc](templates/compact-handoff.mdc) for the same handoff format everywhere — put a copy in `~/.cursor/rules/` |
+| Skill router hooks | Must run in every workspace |
+| Always-on safety rules (git, supply chain, mixed-concern, platform inheritance) | Same policy across all Wade-O-Lution repos |
+| `lab-host-ssh`, browser automation, session-handoff | Cross-repo ops |
+| `sdd-orchestrator` + `sdd-orchestrator-ctl` | Shared SDD phase gating |
+| Pointer stubs (`speckit-*`, Notion, overengineering, …) | Discovery without duplicating large skill bodies |
 
-### Real Example: Mac Mini SSH
-
-We have a global skill for connecting to our Mac mini:
+### Real Example: Lab host SSH
 
 ```
-~/.cursor/skills/mac-mini-ssh/SKILL.md
+~/.cursor/skills/lab-host-ssh/SKILL.md
 ```
 
-This contains the Tailscale IP, SSH user, common operations (deploy Alloy, restart services, tail logs), and PATH caveats for non-interactive SSH. It lives globally because:
-
-1. Both `meeting_notes_workflow` and `Integrity_Lab` need it
-2. It contains a machine-specific IP address
-3. It's operational knowledge, not codebase knowledge
+(Formerly `mac-mini-ssh`.) Tailscale SSH ops for the Mac mini — used by meeting_notes and Integrity_Lab. Lives globally because it spans repos and is operational, not product code. Prefer Tailscale MagicDNS names over hardcoding IPs; never put tokens in the skill.
 
 ## Decision Flowchart
 
@@ -77,48 +74,34 @@ This contains the Tailscale IP, SSH user, common operations (deploy Alloy, resta
 Is this specific to one codebase?
 ├── Yes → Project scope (.cursor/ in that repo)
 │
-├── No, it spans multiple repos
-│   ├── Does it contain machine-specific details (IPs, paths)?
-│   │   └── Yes → Global scope (~/.cursor/skills/)
-│   │
-│   └── No, it's a shared convention
-│       └── Put it in the most relevant repo, or duplicate
-│           if both repos truly need independent copies
+├── No, it spans multiple Wade-O-Lution repos
+│   ├── Cross-repo safety / routing / SDD orchestrator?
+│   │   └── Global (~/.cursor/) — document in global-env.md
+│   ├── Machine-specific ops (SSH, lab)?
+│   │   └── Global skill (no secrets in file)
+│   └── Shared product convention?
+│       └── Owning repo + optional global stub
 │
-└── No, it's personal preference
-    └── Global scope (~/.cursor/skills/)
+└── Personal preference only
+    └── Global skill/rule (your machine)
 ```
 
 ## What NOT to Put in Global Scope
 
-- **API keys or tokens** — Use environment variables, not skills
-- **Project-specific procedures** — These should travel with the repo
-- **Anything a collaborator needs** — If it's not in git, they won't have it
-
-## The `~/.cursor/` Directory
-
-The global `~/.cursor/` directory also contains Cursor-managed files:
-
-| Path | Managed by | Safe to edit? |
-|------|-----------|---------------|
-| `~/.cursor/skills/` | You | Yes — this is where your global skills go |
-| `~/.cursor/rules/` | You | Yes — optional global rules (e.g. handoff format) |
-| `~/.cursor/plans/` | Cursor | No — auto-generated plan files |
-| `~/.cursor/plugins/` | Cursor | No — plugin cache, managed automatically |
-| `~/.cursor/skills-cursor/` | Cursor | No — built-in skills, never create files here |
-
-Create files in `~/.cursor/skills/` and, if needed, `~/.cursor/rules/`. Everything else under `~/.cursor/` is managed by Cursor or should be left alone.
+- **API keys or tokens** — Doppler / env vars
+- **Product procedures collaborators need** — put in the repo
+- **Full duplicates of large repo skills** — use pointer stubs
 
 ## Spec-Driven Development (SDD)
 
 | Asset | Scope | Notes |
 |-------|-------|-------|
-| `.specify/`, `specs/`, SDD docs | **Project** (git) | Ephemeral planning on feature branches |
-| `speckit-*` skills | **Project** (managed by `specify init`) | Phase procedures from Spec Kit |
-| `sdd-entry` skill | **Project** (copy from [templates/skills/sdd-entry/](templates/skills/sdd-entry/)) | Thin bridge to user guide |
-| `sdd-*` workflow YAMLs | **Project** (`.specify/workflows/`) | Copy from [templates/spec-kit/](templates/spec-kit/) |
-| `~/.specify/workflow-catalogs.yml` | **Global** (Spec Kit) | Optional; project workflows live in repo |
+| `.specify/`, `specs/`, SDD docs | **Project** | Ephemeral planning on feature branches |
+| `sdd` / `sdd-remote` workflows | **Project** | From [templates/spec-kit/](templates/spec-kit/) |
+| `sdd-entry` skill | **Project** | Chat front door only |
+| `speckit-*` phase skills | **Project** (managed) + optional **global stubs** | Worker procedures; stubs point at owning repo |
+| `sdd-orchestrator` + `sdd-orchestrator-ctl` | **Global** | Always-on phase gating |
 
-**Do not** put SDD artifacts in global scope — they must travel with the repo. See [spec-driven-development.md](spec-driven-development.md).
+See [spec-driven-development.md](spec-driven-development.md) and [global-env.md](./global-env.md).
 
-**Reference:** [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) is the live SDD reference implementation.
+**Reference:** [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow)

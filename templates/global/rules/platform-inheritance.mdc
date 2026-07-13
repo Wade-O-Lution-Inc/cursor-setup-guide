@@ -1,0 +1,30 @@
+---
+description: Integrity platform inheritance model and anti-fork constraints (all repos)
+alwaysApply: true
+---
+
+# Platform Inheritance
+
+## Architecture
+
+The platform uses a **3-level inheritance model**: **Industry Type → Industry → Customer**.
+
+- Examples: Facilities → Data Centers → Aligned; Remote Sites → Dewatering → CDOT.
+- Customization flows through **profile resolution** (`/v1/me`), composers, and customer profile config — not customer-specific forks in generic code.
+
+## Non-negotiable constraints
+
+- **Do not** create customer-specific router modules, page forks, or hardcoded customer branches in shared services.
+- **Backend (data-api):** Remote Sites via composer registry (`shared/composers/`) and profile dispatch (`shared/remote_sites/`).
+- **Frontend (integrity-ts):** SELECT + OVERRIDE in `customerProfiles`; shells `FacilitiesShell` / `RemoteSitesShell`.
+- **`docs/`** defines product and API behavior. If implementation contradicts a doc, update the doc first — never silently deviate.
+- **Staged OpenAPI** in `integrity-ts/docs/platform/contracts/openapi/` is **proposed guidance**, not live until deployed.
+- **Cross-repo graduation:** coordinate registry / `MocksAndStubsTracker.md` / `ApiState.md` when flipping endpoints live. Use global skill `cross-repo-contract-sync` and `contract-graduation`.
+
+## Auth (platform)
+
+- **Keycloak** = identity (JWT).
+- **data-api** = authorization resolver (roles, site/tenant scope, fail-closed).
+- **Frontend** consumes resolved session/profile from `/v1/me`.
+
+Repo-specific auth chains and DTO rules live in each repo’s `api-contract-guardrails.mdc` and `spec-anchors.mdc`.

@@ -1,0 +1,17 @@
+---
+description: Pause and split when a change spans too many boundaries (all repos)
+alwaysApply: true
+---
+
+# Mixed-Concern Guardrail
+
+Pause and consider **splitting the work** when a change touches **3+ boundaries**, for example:
+
+- Application code + tests + docs
+- Multiple microservices or both frontend and backend in one commit
+- Product code + `.cursor/` harness + CI/tooling
+- UI + API contracts + MSW/handlers + platform docs
+
+Prefer focused PRs or sequential tasks. Run the Team Topologies review loop when the combined change is still necessary.
+
+Repo orchestrators (`agent-orchestrator.mdc`) list boundary paths per stack.

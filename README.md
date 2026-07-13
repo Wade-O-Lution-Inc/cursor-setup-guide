@@ -2,7 +2,9 @@
 
 How we configure Cursor's AI agent to work effectively and safely across Wade-O-Lution projects. This guide is a reference for setting up new repos with the same patterns.
 
-**Spec-Driven Development:** start with [sdd-user-guide.md](./sdd-user-guide.md), then [spec-driven-development.md](./spec-driven-development.md). Reference implementation: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
+**Spec-Driven Development:** start with [sdd-user-guide.md](./sdd-user-guide.md), then [spec-driven-development.md](./spec-driven-development.md). Chat: `Start SDD` / `Continue SDD`; CLI: `sdd` / `sdd-remote`. Reference: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
+
+**Global machine harness:** [global-env.md](./global-env.md) — skill router, always-on safety rules, Spec Kit stubs, `sdd-orchestrator` + `sdd-orchestrator-ctl`.
 
 ## Why Bother?
 
@@ -88,8 +90,9 @@ See [rules.md](rules.md) for detailed guidance on rules. The essentials:
 | `surgical-changes.mdc` | Minimal edits, one concern per commit | Keeps PRs small and focused, respects service boundaries |
 | `think-before-coding.mdc` | Reason before implementing | Forces pattern discovery and blast radius checks before writing code |
 | `compact-handoff.mdc` | Session handoff on demand | Structured Goal / state / next-steps packet when the user says compact, checkpoint, or handoff; see [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint) |
-| [sdd-user-guide.md](./sdd-user-guide.md) | Spec-Driven Development quick reference | Multi-step features via Spec Kit; keep open while learning SDD |
-| [spec-driven-development.md](./spec-driven-development.md) | SDD adoption architecture | Bootstrap checklist, workflow templates, context-budget pattern |
+| [sdd-user-guide.md](./sdd-user-guide.md) | Spec-Driven Development quick reference | `Start SDD` / `Continue SDD` + `sdd` / `sdd-remote`; keep open while learning |
+| [spec-driven-development.md](./spec-driven-development.md) | SDD adoption architecture | Bootstrap checklist, workflows, always-on orchestrator |
+| [global-env.md](./global-env.md) | Machine-local Cursor harness | Skill router, global rules, Spec Kit stubs, `sdd-orchestrator-ctl` |
 | `hooks.json` + `hooks/` | Blocking + optional observation hooks | Security trio blocks bad actions; optional refresh hook keeps `.cursor/auto-context.md` up to date for handoffs |
 
 ## When to Add a Skill
@@ -130,9 +133,9 @@ See [mcp.md](mcp.md) for setup patterns and [EXAMPLES.md](EXAMPLES.md) for sampl
 | Scope | Location | Shared via git? | Use for |
 |-------|----------|----------------|---------|
 | Project | `your-repo/.cursor/` | Yes | Anything specific to this codebase |
-| Global | `~/.cursor/skills/` | No | Cross-project knowledge (SSH hosts, personal workflows) |
-| Global | `~/.cursor/rules/` | No | Personal rules you want in every project (e.g. copy [templates/compact-handoff.mdc](templates/compact-handoff.mdc) for handoff formatting) |
+| Global | `~/.cursor/skills/`, `rules/`, `hooks/`, `sdd-orchestrator-ctl/` | No (document here; sync machines from templates) | Cross-repo routing, safety rules, SDD orchestrator, lab SSH |
+| Built-in | `~/.cursor/skills-cursor/` | — | Cursor product skills — never hand-edit |
 
-**Default to project scope.** Global skills are for things like machine connection details or personal preferences that span multiple repos. If a rule or skill is useful to anyone working on the repo, it belongs in the project.
+**Default to project scope** for product procedures. The Wade-O-Lution **global** layer is intentional and documented in [global-env.md](./global-env.md) (skill router + always-on rules + orchestrator). Templates: [templates/global/](./templates/global/).
 
 See [scope.md](scope.md) for detailed guidance on what goes where.

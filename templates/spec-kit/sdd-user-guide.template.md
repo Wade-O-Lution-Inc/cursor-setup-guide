@@ -1,198 +1,96 @@
 # SDD User Guide
 
-**Keep this file open** while learning Spec-Driven Development (SDD) in {REPO_NAME}.
+**Keep this file open** while learning Spec-Driven Development (SDD) in this repo.
 
 Deep reference: [SPEC_DRIVEN_DEVELOPMENT.md](./SPEC_DRIVEN_DEVELOPMENT.md)
 
 ---
 
-## Start here
+## Kickoff (one screen)
 
-SDD turns multi-step features into **reviewable markdown artifacts** (`spec.md` → `plan.md` → `tasks.md`) before code lands. Use it for features spanning multiple sessions — not for one-line fixes.
+SDD turns multi-step features into reviewable markdown (`spec.md` → `plan.md` → `tasks.md`) before code. Skip it for one-line fixes.
 
-**Two modes:**
+| Surface | Verb / ID | What it does |
+|---------|-----------|--------------|
+| **Chat** | `Start SDD: <what/why>` | New feature → `sdd-entry` → orchestrator **specify** |
+| **Chat** | `Continue SDD` | Resume feature dir → next ungated phase via orchestrator |
+| **CLI** | `specify workflow run sdd …` | Local gated cycle (flags below) |
+| **CLI** | `specify workflow run sdd-remote …` | Laptop through tasks, then remote implement/confidence |
 
-| Mode | How | When |
-|------|-----|------|
-| **A — Chat** | Talk to Cursor Agent; orchestrator routes to SDD | Daily default |
-| **B — Workflow** | `specify workflow run sdd-full …` in terminal | Long runs with explicit gates |
+Every phase is **orchestrator-gated** (worker → deterministic hooks → judge → `phase-exits.md`). Bare `speckit-*` is the worker procedure only. Cost envelope: `~/.cursor/sdd-orchestrator-ctl/README.md`. Headless Continue twin: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`.
+
+### Flags (CLI `sdd` / chat NL)
+
+| Flag | Values | Meaning |
+|------|--------|---------|
+| `scope` | `full` \| `api-only` \| `frontend-only` | What layers the plan/tasks may touch |
+| `stop_at` | `confidence` \| `tasks` \| `plan` | Early exit (RFC ≈ `plan` or `tasks`) |
+| `issues` | `true` \| `false` | After tasks, emit GitHub issues and stop |
+| `mode` | `full` \| `test-fix` | `test-fix` = implement + test retry + confidence |
+| `transfer_only` | on `sdd-remote` | Skip laptop phases; handoff only |
+
+```bash
+specify workflow run sdd -i spec="..." -i integration=cursor-agent \
+  -i scope=full -i stop_at=confidence -i issues=false -i mode=full
+
+specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
+```
+
+**Deprecated aliases** (still run one release): `sdd-full` → `sdd`; `sdd-api` → `scope=api-only`; `sdd-rfc` → `stop_at=tasks`; `sdd-test-fix` → `mode=test-fix`; `sdd-issues` → `issues=true` + `stop_at=tasks`; `sdd-full-remote` / `sdd-remote-handoff` → `sdd-remote`.
 
 ---
 
 ## One-time setup
 
-1. Install CLI (once per machine):
+```bash
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
+specify integration status
+specify workflow list   # expect sdd + sdd-remote
+```
 
-   ```bash
-   uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
-   specify version
-   ```
-
-2. Repo already initialized if `.specify/` and `.cursor/skills/speckit-*` exist. Otherwise:
-
-   ```bash
-   specify init . --integration cursor-agent --here --force --script sh
-   ```
-
-3. Verify:
-
-   ```bash
-   specify integration status
-   specify workflow list
-   ```
-
-   Expect: `speckit`, `sdd-full`, `sdd-api`, `sdd-rfc`, `sdd-test-fix`, `sdd-issues`.
-
-4. Constitution lives at `.specify/memory/constitution.md` (compiled from `.cursor/rules/`). Refresh when governance rules change materially.
-
----
-
-## Which pipeline?
-
-| Situation | Use |
-|-----------|-----|
-| New feature (full stack or mixed) | **`sdd-full`** or chat SDD |
-| API + worker only, no frontend | **`sdd-api`** |
-| Architecture RFC, no code yet | **`sdd-rfc`** |
-| Have `tasks.md`, tests failing — finish branch | **`sdd-test-fix`** |
-| Break tasks into GitHub issues | **`sdd-issues`** |
-| One-line fix, typo, ops task | Normal chat (DEBUG / OPS) — **not SDD** |
+Constitution: `.specify/memory/constitution.md`.
 
 ---
 
 ## Chat cheat sheet
 
-Copy-paste into Cursor Agent:
-
 ```
-Spec this feature: <what and why in plain English — no tech stack yet>
-```
-
-```
-Continue SDD on branch <NNN-feature-name>; next phase from tasks.md
-```
-
-```
+Start SDD: <what and why — no tech stack yet>
+Continue SDD
 I've reviewed spec.md — proceed to plan
-```
-
-```
-Revise spec: <your feedback>
-```
-
-```
+Revise spec: <feedback>
 compact
-```
-
-```
-create handoff
-```
-
-```
 Stop SDD; switch to normal fix mode for <narrow bug>
 ```
+
+Optional: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`, `test-fix mode`.
 
 ---
 
 ## Terminal cheat sheet
 
 ```bash
-# Full cycle (default)
-specify workflow run sdd-full \
-  -i spec="Your feature description" \
-  -i integration=cursor-agent
+specify workflow run sdd -i spec="..." -i integration=cursor-agent
+specify workflow run sdd -i spec="..." -i stop_at=plan
+specify workflow run sdd -i spec="..." -i mode=test-fix
+specify workflow run sdd -i spec="..." -i issues=true -i stop_at=tasks
 
-# Variants
-specify workflow run sdd-api -i spec="..."
-specify workflow run sdd-rfc -i spec="..."
-specify workflow run sdd-test-fix -i spec="Continue from tasks.md"
-specify workflow run sdd-issues -i spec="..."
-
-# While paused at a gate
 specify workflow status
 specify workflow resume <run_id>
 
-# Quality gates (manual)
 {LINT_CMD}
 {TEST_CMD}
+
+specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
 ```
-
----
-
-## First feature walkthrough
-
-### Session 1 — Spec (~15–30 min)
-
-| You | Agent / system |
-|-----|----------------|
-| Type: `Spec this feature: …` | Creates branch `NNN-name`, `specs/NNN-name/spec.md` |
-| Read **spec.md** in editor | Runs clarify; updates spec |
-| Answer clarification questions | Updates spec |
-| Say `compact` if context is heavy | Handoff includes spec path |
-
-**Do not** pick tech stack yet. **Do not** write code yet.
-
-### Session 2 — Plan (~20–40 min)
-
-| You | Agent / system |
-|-----|----------------|
-| `Continue SDD on branch NNN-name. Plan with …` | Writes plan.md, research.md, tasks.md |
-| Read **plan.md** — catch over-engineering | Runs analyze |
-| Approve: `proceed to implement` or run workflow resume at gate | — |
-
-### Session 3+ — Implement (hours, chunked)
-
-| You | Agent / system |
-|-----|----------------|
-| `Implement next phase from tasks.md` | Marks tasks `[X]`, writes code |
-| Review diffs | Runs ruff + pytest at checkpoints |
-| `compact` overnight | Handoff + `.cursor/auto-context.md` shows task progress |
-
-### PR
-
-- Branch `NNN-*` → PR to **staging** with spec/plan/tasks in repo.
-
----
-
-## Files to watch
-
-| Phase | Files updated |
-|-------|----------------|
-| Specify | `specs/NNN-*/spec.md` |
-| Plan | `plan.md`, `research.md`, `data-model.md`, `contracts/` |
-| Tasks | `tasks.md` |
-| Implement | App code + `[X]` in `tasks.md` |
-| Always | `.cursor/auto-context.md` (Spec Progress section on SDD branches) |
-
----
-
-## Stuck?
-
-| Problem | Fix |
-|---------|-----|
-| Wrong branch | `git checkout NNN-feature-name` |
-| Skipped clarify | Run clarify before plan |
-| Workflow paused | `specify workflow status` → `specify workflow resume <run_id>` |
-| Tests fail after implement | `specify workflow run sdd-test-fix` or fix in chat |
-| Context full | `compact` → new chat with handoff |
-| Agent implements too early | Point to `tasks.md`; use orchestrator SDD guards |
 
 ---
 
 ## Do not
 
-- Use SDD for hotfixes (`fix/` branches, single-file changes)
-- Treat `specs/` as product docs or Agent OS memory
-- Skip clarify on multi-boundary features
-- Implement before `tasks.md` exists (unless explicit spike)
-- Merge to staging without pytest + ruff green
+- Use SDD for hotfixes / single-file changes
+- Call bare `speckit-*` as the chat front door (use `sdd-entry` → orchestrator)
+- Implement before `tasks.md`
+- Merge without `{LINT_CMD}` + `{TEST_CMD}` green
 
----
-
-
----
-
-## Guide feedback
-
-_(Fill after first real SDD feature in {REPO_NAME}.)_
-
+Repo: `{REPO_NAME}`. Secrets prefix: `{SECRETS_PREFIX}`.
