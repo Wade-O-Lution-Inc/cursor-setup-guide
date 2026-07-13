@@ -134,9 +134,15 @@ Example (Notion workspace plugin):
 }
 ```
 
-## 8. Global skills (machine-specific, not in git)
+## 8. Global harness (machine-local)
 
-Per [scope.md](scope.md), cross-repo SSH or host-specific runbooks can live under `~/.cursor/skills/<name>/SKILL.md`. Do **not** store API keys there.
+See [global-env.md](./global-env.md) and [scope.md](scope.md). Install:
+
+- Skill router: [templates/global/hooks/](templates/global/hooks/) + [templates/global/hooks.json](templates/global/hooks.json)
+- Always-on rules: [templates/global/rules/](templates/global/rules/)
+- Ops skills (`lab-host-ssh`, …) and `sdd-orchestrator-ctl` from a known-good machine
+
+Do **not** store API keys in skills.
 
 ## 9. Vendoring this guide inside a repo
 
@@ -150,10 +156,11 @@ Some teams copy these markdown files into **`your-repo/.cursor/guide/`** (plus a
 | Always-on agent behavior | **`.cursor/rules/*.mdc`** |
 | Multi-step runbooks | **`.cursor/skills/<skill>/SKILL.md`** |
 | Hard blocks | **`.cursor/hooks/`** + **`hooks.json`** |
+| Cross-repo routing / SDD orchestrator | **`~/.cursor/`** — [global-env.md](./global-env.md) |
 | Session handoff (compact / checkpoint) | **`.cursor/rules/compact-handoff.mdc`**, optional **`.cursor/auto-context.md`** (hook-generated) and **`.cursor/session-handoff.md`** (on explicit save) — see [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint) |
 | Organization templates | **This repo** — [cursor-setup-guide](https://github.com/Wade-O-Lution-Inc/cursor-setup-guide) |
 
-## 11. Spec-Driven Development (`sdd-full`)
+## 11. Spec-Driven Development (`sdd` / `sdd-remote`)
 
 **Keep [sdd-user-guide.md](./sdd-user-guide.md) open while learning.** Reference: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
 
@@ -163,42 +170,47 @@ Some teams copy these markdown files into **`your-repo/.cursor/guide/`** (plus a
 uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
 cd your-repo
 specify init . --integration cursor-agent --here --force --script sh
-# Copy templates/spec-kit/sdd-*-workflow.yml → .specify/workflows/
-specify workflow list
+# Copy templates/spec-kit/sdd-workflow.yml → .specify/workflows/sdd/workflow.yml
+# Copy templates/spec-kit/sdd-remote-workflow.yml → .specify/workflows/sdd-remote/workflow.yml
+specify workflow list   # expect sdd + sdd-remote
 ```
 
 Full checklist: [templates/spec-kit/init-checklist.md](templates/spec-kit/init-checklist.md)
 
-### Run full cycle (terminal Mode B)
+### Run cycle (terminal)
 
 ```bash
-specify workflow run sdd-full \
+specify workflow run sdd \
   -i spec="Add user-facing export for meeting summaries" \
   -i integration=cursor-agent
+
+# RFC / stop early:
+specify workflow run sdd -i spec="..." -i stop_at=plan
+
+# Close laptop after tasks:
+specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
 ```
 
-Engine pauses at **gates** (`review-spec`, `review-plan`, `review-tasks`). While paused:
+Engine pauses at **gates**. While paused:
 
 ```bash
 specify workflow status
-# Review specs/NNN-*/spec.md in editor
 specify workflow resume <run_id>
 ```
 
-### Chat Mode A (daily default)
-
-In Cursor Agent:
+### Chat (daily default)
 
 ```
-Spec this feature: Add user-facing export for meeting summaries
+Start SDD: Add user-facing export for meeting summaries
+Continue SDD
 ```
 
-Orchestrator SDD mode handles phase routing without terminal gates — say `I've reviewed spec.md — proceed to plan` at review points.
+`sdd-entry` → `sdd-orchestrator` per phase (not bare `speckit-*`). Optional NL flags: `scope=api`, `stop at plan`, `test-fix mode`.
 
 ### Resume after compact
 
 ```
-Continue SDD on branch 001-export-summaries; next phase from tasks.md
+Continue SDD
 ```
 
 Optional: `.cursor/auto-context.md` shows **Spec Progress** on `NNN-*` branches (see [refresh-compact-context-sdd.patch](templates/hooks/refresh-compact-context-sdd.patch)).

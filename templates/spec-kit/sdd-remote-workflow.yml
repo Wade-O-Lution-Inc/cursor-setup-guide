@@ -1,0 +1,210 @@
+schema_version: "1.0"
+workflow:
+  id: "sdd-remote"
+  name: "SDD Remote"
+  version: "2.0.0"
+  author: "Integrity"
+  description: >-
+    Laptop gated SDD through tasks (orchestrator-gated), then Mac mini handoff
+    for implement/confidence. Set transfer_only=true to skip laptop phases.
+
+requires:
+  speckit_version: ">=0.10.0"
+  integrations:
+    any:
+      - "cursor-agent"
+
+inputs:
+  spec:
+    type: string
+    required: false
+    default: "Continue SDD from tasks.md on current branch"
+    prompt: "Feature description (or continue context for transfer-only)"
+  integration:
+    type: string
+    default: "auto"
+    prompt: "Integration (auto uses project default, e.g. cursor-agent)"
+  scope:
+    type: string
+    default: "full"
+    enum: ["full", "api-only", "frontend-only"]
+  interval:
+    type: string
+    default: "600"
+    prompt: "Seconds between remote agent ticks (default 600)"
+  model:
+    type: string
+    default: ""
+    prompt: "Optional cursor agent model; empty = Cursor default"
+  remote_phase:
+    type: string
+    default: "implement"
+    enum: ["implement", "confidence", "test-fix"]
+    prompt: "Remote phase after transfer"
+  transfer_only:
+    type: string
+    default: "false"
+    enum: ["true", "false"]
+    prompt: "true = skip laptop specify→tasks; hand off current branch only"
+
+steps:
+  - id: route-transfer
+    type: if
+    condition: "inputs.transfer_only == 'true'"
+    then:
+      - id: handoff-only
+        type: prompt
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Write .cursor/session-handoff.md per compact-handoff rule.
+          Context: {{ inputs.spec }}.
+          Remote phase: {{ inputs.remote_phase }}.
+          Include tasks.md progress, specs path, and a Resume Prompt for the Mac mini.
+          Remote agent should use sdd-orchestrator for each phase (always-on).
+          If phase is confidence, reference speckit.confidence (max 3 iterations).
+
+      - id: approve-transfer-only
+        type: gate
+        message: >-
+          Review session-handoff.md. Approve to push and start Mac mini remote loop.
+        options: [approve, reject]
+        on_reject: abort
+
+      - id: preflight-local-only
+        type: shell
+        run: "bash scripts/remote_agent_preflight.sh --local"
+
+      - id: start-remote-only
+        type: shell
+        run: >-
+          bash scripts/start_remote_sdd_handoff.sh
+          --interval {{ inputs.interval }}
+          --phase {{ inputs.remote_phase }}
+          --model "{{ inputs.model }}"
+
+      - id: preflight-remote-only
+        type: shell
+        run: "bash scripts/remote_agent_preflight.sh --remote"
+        continue_on_error: true
+
+      - id: remote-status-only
+        type: shell
+        run: "bash scripts/handoff_to_mac_mini.sh --status"
+        continue_on_error: true
+
+    else:
+      - id: specify
+        command: speckit.specify
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=specify through sdd-orchestrator. Worker follows
+            .cursor/skills/speckit-specify/SKILL.md.
+            Feature: {{ inputs.spec }}
+
+      - id: review-spec
+        type: gate
+        message: "Review specs/*/spec.md before planning. Approve to continue."
+        options: [approve, reject]
+        on_reject: abort
+
+      - id: clarify
+        command: speckit.clarify
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=clarify through sdd-orchestrator. Worker follows
+            .cursor/skills/speckit-clarify/SKILL.md.
+            Context: {{ inputs.spec }}
+
+      - id: plan
+        command: speckit.plan
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=plan through sdd-orchestrator. Worker follows
+            .cursor/skills/speckit-plan/SKILL.md.
+            Scope: {{ inputs.scope }}. {{ inputs.spec }}
+
+      - id: review-plan
+        type: gate
+        message: "Review plan.md before tasks."
+        options: [approve, reject]
+        on_reject: abort
+
+      - id: tasks
+        command: speckit.tasks
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=tasks through sdd-orchestrator. Worker follows
+            .cursor/skills/speckit-tasks/SKILL.md.
+            Scope: {{ inputs.scope }}. {{ inputs.spec }}
+
+      - id: analyze
+        command: speckit.analyze
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=analyze through sdd-orchestrator. Worker follows
+            .cursor/skills/speckit-analyze/SKILL.md.
+            Context: {{ inputs.spec }}
+
+      - id: review-tasks
+        type: gate
+        message: >-
+          Review tasks.md before remote transfer. Approve to hand off
+          {{ inputs.remote_phase }} to the Mac mini.
+        options: [approve, reject]
+        on_reject: abort
+
+      - id: lint-check
+        type: shell
+        run: "{LINT_CMD}"
+        continue_on_error: true
+
+      - id: handoff
+        type: prompt
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Write .cursor/session-handoff.md per compact-handoff for Mac mini remote
+          execution. Context: {{ inputs.spec }}.
+          Remote phase: {{ inputs.remote_phase }}.
+          Include specs path, tasks.md progress, branch, and a Resume Prompt that
+          tells the remote agent to run each phase via sdd-orchestrator (always-on).
+          Reference .cursor/skills/remote-agent-handoff/SKILL.md.
+
+      - id: approve-transfer
+        type: gate
+        message: >-
+          Review session-handoff.md. Approve to push branch and start the detached
+          remote loop on the Mac mini.
+        options: [approve, reject]
+        on_reject: abort
+
+      - id: preflight-local
+        type: shell
+        run: "bash scripts/remote_agent_preflight.sh --local"
+
+      - id: start-remote
+        type: shell
+        run: >-
+          bash scripts/start_remote_sdd_handoff.sh
+          --interval {{ inputs.interval }}
+          --phase {{ inputs.remote_phase }}
+          --model "{{ inputs.model }}"
+
+      - id: preflight-remote
+        type: shell
+        run: "bash scripts/remote_agent_preflight.sh --remote"
+        continue_on_error: true
+
+      - id: remote-status
+        type: shell
+        run: "bash scripts/handoff_to_mac_mini.sh --status"
+        continue_on_error: true

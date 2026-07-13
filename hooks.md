@@ -99,6 +99,20 @@ Some repositories add **extra** hooks on top of the security trio — for exampl
 
 These are **not** part of the default templates; copy them from a repo that maintains them, or write your own. A full **extended `hooks.json`** (security trio + orchestrator hooks + context refresh) and manual stdin tests are documented in [EXAMPLES.md](EXAMPLES.md) (see the [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) reference there).
 
+## Global skill router (`beforeSubmitPrompt`)
+
+Wade-O-Lution machines register a **global** (user-level) `beforeSubmitPrompt` hook that does not block prompts — it injects an `agent_message` listing skills/rules the agent must read. Pair with always-on `skill-routing-mandate.mdc`.
+
+| Path | Role |
+|------|------|
+| `~/.cursor/hooks.json` | `beforeSubmitPrompt` → `hooks/route-skills-before-prompt.sh` |
+| `route-skills-before-prompt.sh` | Thin `exec` into the router |
+| `workspace-skill-router.sh` | Repo + keyword → skill path suggestions |
+
+**Templates:** [templates/global/hooks/](templates/global/hooks/) and [templates/global/hooks.json](templates/global/hooks.json). Full behavior: [global-env.md](./global-env.md).
+
+Repo hooks remain the place for **blocking** security (secrets, `--no-verify`, sensitive reads). Do not replace the security trio with the router.
+
 ## Session handoff pattern (compact / checkpoint)
 
 A lightweight approximation of Claude Code's `/compact` command can be assembled from a hook + a rule:

@@ -13,16 +13,41 @@ Copy [templates/spec-kit/sdd-user-guide.template.md](./templates/spec-kit/sdd-us
 
 **Reference implementation:** [meeting_notes_workflow/docs/agents/SDD_USER_GUIDE.md](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/staging/docs/agents/SDD_USER_GUIDE.md)
 
+**Global harness:** [global-env.md](./global-env.md) — `sdd-orchestrator` + `sdd-orchestrator-ctl`.
+
 ---
 
-## Start here
+## Kickoff (one screen)
 
-SDD turns multi-step features into **reviewable markdown artifacts** before code lands.
+SDD turns multi-step features into reviewable markdown (`spec.md` → `plan.md` → `tasks.md`) before code. Skip it for one-line fixes.
 
-| Mode | How | When |
-|------|-----|------|
-| **A — Chat** | Talk to Cursor Agent; orchestrator routes to SDD | Daily default |
-| **B — Workflow** | `specify workflow run sdd-full …` | Long runs with explicit gates |
+| Surface | Verb / ID | What it does |
+|---------|-----------|--------------|
+| **Chat** | `Start SDD: <what/why>` | New feature → `sdd-entry` → orchestrator **specify** |
+| **Chat** | `Continue SDD` | Resume feature dir → next ungated phase via orchestrator |
+| **CLI** | `specify workflow run sdd …` | Local gated cycle (flags below) |
+| **CLI** | `specify workflow run sdd-remote …` | Laptop through tasks, then Mac mini implement/confidence |
+
+Every phase is **orchestrator-gated** (worker → deterministic hooks → judge → `phase-exits.md`). Bare `speckit-*` is the worker procedure only. Cost envelope: `~/.cursor/sdd-orchestrator-ctl/README.md`. Headless Continue twin: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`.
+
+### Flags (CLI `sdd` / chat NL)
+
+| Flag | Values | Meaning |
+|------|--------|---------|
+| `scope` | `full` \| `api-only` \| `frontend-only` | What layers the plan/tasks may touch |
+| `stop_at` | `confidence` \| `tasks` \| `plan` | Early exit (RFC ≈ `plan` or `tasks`) |
+| `issues` | `true` \| `false` | After tasks, emit GitHub issues and stop |
+| `mode` | `full` \| `test-fix` | `test-fix` = implement + pytest retry + confidence |
+| `transfer_only` | on `sdd-remote` | Skip laptop phases; handoff only |
+
+```bash
+specify workflow run sdd -i spec="..." -i integration=cursor-agent \
+  -i scope=full -i stop_at=confidence -i issues=false -i mode=full
+
+specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
+```
+
+**Deprecated aliases** (still run one release): `sdd-full` → `sdd`; `sdd-api` → `scope=api-only`; `sdd-rfc` → `stop_at=tasks`; `sdd-test-fix` → `mode=test-fix`; `sdd-issues` → `issues=true` + `stop_at=tasks`; `sdd-full-remote` / `sdd-remote-handoff` → `sdd-remote`. Upstream `speckit` stays installed but undocumented.
 
 ---
 
@@ -32,41 +57,32 @@ SDD turns multi-step features into **reviewable markdown artifacts** before code
 uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
 specify init . --integration cursor-agent --here --force --script sh
 specify integration status
-specify workflow list
+specify workflow list   # expect sdd + sdd-remote
 ```
 
-Copy org workflow YAMLs from [cursor-setup-guide/templates/spec-kit/](./templates/spec-kit/) into `.specify/workflows/` and register in `workflow-registry.json`.
-
----
-
-## Which pipeline?
-
-| Situation | Use |
-|-----------|-----|
-| New feature | **`sdd-full`** or chat SDD |
-| API/service only | **`sdd-api`** |
-| Architecture RFC | **`sdd-rfc`** |
-| Tests failing — finish branch | **`sdd-test-fix`** |
-| Break into GitHub issues | **`sdd-issues`** |
-| One-line fix | Normal chat — **not SDD** |
+Copy org workflows from [templates/spec-kit/](./templates/spec-kit/) (`sdd-workflow.yml`, `sdd-remote-workflow.yml`). See [init-checklist.md](./templates/spec-kit/init-checklist.md).
 
 ---
 
 ## Chat cheat sheet
 
 ```
-Spec this feature: <what and why — no tech stack yet>
-Continue SDD on branch <NNN-feature-name>; next phase from tasks.md
+Start SDD: <what and why — no tech stack yet>
+Continue SDD
 I've reviewed spec.md — proceed to plan
 compact
 ```
+
+Optional NL flags: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`, `test-fix mode`.
 
 ---
 
 ## Terminal cheat sheet
 
 ```bash
-specify workflow run sdd-full -i spec="..." -i integration=cursor-agent
+specify workflow run sdd -i spec="..." -i integration=cursor-agent
+specify workflow run sdd -i spec="..." -i stop_at=plan
+specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
 specify workflow status
 specify workflow resume <run_id>
 {LINT_CMD}

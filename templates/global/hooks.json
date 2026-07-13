@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "hooks/route-skills-before-prompt.sh"
+      }
+    ]
+  }
+}

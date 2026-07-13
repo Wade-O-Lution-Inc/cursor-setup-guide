@@ -2,16 +2,20 @@
 
 Add to your orchestrator's classify table:
 
-| **SDD** | "spec this feature", "speckit", "SDD", "sdd-full", "spec-driven", new multi-step feature when `.specify/` exists |
+| **SDD** | "Start SDD", "Continue SDD", "spec this feature", "speckit", "SDD", "sdd", "sdd-remote", "spec-driven", new multi-step feature when `.specify/` exists |
 
 Add routing block:
 
 **SDD** (Spec-Driven Development — see repo SDD user guide)
-- If on branch matching `NNN-*`, use that feature directory; else start with `speckit-specify`.
-- Phase order: specify → **clarify** (before plan) → plan → tasks → **analyze** (before implement if 3+ boundaries) → implement.
+- Entry = `.cursor/skills/sdd-entry/SKILL.md` only (Start SDD / Continue SDD). Never invoke bare `speckit-*` as the top-level skill.
+- Every phase goes through **`sdd-orchestrator`** (worker → D-hooks → judge → `phase-exits.md` gate). Worker procedure = matching `speckit-*` skill.
+- Resolve `FEATURE_DIR` (`specs/NNN-*`) + next `PHASE`, then run the orchestrator for that phase.
+- Phase order: specify → **clarify** (before plan) → plan → tasks → **analyze** (before implement if 3+ boundaries) → implement → **confidence**.
 - Do not skip clarify before plan; do not implement without `tasks.md`.
 - Quality gates: `{LINT_CMD}` and `{TEST_CMD}`.
-- Terminal workflows: `specify workflow run sdd-full` (default), `sdd-api`, `sdd-rfc`, `sdd-test-fix`, `sdd-issues`.
+- CLI: `specify workflow run sdd` (flags: `scope`, `stop_at`, `issues`, `mode`) or `sdd-remote`. Deprecated aliases still work one release.
 - On compact/checkpoint during SDD: include `tasks.md` progress (completed/total) in handoff.
+
+Requires global `~/.cursor/skills/sdd-orchestrator/` + `~/.cursor/sdd-orchestrator-ctl/` — see [global-env.md](../../global-env.md).
 
 Reference: [meeting_notes_workflow/.cursor/rules/00-orchestrator.mdc](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/staging/.cursor/rules/00-orchestrator.mdc)

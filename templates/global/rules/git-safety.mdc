@@ -1,0 +1,11 @@
+---
+description: Git safety constraints for Wade-O-Lution agentic development (all repos)
+alwaysApply: true
+---
+
+# Git Safety
+
+- Never force-push unless explicitly requested.
+- Never push directly to `main` or `master`.
+- No `--no-verify` unless explicitly requested.
+- Do not commit unless the user asks.

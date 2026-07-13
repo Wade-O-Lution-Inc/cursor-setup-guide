@@ -189,7 +189,7 @@ This skill is different from the procedure-oriented examples above — it's a **
 
 **Template:** [templates/search-first-skill/SKILL.md](templates/search-first-skill/SKILL.md)
 
-## Spec Kit managed skills vs bridge skills
+## Spec Kit managed skills vs bridge skills vs orchestrator
 
 After `specify init --integration cursor-agent`, Spec Kit installs **managed phase skills** under `.cursor/skills/`:
 
@@ -201,17 +201,22 @@ After `specify init --integration cursor-agent`, Spec Kit installs **managed pha
 | `speckit-tasks` | Ordered `tasks.md` |
 | `speckit-analyze` | Cross-artifact consistency check |
 | `speckit-implement` | Execute tasks |
+| `speckit-confidence` | Terminal reflect-and-loop (org extension) |
 | `speckit-taskstoissues` | GitHub issues from tasks |
 
-**Do not hand-edit** managed `speckit-*` skills — upgrade via `specify integration upgrade`.
+**Do not hand-edit** managed `speckit-*` skills — upgrade via `specify integration upgrade`. On developer machines, **global pointer stubs** under `~/.cursor/skills/speckit-*` may point at the canonical repo copy for router discovery ([global-env.md](./global-env.md)).
 
 Add one **custom bridge skill** ([templates/skills/sdd-entry/SKILL.md](templates/skills/sdd-entry/SKILL.md)):
 
-- Points humans and agents to `docs/agents/SDD_USER_GUIDE.md`
-- Lists `sdd-*` workflow IDs
-- Safe to customize per repo
+- Chat front door: `Start SDD` / `Continue SDD`
+- Resolves `FEATURE_DIR` + next `PHASE`
+- **Must** run `~/.cursor/skills/sdd-orchestrator/` for that phase — never call bare `speckit-*` as the top-level skill
 
-See [spec-driven-development.md](spec-driven-development.md) and [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) reference impl.
+**Global control plane:** `sdd-orchestrator` (Task path) + `~/.cursor/sdd-orchestrator-ctl/` (`bin/sdd-run` for headless ranges).
+
+CLI: `specify workflow run sdd` / `sdd-remote` (not the old eight-pipeline matrix).
+
+See [spec-driven-development.md](spec-driven-development.md) and [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
 
 ## When to Create a New Skill
 
