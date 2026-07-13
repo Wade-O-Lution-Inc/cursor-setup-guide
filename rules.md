@@ -229,7 +229,7 @@ globs: specs/**, .specify/**
 
 Template: [templates/spec-kit/specify-rules-override.mdc](templates/spec-kit/specify-rules-override.mdc)
 
-SDD **routing** (~40 lines) belongs in the orchestrator — snippet: [templates/rules/sdd-orchestrator-snippet.mdc](templates/rules/sdd-orchestrator-snippet.mdc).
+SDD **routing** (~40 lines) belongs in the orchestrator — snippet: [templates/rules/sdd-orchestrator-snippet.mdc](templates/rules/sdd-orchestrator-snippet.mdc). Full Spec Kit docs: [specify/](./specify/).
 
 ## Writing Tips
 
