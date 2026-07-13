@@ -216,7 +216,15 @@ Add one **custom bridge skill** ([templates/skills/sdd-entry/SKILL.md](templates
 
 CLI: `specify workflow run sdd` / `sdd-remote` (not the old eight-pipeline matrix).
 
-See [spec-driven-development.md](spec-driven-development.md) and [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
+See **[specify/](./specify/)** for the full Spec Kit story. Summary:
+
+**Do not hand-edit** managed `speckit-*` skills lightly — they are hash-tracked; meeting_notes intentionally diverges (phase exits). Upgrade via `specify integration upgrade` then re-apply deltas ([specify/managed-vs-custom.md](./specify/managed-vs-custom.md)).
+
+**Bridge:** [templates/skills/sdd-entry/SKILL.md](templates/skills/sdd-entry/SKILL.md) — Start/Continue only; must call `sdd-orchestrator`.
+
+**Global control plane:** [specify/orchestrator.md](./specify/orchestrator.md).
+
+**CLI:** `specify workflow run sdd` / `sdd-remote` — [specify/workflows.md](./specify/workflows.md).
 
 ## When to Create a New Skill
 

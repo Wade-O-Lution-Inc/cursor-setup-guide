@@ -2,7 +2,7 @@
 
 Canonical description of the **machine-local** Cursor harness under `~/.cursor/`, as of 2026-07. Project repos still own most rules/skills in git; this layer adds cross-repo routing, always-on safety rules, Spec Kit stubs, and the SDD multi-model control plane.
 
-**Pair with:** [scope.md](./scope.md) (what goes where) · [hooks.md](./hooks.md) (events) · [sdd-user-guide.md](./sdd-user-guide.md) (SDD kickoff) · live reference [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow)
+**Pair with:** [specify/](./specify/) (workflows + customizations) · [scope.md](./scope.md) · [hooks.md](./hooks.md) · live reference [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow)
 
 ---
 
@@ -76,15 +76,15 @@ Stubs keep discovery working when the router suggests a name that is owned in a 
 
 ## SDD control plane (global)
 
+Full policy docs: **[specify/orchestrator.md](./specify/orchestrator.md)**.
+
 | Asset | Role |
 |-------|------|
 | `~/.cursor/skills/sdd-orchestrator/SKILL.md` | Interactive Task-path: worker → D-hooks → judge → `phase-exits.md` + JSONL |
-| `~/.cursor/sdd-orchestrator-ctl/` | Shared policy (`phase-models.json`), checklists, prompts, `bin/sdd-run` (headless twin of chat Continue) |
-| Project `sdd-entry` | Chat front door only — resolves FEATURE_DIR + PHASE, then **must** call the orchestrator |
+| `~/.cursor/sdd-orchestrator-ctl/` | Shared policy (`phase-models.json`), checklists, prompts, `bin/sdd-run` |
+| Project `sdd-entry` | Chat front door — resolves FEATURE_DIR + PHASE, then **must** call the orchestrator |
 
-Every Spec Kit phase is orchestrator-gated. Bare `speckit-*` = worker procedure. Cost envelope and flags: `~/.cursor/sdd-orchestrator-ctl/README.md`.
-
-CLI in repos: `specify workflow run sdd` / `sdd-remote` (see [sdd-user-guide.md](./sdd-user-guide.md)).
+CLI in repos: `specify workflow run sdd` / `sdd-remote` — [specify/workflows.md](./specify/workflows.md).
 
 ---
 

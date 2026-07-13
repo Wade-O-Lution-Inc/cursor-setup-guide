@@ -162,55 +162,21 @@ Some teams copy these markdown files into **`your-repo/.cursor/guide/`** (plus a
 
 ## 11. Spec-Driven Development (`sdd` / `sdd-remote`)
 
-**Keep [sdd-user-guide.md](./sdd-user-guide.md) open while learning.** Reference: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
-
-### Bootstrap
+**Canonical docs:** [specify/quick-start.md](./specify/quick-start.md) · [specify/workflows.md](./specify/workflows.md).
 
 ```bash
 uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
-cd your-repo
-specify init . --integration cursor-agent --here --force --script sh
-# Copy templates/spec-kit/sdd-workflow.yml → .specify/workflows/sdd/workflow.yml
-# Copy templates/spec-kit/sdd-remote-workflow.yml → .specify/workflows/sdd-remote/workflow.yml
-specify workflow list   # expect sdd + sdd-remote
-```
-
-Full checklist: [templates/spec-kit/init-checklist.md](templates/spec-kit/init-checklist.md)
-
-### Run cycle (terminal)
-
-```bash
-specify workflow run sdd \
-  -i spec="Add user-facing export for meeting summaries" \
-  -i integration=cursor-agent
-
-# RFC / stop early:
+specify workflow run sdd -i spec="..." -i integration=cursor-agent
 specify workflow run sdd -i spec="..." -i stop_at=plan
-
-# Close laptop after tasks:
 specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
+specify workflow status && specify workflow resume <run_id>
 ```
 
-Engine pauses at **gates**. While paused:
-
-```bash
-specify workflow status
-specify workflow resume <run_id>
-```
-
-### Chat (daily default)
+Chat:
 
 ```
 Start SDD: Add user-facing export for meeting summaries
 Continue SDD
 ```
 
-`sdd-entry` → `sdd-orchestrator` per phase (not bare `speckit-*`). Optional NL flags: `scope=api`, `stop at plan`, `test-fix mode`.
-
-### Resume after compact
-
-```
-Continue SDD
-```
-
-Optional: `.cursor/auto-context.md` shows **Spec Progress** on `NNN-*` branches (see [refresh-compact-context-sdd.patch](templates/hooks/refresh-compact-context-sdd.patch)).
+Bootstrap: [specify/bootstrap.md](./specify/bootstrap.md) · templates: [templates/spec-kit/](templates/spec-kit/).

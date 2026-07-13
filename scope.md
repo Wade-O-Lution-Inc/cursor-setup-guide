@@ -94,14 +94,14 @@ Is this specific to one codebase?
 
 ## Spec-Driven Development (SDD)
 
+Full docs: **[specify/](./specify/)** · placement detail: **[specify/managed-vs-custom.md](./specify/managed-vs-custom.md)**
+
 | Asset | Scope | Notes |
 |-------|-------|-------|
 | `.specify/`, `specs/`, SDD docs | **Project** | Ephemeral planning on feature branches |
 | `sdd` / `sdd-remote` workflows | **Project** | From [templates/spec-kit/](templates/spec-kit/) |
 | `sdd-entry` skill | **Project** | Chat front door only |
-| `speckit-*` phase skills | **Project** (managed) + optional **global stubs** | Worker procedures; stubs point at owning repo |
+| `speckit-*` phase skills | **Project** (managed) + optional **global stubs** | Worker procedures |
 | `sdd-orchestrator` + `sdd-orchestrator-ctl` | **Global** | Always-on phase gating |
-
-See [spec-driven-development.md](spec-driven-development.md) and [global-env.md](./global-env.md).
 
 **Reference:** [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow)

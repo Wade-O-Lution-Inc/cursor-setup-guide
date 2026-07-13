@@ -1,141 +1,81 @@
 # Cursor Agent Setup Guide
 
-How we configure Cursor's AI agent to work effectively and safely across Wade-O-Lution projects. This guide is a reference for setting up new repos with the same patterns.
+How Wade-O-Lution configures Cursor’s AI agent — with **Spec Kit / `specify` workflows** as the primary documentation focus, plus the supporting rules, skills, hooks, and global machine harness.
 
-**Spec-Driven Development:** start with [sdd-user-guide.md](./sdd-user-guide.md), then [spec-driven-development.md](./spec-driven-development.md). Chat: `Start SDD` / `Continue SDD`; CLI: `sdd` / `sdd-remote`. Reference: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
+## Start here: Specify & SDD
 
-**Global machine harness:** [global-env.md](./global-env.md) — skill router, always-on safety rules, Spec Kit stubs, `sdd-orchestrator` + `sdd-orchestrator-ctl`.
+→ **[specify/](./specify/)** — full documentation of the `specify` workflow, org customizations, and what you can still change.
 
-## Why Bother?
+| I want to… | Go to |
+|------------|--------|
+| Run SDD today (chat + CLI) | [specify/quick-start.md](./specify/quick-start.md) |
+| Understand Spec Kit vs our layers | [specify/overview.md](./specify/overview.md) |
+| Adopt SDD in a new repo | [specify/bootstrap.md](./specify/bootstrap.md) |
+| See `sdd` / `sdd-remote` flags & gates | [specify/workflows.md](./specify/workflows.md) |
+| Tune models / phase gates | [specify/orchestrator.md](./specify/orchestrator.md) |
+| Know managed vs custom files | [specify/managed-vs-custom.md](./specify/managed-vs-custom.md) |
 
-Without rules and skills, every Cursor session starts from zero. The agent doesn't know your project structure, your deployment pipeline, your database conventions, or what it's not allowed to touch. You end up repeating the same corrections session after session.
+**Live reference:** [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) (`.specify/`, `sdd-entry`, docs under `docs/agents/`).
 
-Rules, skills, and hooks solve this by giving the agent **persistent institutional knowledge**:
-
-- **Rules** = guardrails and context that apply automatically (like a `.editorconfig` for AI behavior)
-- **Skills** = step-by-step procedures the agent follows for specific tasks (like runbooks, but executable)
-- **Hooks** = shell scripts on lifecycle events — blocking hooks that deny bad actions, and optional observation hooks for side effects (e.g. refreshing a repo snapshot)
-- **MCP** = live connections to your running services the agent can query
-
-The payoff is immediate: the agent writes code that follows your patterns, avoids your known pitfalls, and knows where things live — without being told each session.
-
-## Directory Structure
-
-```
-your-repo/
-├── AGENTS.md            # Cloud Agent VM instructions (optional)
-├── .cursor/
-│   ├── rules/           # Always-on context and guardrails
-│   │   ├── project.mdc      # Project identity, entry points, key commands
-│   │   ├── code-style.mdc   # Language conventions, patterns, lint config
-│   │   ├── environment.mdc  # Secret safety, config patterns, environments
-│   │   ├── git-workflow.mdc  # Branch strategy, forbidden ops, multi-agent coordination
-│   │   ├── security-protocol.mdc  # Stop-and-report for security findings
-│   │   ├── testing-conventions.mdc # Test patterns, naming, mandatory coverage
-│   │   ├── goal-driven-execution.mdc  # Scope management, done criteria
-│   │   ├── surgical-changes.mdc       # Minimal edits, service boundaries
-│   │   ├── think-before-coding.mdc    # Pattern discovery, blast radius
-│   │   ├── compact-handoff.mdc  # On-demand: compact / checkpoint / session handoff (optional)
-│   │   └── ...               # Domain-specific rules as needed
-│   ├── skills/          # On-demand procedures for specific tasks
-│   │   ├── migration-workflow/
-│   │   │   └── SKILL.md
-│   │   ├── search-first/     # Adopt/Extend/Compose/Build decision matrix
-│   │   │   └── SKILL.md
-│   │   └── ...
-│   ├── hooks/           # Blocking + optional observation scripts
-│   │   ├── detect-secrets.sh     # Block leaked API keys in prompts
-│   │   ├── block-no-verify.sh    # Prevent --no-verify in git commands
-│   │   ├── block-sensitive-reads.sh  # Block reading .env, .key, .pem files
-│   │   └── refresh-compact-context.sh  # Optional: refresh .cursor/auto-context.md
-│   ├── hooks.json       # Hook event → script mapping
-│   ├── mcp.json         # MCP server connections (optional); see templates/mcp.json
-│   ├── settings.json    # Cursor plugin settings (optional)
-│   └── guide/           # Optional: vendored copies of this guide + team EXAMPLES.md
-```
-
-Everything in `.cursor/` is safe to commit to git. It contains no secrets — just guidance for the AI agent that should be shared with collaborators.
-
-**Concrete snippets:** see [EXAMPLES.md](EXAMPLES.md) (extended hooks, MCP, Doppler-style commands, vendoring note).
-
-## Quick Start for a New Repo
-
-1. Copy the templates from `templates/` into your repo's `.cursor/` directory
-2. Edit `project.mdc` — this is the single most impactful rule
-3. Add a `code-style.mdc` if you have language conventions
-4. Add safety rules for anything the agent shouldn't touch (`environment.mdc`, `git-workflow.mdc`)
-5. Copy `templates/hooks.json` and `templates/hooks/` into `.cursor/` for hard security enforcement (the template also includes optional `afterFileEdit` + `stop` entries for the compact-handoff context snapshot; remove those lines if you do not want them)
-6. Make hook scripts executable: `chmod +x .cursor/hooks/*.sh`
-7. (Optional) Copy `templates/compact-handoff.mdc` into `.cursor/rules/` if you want a standard “compact / checkpoint / handoff” output format; pair with the refresh hook or run the script manually
-8. Add skills for any multi-step procedure you find yourself repeating
-9. Commit the `.cursor/` directory to git
-
-Start small. Two or three rules plus the security hooks is plenty. Add skills as pain points emerge.
+**CLI pin:** Spec Kit **`0.10.2`** (`uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2`).
 
 ---
 
-## The Core Files You Should Start With
+## Why the rest of this repo exists
 
-See [rules.md](rules.md) for detailed guidance on rules. The essentials:
+Without rules and skills, every Cursor session starts from zero. Spec Kit structures multi-step features; rules/skills/hooks keep day-to-day coding safe and consistent.
 
-| File | Purpose | Why It Matters |
-|------|---------|---------------|
-| `project.mdc` | Project identity, entry points, commands | Without this, the agent wastes time exploring your repo from scratch every session |
-| `code-style.mdc` | Language conventions, patterns | Prevents the agent from writing code in a style that doesn't match your project |
-| `environment.mdc` | Secret safety, config patterns | Prevents the agent from reading `.env`, hardcoding credentials, or committing secrets |
-| `git-workflow.mdc` | Branch strategy, forbidden ops | Prevents the agent from pushing to main, force pushing, or skipping CI |
-| `security-protocol.mdc` | Stop-and-report for security issues | Ensures the agent flags hardcoded secrets, injection vectors, and auth gaps immediately |
-| `testing-conventions.mdc` | Test patterns, naming, markers | Keeps test code consistent: AAA structure, descriptive names, mandatory test coverage |
-| `goal-driven-execution.mdc` | Scope management, done criteria | Prevents scope creep, "while I'm here" refactors, and unrelated changes |
-| `surgical-changes.mdc` | Minimal edits, one concern per commit | Keeps PRs small and focused, respects service boundaries |
-| `think-before-coding.mdc` | Reason before implementing | Forces pattern discovery and blast radius checks before writing code |
-| `compact-handoff.mdc` | Session handoff on demand | Structured Goal / state / next-steps packet when the user says compact, checkpoint, or handoff; see [hooks.md](hooks.md#session-handoff-pattern-compact--checkpoint) |
-| [sdd-user-guide.md](./sdd-user-guide.md) | Spec-Driven Development quick reference | `Start SDD` / `Continue SDD` + `sdd` / `sdd-remote`; keep open while learning |
-| [spec-driven-development.md](./spec-driven-development.md) | SDD adoption architecture | Bootstrap checklist, workflows, always-on orchestrator |
-| [global-env.md](./global-env.md) | Machine-local Cursor harness | Skill router, global rules, Spec Kit stubs, `sdd-orchestrator-ctl` |
-| `hooks.json` + `hooks/` | Blocking + optional observation hooks | Security trio blocks bad actions; optional refresh hook keeps `.cursor/auto-context.md` up to date for handoffs |
+| Layer | Role |
+|-------|------|
+| **Specify / SDD** | Reviewable `spec → plan → tasks → confidence` before/alongside code |
+| **Rules** | Always-on or glob-gated guardrails (`.mdc`) |
+| **Skills** | On-demand procedures (`SKILL.md`) |
+| **Hooks** | Hard blocks + skill routing + observation side-effects |
+| **MCP** | Live tool connections to running services |
+| **Global `~/.cursor/`** | Cross-repo router, safety rules, `sdd-orchestrator` — [global-env.md](./global-env.md) |
 
-## When to Add a Skill
+---
 
-Create a skill when:
-- You have a **multi-step procedure** that the agent gets wrong without detailed guidance
-- The procedure has **safety constraints** (like database migrations, deployments, integration changes)
-- You find yourself **re-explaining the same workflow** across multiple sessions
+## Directory map (this guide)
 
-Don't create skills for simple tasks. If the agent can figure it out from the rules and codebase alone, a skill adds noise without value.
+```
+cursor-setup-guide/
+├── specify/                 # ★ Canonical Spec Kit + customization docs
+├── global-env.md            # Machine ~/.cursor harness
+├── scope.md                 # Project vs global placement
+├── rules.md / skills.md / hooks.md / agents.md / mcp.md
+├── EXAMPLES.md              # Snippets (incl. specify run/resume)
+└── templates/               # Copy-paste starters (workflows, hooks, rules, skills)
+    ├── spec-kit/            # sdd + sdd-remote YAMLs, init checklist, …
+    ├── global/              # Skill router + alwaysApply rules
+    ├── skills/sdd-entry/
+    └── rules/sdd-orchestrator-snippet.mdc
+```
 
-See [skills.md](skills.md) for the anatomy of a good skill and templates.
+---
 
-## When to Add Hooks
+## Quick start for a new *product* repo (non-SDD baseline)
 
-Add hooks when rules aren't strong enough. Rules are "soft" — the agent *should* follow them but can slip. **Blocking** hooks are "hard" — the action is physically denied by the script. **Observation** hooks (`afterFileEdit`, `stop`, `subagentStop`) run for side effects (they should always exit 0) — for example refreshing a file with current `git` state before the agent compacts a session handoff.
+1. Copy security hooks + core rules from `templates/` into `your-repo/.cursor/`
+2. Edit `project.mdc`
+3. `chmod +x .cursor/hooks/*.sh`
+4. Commit `.cursor/`
 
-Start with the three security hooks (secret detection, git safety, sensitive file blocking). They cost nothing when the agent behaves correctly and catch real mistakes when it doesn't. Add the optional `refresh-compact-context.sh` entries when you use [session handoff](hooks.md#session-handoff-pattern-compact--checkpoint).
+For multi-step features, continue with [specify/bootstrap.md](./specify/bootstrap.md).
 
-See [hooks.md](hooks.md) for the full guide and template scripts. Optional workflow hooks and a full extended `hooks.json` are in [EXAMPLES.md](EXAMPLES.md).
+---
 
-## AGENTS.md — Cloud Agent Instructions
+## Supporting guides
 
-If you use Cursor Cloud Agents (background agents that run in ephemeral VMs), add an `AGENTS.md` to your repo root. It tells the agent how to run your project without your local tools (Doppler, 1Password, etc.), which env vars to use with placeholder values, and any tooling quirks specific to the VM environment.
+| Doc | Topic |
+|-----|--------|
+| [rules.md](./rules.md) | Writing `.mdc` rules; glob-gated SDD rules |
+| [skills.md](./skills.md) | Skill anatomy; `speckit-*` vs `sdd-entry` vs orchestrator |
+| [hooks.md](./hooks.md) | Blocking trio + global skill router + compact handoff |
+| [scope.md](./scope.md) | What belongs in the repo vs `~/.cursor/` |
+| [global-env.md](./global-env.md) | Bootstrap a developer machine |
+| [agents.md](./agents.md) | Cloud Agent `AGENTS.md` |
+| [mcp.md](./mcp.md) | MCP connections |
+| [EXAMPLES.md](./EXAMPLES.md) | Concrete JSON / CLI examples |
 
-This is separate from `.cursor/rules/` — rules apply to all sessions (local and cloud), while `AGENTS.md` is operational setup for cloud-only environments.
-
-See [agents.md](agents.md) for the full guide and template.
-
-## When to Add MCP
-
-Add an MCP connection when your running app exposes tools or data the agent should be able to query. For example, our knowledge base API exposes an MCP server that lets the agent search meetings, look up people, and query the knowledge graph — without writing ad-hoc database queries.
-
-See [mcp.md](mcp.md) for setup patterns and [EXAMPLES.md](EXAMPLES.md) for sample `mcp.json` and plugin `settings.json` snippets.
-
-## Global vs Project Scope
-
-| Scope | Location | Shared via git? | Use for |
-|-------|----------|----------------|---------|
-| Project | `your-repo/.cursor/` | Yes | Anything specific to this codebase |
-| Global | `~/.cursor/skills/`, `rules/`, `hooks/`, `sdd-orchestrator-ctl/` | No (document here; sync machines from templates) | Cross-repo routing, safety rules, SDD orchestrator, lab SSH |
-| Built-in | `~/.cursor/skills-cursor/` | — | Cursor product skills — never hand-edit |
-
-**Default to project scope** for product procedures. The Wade-O-Lution **global** layer is intentional and documented in [global-env.md](./global-env.md) (skill router + always-on rules + orchestrator). Templates: [templates/global/](./templates/global/).
-
-See [scope.md](scope.md) for detailed guidance on what goes where.
+Legacy filenames [sdd-user-guide.md](./sdd-user-guide.md) and [spec-driven-development.md](./spec-driven-development.md) redirect into `specify/`.
