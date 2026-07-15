@@ -4,6 +4,8 @@ This section is the **canonical documentation** for how Wade-O-Lution uses GitHu
 
 **Live reference implementation:** [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) (branch `staging`).
 
+**Copy-paste templates:** [../templates/spec-kit/](../templates/spec-kit/) and [../templates/skills/](../templates/skills/) — synced from meeting_notes SDD harness v2.0.0.
+
 | Doc | Read when |
 |-----|-----------|
 | [overview.md](./overview.md) | What Spec Kit is vs our layers |
@@ -17,4 +19,18 @@ This section is the **canonical documentation** for how Wade-O-Lution uses GitHu
 | [managed-vs-custom.md](./managed-vs-custom.md) | What you can change; upgrade warnings |
 | [troubleshooting.md](./troubleshooting.md) | Status WARNING, resume, anti-patterns |
 
-Related (non-specify): [../global-env.md](../global-env.md) · [../scope.md](../scope.md) · [../templates/](../templates/)
+## Template inventory (canonical)
+
+| Category | Files in `templates/` |
+|----------|----------------------|
+| Workflows | `sdd-workflow.yml`, `sdd-remote-workflow.yml`, `workflow-registry.template.json` |
+| Hooks wiring | `extensions.yml.template`, `agent-context-config.yml.template` |
+| Artifacts | `phase-exits-template.md`, `confidence-template.md`, `confidence-checks-template.md` |
+| Skills | `sdd-entry`, `speckit-confidence`, `speckit-confidence-improve`, `speckit-agent-context-update` |
+| Managed deltas | `speckit-managed-deltas.md`, `plan-template-confidence-section.patch` |
+| Rules | `specify-rules-override.mdc`, `sdd-orchestrator-snippet.mdc` |
+| User guide | `sdd-user-guide.template.md` |
+
+When meeting_notes harness changes materially, sync templates here before claiming org canonicalization is current.
+
+Related (non-specify): [../global-env.md](../global-env.md) · [../scope.md](../scope.md) · [../templates/README.md](../templates/README.md)

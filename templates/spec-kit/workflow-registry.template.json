@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "workflows": {
+    "speckit": {
+      "name": "Full SDD Cycle",
+      "version": "1.0.0",
+      "description": "Upstream bundled workflow (undocumented for this repo — use sdd / sdd-remote)",
+      "source": "bundled",
+      "installed_at": "2026-06-13T20:45:35.817641+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd": {
+      "name": "SDD",
+      "version": "2.0.0",
+      "description": "Canonical local SDD cycle. Flags: scope, stop_at, issues, mode. Orchestrator-gated phases.",
+      "source": "local",
+      "installed_at": "2026-07-13T02:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-remote": {
+      "name": "SDD Remote",
+      "version": "2.0.0",
+      "description": "Laptop through tasks then Mac mini handoff. transfer_only for handoff-only.",
+      "source": "local",
+      "installed_at": "2026-07-13T02:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-full": {
+      "name": "SDD Full Cycle (deprecated alias)",
+      "version": "2.0.0",
+      "description": "DEPRECATED — use sdd",
+      "source": "local",
+      "installed_at": "2026-06-13T21:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-api": {
+      "name": "SDD API Cycle (deprecated alias)",
+      "version": "2.0.0",
+      "description": "DEPRECATED — use sdd -i scope=api-only",
+      "source": "local",
+      "installed_at": "2026-06-13T21:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-rfc": {
+      "name": "SDD RFC (deprecated alias)",
+      "version": "2.0.0",
+      "description": "DEPRECATED — use sdd -i stop_at=tasks",
+      "source": "local",
+      "installed_at": "2026-06-13T21:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-test-fix": {
+      "name": "SDD Test-Fix Loop (deprecated alias)",
+      "version": "2.0.0",
+      "description": "DEPRECATED — use sdd -i mode=test-fix",
+      "source": "local",
+      "installed_at": "2026-06-13T21:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-issues": {
+      "name": "SDD to GitHub Issues (deprecated alias)",
+      "version": "2.0.0",
+      "description": "DEPRECATED — use sdd -i issues=true -i stop_at=tasks",
+      "source": "local",
+      "installed_at": "2026-06-13T21:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-remote-handoff": {
+      "name": "SDD Remote Handoff (deprecated alias)",
+      "version": "2.0.0",
+      "description": "DEPRECATED — use sdd-remote -i transfer_only=true",
+      "source": "local",
+      "installed_at": "2026-06-16T00:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    },
+    "sdd-full-remote": {
+      "name": "SDD Full Remote (deprecated alias)",
+      "version": "2.0.0",
+      "description": "DEPRECATED — use sdd-remote",
+      "source": "local",
+      "installed_at": "2026-06-16T00:00:00.000000+00:00",
+      "updated_at": "2026-07-13T02:00:00.000000+00:00"
+    }
+  }
+}

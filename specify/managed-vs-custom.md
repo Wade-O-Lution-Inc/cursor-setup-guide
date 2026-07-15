@@ -27,22 +27,22 @@ Scripts + templates under `.specify/`. **Modified:** `.specify/templates/plan-te
 specify integration status          # WARNING with modified_managed_files is OK for reference repo
 # After upstream bump:
 specify integration upgrade --force
-# Then re-apply org deltas (phase exits, confidence-checks, plan section)
+# Then re-apply org deltas — see [../templates/skills/speckit-managed-deltas.md](../templates/skills/speckit-managed-deltas.md)
 ```
 
 ## Fully custom (safe to own)
 
 | Asset | Notes |
 |-------|-------|
-| `.specify/workflows/sdd/`, `sdd-remote/` (+ aliases) | Local registry entries |
-| `.cursor/skills/sdd-entry/` | Chat front door |
-| `speckit-confidence`, `speckit-confidence-improve` | Not in Spec Kit manifest |
-| `speckit-agent-context-update` | Wrapper over extension |
-| `remote-agent-handoff` | Mini ops |
-| `.specify/templates/phase-exits-template.md`, `confidence-checks-template.md` | Org-added |
+| `.specify/workflows/sdd/`, `sdd-remote/` (+ aliases) | Local registry entries — [workflow-registry.template.json](../templates/spec-kit/workflow-registry.template.json) |
+| `.cursor/skills/sdd-entry/` | Chat front door — [templates/skills/sdd-entry/](../templates/skills/sdd-entry/) |
+| `speckit-confidence`, `speckit-confidence-improve`, `speckit-agent-context-update` | Not in Spec Kit manifest — [templates/skills/](../templates/skills/) |
+| `remote-agent-handoff` | Mini ops — copy from meeting_notes if needed |
 | `.specify/memory/constitution.md` | Compiled from rules |
-| `.specify/extensions.yml` | Hook wiring |
 | `.cursor/rules/00-orchestrator.mdc` SDD block, `specify-rules.mdc` | Repo harness |
+| `.specify/templates/phase-exits-template.md`, `confidence-template.md`, `confidence-checks-template.md` | Org-added — [templates/spec-kit/](../templates/spec-kit/) |
+| `.specify/extensions.yml`, `agent-context-config.yml` | Hook wiring — [extensions.yml.template](../templates/spec-kit/extensions.yml.template) |
+| Managed `speckit-*` Phase Exit Gate deltas | Re-apply procedure — [speckit-managed-deltas.md](../templates/skills/speckit-managed-deltas.md) |
 | `~/.cursor/sdd-orchestrator*` | Global control plane |
 | Global `speckit-*` **stubs** | Pointers only |
 

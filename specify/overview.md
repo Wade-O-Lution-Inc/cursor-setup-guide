@@ -63,12 +63,12 @@ After `specify init . --integration cursor-agent --here --script sh`:
 
 | Layer | Customization |
 |-------|----------------|
-| Workflows | **`sdd`**, **`sdd-remote`** with flags; clarify + analyze + confidence; always-on orchestrator args; lint/test shells |
-| Chat entry | **`sdd-entry`** — only allowed Start/Continue path |
+| Workflows | **`sdd`**, **`sdd-remote`** with flags — [templates/spec-kit/](../templates/spec-kit/) |
+| Chat entry | **`sdd-entry`** — [templates/skills/sdd-entry/](../templates/skills/sdd-entry/) |
 | Phase exits | Binary gates in six phase skills + `phase-exits-template.md` |
-| Confidence | **`speckit-confidence`**, **`confidence-checks`**, learning log, **`speckit-confidence-improve`** |
+| Confidence | **`speckit-confidence`**, **`confidence-checks`**, learning log, **`speckit-confidence-improve`** — templates in [../templates/skills/](../templates/skills/) |
 | Constitution | Compiled from `.cursor/rules/`; SDD quality gates 1–6 |
-| Extensions | `after_specify` / `after_plan` → agent-context; `after_implement` → confidence; `after_confidence` → improve |
+| Extensions | `after_specify` / `after_plan` → agent-context; `after_implement` → confidence; `after_confidence` → improve — [extensions.yml.template](../templates/spec-kit/extensions.yml.template) |
 | Remote | `sdd-remote` + `remote-agent-handoff` + handoff scripts |
 | Global | Multi-model **`sdd-orchestrator`** + **`sdd-orchestrator-ctl`** |
 

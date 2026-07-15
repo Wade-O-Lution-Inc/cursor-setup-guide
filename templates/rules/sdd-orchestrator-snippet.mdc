@@ -10,7 +10,7 @@ Add routing block:
 - Entry = `.cursor/skills/sdd-entry/SKILL.md` only (Start SDD / Continue SDD). Never invoke bare `speckit-*` as the top-level skill.
 - Every phase goes through **`sdd-orchestrator`** (worker → D-hooks → judge → `phase-exits.md` gate). Worker procedure = matching `speckit-*` skill.
 - Resolve `FEATURE_DIR` (`specs/NNN-*`) + next `PHASE`, then run the orchestrator for that phase.
-- Phase order: specify → **clarify** (before plan) → plan → tasks → **analyze** (before implement if 3+ boundaries) → implement → **confidence**.
+- Phase order: specify → **clarify** (before plan) → plan → tasks → **analyze** (before implement if 3+ boundaries) → implement → **confidence** (reflect-and-loop terminal; max 3 iterations; writes `confidence.md`).
 - Do not skip clarify before plan; do not implement without `tasks.md`.
 - Quality gates: `{LINT_CMD}` and `{TEST_CMD}`.
 - CLI: `specify workflow run sdd` (flags: `scope`, `stop_at`, `issues`, `mode`) or `sdd-remote`. Deprecated aliases still work one release.
