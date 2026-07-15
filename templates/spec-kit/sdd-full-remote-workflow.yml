@@ -1,0 +1,5 @@
+# DEPRECATED alias of sdd-remote (full remote cycle)
+# Prefer templates/spec-kit/sdd-remote-workflow.yml → .specify/workflows/sdd-remote/workflow.yml
+#
+# Equivalent:
+#   specify workflow run sdd-remote -i spec="..." -i integration=cursor-agent

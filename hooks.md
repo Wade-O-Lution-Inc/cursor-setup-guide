@@ -97,6 +97,8 @@ Some repositories add **extra** hooks on top of the security trio — for exampl
 | `orchestrator-post-tool.sh` | `subagentStop` | Post-flight checks after subagents finish |
 | `refresh-compact-context.sh` | `afterFileEdit` + `stop` | Keep `.cursor/auto-context.md` fresh for session handoff |
 
+**SDD Spec Progress:** apply [templates/hooks/refresh-compact-context-sdd.patch](templates/hooks/refresh-compact-context-sdd.patch) to the base refresh script so `auto-context.md` includes `tasks.md` checkbox progress during SDD runs.
+
 These are **not** part of the default templates; copy them from a repo that maintains them, or write your own. A full **extended `hooks.json`** (security trio + orchestrator hooks + context refresh) and manual stdin tests are documented in [EXAMPLES.md](EXAMPLES.md) (see the [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) reference there).
 
 ## Global skill router (`beforeSubmitPrompt`)

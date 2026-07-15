@@ -4,4 +4,4 @@
 #
 # Equivalent:
 #   specify workflow run sdd -i spec="..." -i integration=cursor-agent \
-#     # plus the flags implied by the old ID (see docs/sdd-user-guide.md)
+#     plus the flags implied by the old ID (see specify/quick-start.md)

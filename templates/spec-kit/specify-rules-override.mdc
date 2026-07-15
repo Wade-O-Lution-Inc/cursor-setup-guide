@@ -7,7 +7,7 @@ globs: specs/**, .specify/**
 <!-- SPECKIT START -->
 When working under `specs/` or `.specify/`, follow SDD phase order from your repo's SDD user guide:
 
-constitution → specify → clarify → plan → tasks → analyze → implement.
+constitution → specify → clarify → plan → tasks → analyze → implement → confidence (reflect-and-loop).
 
 Defer to orchestrator SDD mode for routing. Read `.specify/memory/constitution.md` for governance.
 Quality gates: `{LINT_CMD}` and `{TEST_CMD}`.

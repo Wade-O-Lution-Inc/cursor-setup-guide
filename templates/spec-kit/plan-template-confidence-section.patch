@@ -1,0 +1,13 @@
+# Patch: merge into `.specify/templates/plan-template.md` after Constitution Check
+
+Insert after the `## Constitution Check` section (and its gate note), before `## Project Structure`:
+
+```markdown
+## Confidence Checks (draft)
+
+After the Constitution Check passes, draft `confidence-checks.md` from this feature's own Functional Requirements, Success Criteria, and an explicit complexity ceiling (what will deliberately NOT be built). Resolve `confidence-checks-template.md` and write one check per FR/SC with agent-verifiable evidence, tagging each `in_authority` or `escalate`. This draft is re-compiled against the final diff at `/speckit-confidence` — it is not the final word, just the plan-time intent to build against.
+```
+
+**Canonical source:** [meeting_notes_workflow plan-template.md](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/staging/.specify/templates/plan-template.md) lines 45–47.
+
+Expect `specify integration status` **WARNING** on `plan-template.md` after merge — that is normal for the reference repo.

@@ -1,0 +1,41 @@
+installed:
+- agent-context
+settings:
+  auto_execute_hooks: true
+hooks:
+  after_specify:
+  - extension: agent-context
+    command: speckit.agent-context.update
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Execute speckit.agent-context.update?
+    description: Refresh agent context after specification
+    condition: null
+  after_plan:
+  - extension: agent-context
+    command: speckit.agent-context.update
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Execute speckit.agent-context.update?
+    description: Refresh agent context after planning
+    condition: null
+  after_implement:
+  - extension: speckit-confidence
+    command: speckit.confidence
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Run /speckit-confidence to score implementation confidence and reflect-and-loop?
+    description: Score accuracy/complexity/performance confidence and loop back until highly confident
+    condition: null
+  after_confidence:
+  - extension: speckit-confidence-improve
+    command: speckit.confidence-improve
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Run /speckit-confidence-improve to check for recurring findings worth proposing as a harness improvement?
+    description: Cluster the confidence learning log into a human-reviewed proposal (never edits skills/constitution itself)
+    condition: null

@@ -1,5 +1,7 @@
 # Bootstrap — new repo or machine
 
+Canonical templates live in [../templates/](../templates/). **Live reference:** [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow).
+
 ## Machine (once)
 
 1. Install CLI:
@@ -29,19 +31,44 @@ specify integration status
 ### Install org workflows
 
 ```bash
+GUIDE=path/to/cursor-setup-guide/templates
+
 mkdir -p .specify/workflows/sdd .specify/workflows/sdd-remote
-cp path/to/cursor-setup-guide/templates/spec-kit/sdd-workflow.yml \
-  .specify/workflows/sdd/workflow.yml
-cp path/to/cursor-setup-guide/templates/spec-kit/sdd-remote-workflow.yml \
-  .specify/workflows/sdd-remote/workflow.yml
-# Replace {LINT_CMD} and {TEST_CMD}
+cp "$GUIDE/spec-kit/sdd-workflow.yml" .specify/workflows/sdd/workflow.yml
+cp "$GUIDE/spec-kit/sdd-remote-workflow.yml" .specify/workflows/sdd-remote/workflow.yml
+
+cp "$GUIDE/spec-kit/workflow-registry.template.json" .specify/workflows/workflow-registry.json
+# Update installed_at / updated_at timestamps in registry if desired
+
+# Replace placeholders in workflow YAMLs:
+#   {LINT_CMD}  e.g. uv run ruff check
+#   {TEST_CMD}  e.g. doppler run -- uv run python -m pytest tests/ -x -q
 ```
 
-Register in `.specify/workflows/workflow-registry.json` (copy shape from meeting_notes). Optional: copy deprecated alias workflows from meeting_notes for one release.
+Optional deprecated alias dirs: see [../templates/spec-kit/deprecated-aliases.md](../templates/spec-kit/deprecated-aliases.md).
 
 ```bash
 specify workflow list
 specify workflow info sdd
+```
+
+### Org templates
+
+```bash
+cp "$GUIDE/spec-kit/phase-exits-template.md" .specify/templates/
+cp "$GUIDE/spec-kit/confidence-template.md" .specify/templates/
+cp "$GUIDE/spec-kit/confidence-checks-template.md" .specify/templates/
+# Merge plan-template-confidence-section.patch into .specify/templates/plan-template.md
+```
+
+### Extensions + agent context
+
+```bash
+cp "$GUIDE/spec-kit/extensions.yml.template" .specify/extensions.yml
+mkdir -p .specify/extensions/agent-context
+cp "$GUIDE/spec-kit/agent-context-config.yml.template" \
+  .specify/extensions/agent-context/agent-context-config.yml
+# Set context_file (default .cursor/rules/specify-rules.mdc)
 ```
 
 ### Constitution
@@ -53,47 +80,43 @@ Include SDD quality gates (clarify before plan, analyze before implement when ne
 ### Rules + entry skill
 
 ```bash
-cp templates/spec-kit/specify-rules-override.mdc .cursor/rules/specify-rules.mdc
+cp "$GUIDE/spec-kit/specify-rules-override.mdc" .cursor/rules/specify-rules.mdc
 # alwaysApply: false; globs: specs/**, .specify/**
+# Replace {LINT_CMD} and {TEST_CMD} in the SPECKIT block
 
 # Merge templates/rules/sdd-orchestrator-snippet.mdc into your orchestrator rule
 
 mkdir -p .cursor/skills/sdd-entry
-cp templates/skills/sdd-entry/SKILL.md .cursor/skills/sdd-entry/SKILL.md
+cp "$GUIDE/skills/sdd-entry/SKILL.md" .cursor/skills/sdd-entry/SKILL.md
 ```
-
-### Org templates (copy from meeting_notes if not already present)
-
-| File | Role |
-|------|------|
-| `.specify/templates/phase-exits-template.md` | Append-only binary gate log |
-| `.specify/templates/confidence-template.md` | Terminal score artifact |
-| `.specify/templates/confidence-checks-template.md` | Effort checks drafted at plan |
-| Plan template Confidence Checks section | Managed file — expect `integration status` WARNING |
 
 ### Custom skills (not in Spec Kit manifest)
 
-Copy from meeting_notes as needed:
+```bash
+mkdir -p .cursor/skills/speckit-confidence .cursor/skills/speckit-confidence-improve \
+  .cursor/skills/speckit-agent-context-update
 
-- `speckit-confidence`, `speckit-confidence-improve`
-- `speckit-agent-context-update` (if using agent-context extension)
-- `remote-agent-handoff` (if using Mac mini)
+cp "$GUIDE/skills/speckit-confidence/SKILL.md" .cursor/skills/speckit-confidence/
+cp "$GUIDE/skills/speckit-confidence-improve/SKILL.md" .cursor/skills/speckit-confidence-improve/
+cp "$GUIDE/skills/speckit-agent-context-update/SKILL.md" .cursor/skills/speckit-agent-context-update/
 
-### Extensions hooks
+# Replace {LINT_CMD} and {TEST_CMD} in speckit-confidence/SKILL.md
+```
 
-Wire `.specify/extensions.yml` (meeting_notes pattern):
+Re-apply managed `speckit-*` Phase Exit Gate deltas after any `specify integration upgrade --force`: [../templates/skills/speckit-managed-deltas.md](../templates/skills/speckit-managed-deltas.md).
 
-| Hook | Command |
-|------|---------|
-| `after_specify` / `after_plan` | `speckit.agent-context.update` (optional) |
-| `after_implement` | `speckit.confidence` (optional) |
-| `after_confidence` | `speckit.confidence-improve` (optional) |
+Optional: `remote-agent-handoff` from meeting_notes if using Mac mini.
+
+### Hooks (SDD progress in auto-context)
+
+Apply [../templates/hooks/refresh-compact-context-sdd.patch](../templates/hooks/refresh-compact-context-sdd.patch) to `.cursor/hooks/refresh-compact-context.sh`.
 
 ### Docs + gitignore
 
 ```bash
-cp templates/spec-kit/sdd-user-guide.template.md docs/agents/SDD_USER_GUIDE.md
-# Prefer linking this guide's specify/ hub as org source of truth
+mkdir -p docs/agents
+cp "$GUIDE/spec-kit/sdd-user-guide.template.md" docs/agents/SDD_USER_GUIDE.md
+# Replace {LINT_CMD}, {TEST_CMD}, and repo-specific handoff notes
 ```
 
 ```

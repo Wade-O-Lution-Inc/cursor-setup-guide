@@ -1,0 +1,5 @@
+# DEPRECATED alias of sdd-remote (transfer only)
+# Prefer templates/spec-kit/sdd-remote-workflow.yml → .specify/workflows/sdd-remote/workflow.yml
+#
+# Equivalent:
+#   specify workflow run sdd-remote -i transfer_only=true -i remote_phase=confidence -i interval=600
