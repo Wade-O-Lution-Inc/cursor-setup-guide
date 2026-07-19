@@ -1,0 +1,8 @@
+{
+  "gate_mode": "automatic",
+  "allow_repo_commands": true,
+  "implement_hooks": [
+    "uv run ruff check",
+    "doppler run -- uv run python -m pytest tests/ -x -q"
+  ]
+}

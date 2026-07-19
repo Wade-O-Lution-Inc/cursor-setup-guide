@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 # SDD Entry
 
-**Read first:** `docs/agents/SDD_USER_GUIDE.md`.
+**Read first:** [docs/agents/SDD_USER_GUIDE.md](../../docs/agents/SDD_USER_GUIDE.md).
 
 Every phase transition goes through **`sdd-orchestrator`** (worker → D-hooks →
 judge → gate). Bare `speckit-*` skills are the **worker procedure** the
@@ -38,10 +38,12 @@ Optional natural-language flags: `scope=api`, `stop at plan`, `emit issues`,
    implement → confidence). Do not skip clarify before plan; do not implement
    without `tasks.md`. Honor stop flags (`stop at plan` / `stop at tasks`).
 4. **Must** read and follow `~/.cursor/skills/sdd-orchestrator/SKILL.md` for
-   that PHASE (FEATURE_DIR + PHASE). Do **not** call `speckit-*` as the
-   top-level skill.
-5. After a hard gate pass, stop and report to the human before the next phase
-   unless they already approved Continue.
+   that PHASE (FEATURE_DIR + PHASE) in `auto_chain` mode. Preserve the original
+   Start SDD what/why as `--feature-description` for specify. Do **not** call
+   `speckit-*` as the top-level skill.
+5. Passing phases auto-continue. Stop only when `sdd-ctl` returns `stop`
+   (repair cap exhausted), the requested `stop_at` boundary is reached, or the
+   repository opts into `gate_mode: interactive`.
 
 Headless twin of Continue: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`
 (see `~/.cursor/sdd-orchestrator-ctl/README.md`).
@@ -58,8 +60,7 @@ specify workflow run sdd-remote -i spec="..." -i remote_phase=implement \
 # transfer only: -i transfer_only=true
 ```
 
-Deprecated aliases (still run): `sdd-full`, `sdd-api`, `sdd-rfc`,
-`sdd-test-fix`, `sdd-issues`, `sdd-full-remote`, `sdd-remote-handoff`.
+Only `sdd`, `sdd-remote`, and the upstream `speckit` workflow are registered.
 
 ## Brownfield
 
@@ -70,4 +71,4 @@ Before specify: closest pattern in `project.mdc` → *Finding the Right Pattern*
 On compact/checkpoint: include `specs/.../tasks.md` progress. Read
 `.cursor/auto-context.md` Spec Progress on resume.
 
-Deep reference: `docs/agents/SPEC_DRIVEN_DEVELOPMENT.md` (or org hub [cursor-setup-guide/specify/](https://github.com/Wade-O-Lution-Inc/cursor-setup-guide/tree/main/specify))
+Deep reference: [docs/agents/SPEC_DRIVEN_DEVELOPMENT.md](../../docs/agents/SPEC_DRIVEN_DEVELOPMENT.md)

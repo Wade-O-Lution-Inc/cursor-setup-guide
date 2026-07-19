@@ -1,6 +1,6 @@
 # Confidence loop & learning
 
-Terminal phase after implement. Worker skill: **`speckit-confidence`** (org-owned, not Spec Kit managed). Optional follow-up: **`speckit-confidence-improve`**.
+Terminal phase after implement. Worker skill: **`speckit-confidence`** (org-owned, not Spec Kit managed). Orchestration: **confidence swarm** + mandatory advocate + merge via [orchestrator.md](./orchestrator.md). Optional follow-up: **`speckit-confidence-improve`**.
 
 ## Lifecycle of effort checks
 
@@ -17,7 +17,9 @@ Terminal phase after implement. Worker skill: **`speckit-confidence`** (org-owne
 
 Exit bar: all axes at 5 **and** all `in_authority` checks pass **and** lint/test green. Else loop findings back to plan/tasks/implement and re-score — **max 3 iterations**, then residual risk in `confidence.md`.
 
-Wired optionally via `.specify/extensions.yml` `after_implement` → `speckit.confidence`.
+Artifact shape: CF-05 format contract on `confidence.md` (see meeting_notes confidence template). Passing confidence verdicts must include a decision (`HIGHLY_CONFIDENT` or `RESIDUAL_RISK_ACCEPTED`).
+
+Wired optionally via `.specify/extensions.yml` `after_implement` → `speckit.confidence`. End of run: **`sdd-ctl report`**.
 
 ## Learning log
 
@@ -34,10 +36,10 @@ Wired optionally via `.specify/extensions.yml` `after_implement` → `speckit.co
 | Surface | You can |
 |---------|---------|
 | `confidence-checks-template.md` | Change draft structure |
-| `confidence-template.md` | Change score artifact shape |
+| `confidence-template.md` | Change score artifact shape (keep CF-05 contract) |
 | `speckit-confidence` skill | Loop rules, axis definitions (repo-owned) |
+| ctl confidence prompts / swarm roles | `prompts/confidence-*.md`, `phase-models.json` |
 | Learning log path / tags | Repo docs convention |
 | Extension hooks | Enable/disable optional prompts in `extensions.yml` |
-| Orchestrator confidence phase | Models / repair_cap in `phase-models.json` |
 
-Next: [phase-model.md](./phase-model.md) · [managed-vs-custom.md](./managed-vs-custom.md)
+Next: [phase-model.md](./phase-model.md) · [orchestrator.md](./orchestrator.md) · [managed-vs-custom.md](./managed-vs-custom.md)

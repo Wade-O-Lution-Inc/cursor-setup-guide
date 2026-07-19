@@ -1,6 +1,8 @@
 # Quick start
 
-**Keep this open** while running SDD. Live copy in meeting_notes: `docs/agents/SDD_USER_GUIDE.md`.
+**Keep this open** while running SDD. Live product copy: [meeting_notes `SDD_USER_GUIDE.md`](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/main/docs/agents/SDD_USER_GUIDE.md).
+
+Passing phases **auto-continue**. Failures repair up to the configured cap, then **stop**. After confidence (or `stop_at`), expect an **`sdd-ctl report`** summary.
 
 ## Chat (daily default)
 
@@ -15,14 +17,14 @@ Stop SDD; switch to normal fix mode for <narrow bug>
 
 Optional natural-language flags: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`, `test-fix mode`.
 
-Flow: **`sdd-entry` → `sdd-orchestrator` → `speckit-*` worker**.
+Flow: **`sdd-entry` → `sdd-orchestrator` (`auto_chain`) → `speckit-*` worker** · visible Task subagents · `sdd-ctl` for plan/hooks/record/report.
 
 ## CLI
 
 ```bash
 # Status
 specify integration status
-specify workflow list          # expect sdd + sdd-remote (+ deprecated aliases)
+specify workflow list          # expect sdd + sdd-remote (+ upstream speckit)
 
 # Full local cycle
 specify workflow run sdd -i spec="..." -i integration=cursor-agent \
@@ -43,14 +45,16 @@ specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i inter
 # Transfer only (already past tasks)
 specify workflow run sdd-remote -i transfer_only=true -i remote_phase=confidence -i interval=600
 
-# While paused at a gate
+# While paused at a Spec Kit workflow gate (if any)
 specify workflow status
 specify workflow resume <run_id>
 
-# Headless Continue (global)
-~/.cursor/sdd-orchestrator-ctl/bin/sdd-run \
+# Headless Continue (global ctl)
+~/.cursor/sdd-orchestrator-ctl/.venv/bin/python \
+  ~/.cursor/sdd-orchestrator-ctl/bin/sdd-run \
   --cwd /path/to/repo --feature-dir specs/NNN-name \
-  --from-phase specify --to-phase tasks
+  --from-phase specify --to-phase tasks \
+  --feature-description "what and why"
 ```
 
 ## Flags at a glance
@@ -69,6 +73,8 @@ specify workflow resume <run_id>
 
 ## Deprecated aliases → flags
 
+Old workflow IDs are **removed** from the gold registry. Use flags:
+
 | Old ID | Use instead |
 |--------|-------------|
 | `sdd-full` | `sdd` |
@@ -81,4 +87,4 @@ specify workflow resume <run_id>
 
 Upstream workflow **`speckit`**: installed, not for daily use.
 
-Next: [workflows.md](./workflows.md) · [phase-model.md](./phase-model.md)
+Next: [workflows.md](./workflows.md) · [phase-model.md](./phase-model.md) · [orchestrator.md](./orchestrator.md)

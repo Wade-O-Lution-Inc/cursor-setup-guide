@@ -12,12 +12,12 @@ flowchart TB
     WF["workflows: sdd + sdd-remote"]
     Entry["sdd-entry chat front door"]
     Conf["speckit-confidence + confidence-improve"]
-    Const["constitution + phase-exits + confidence-checks templates"]
-    Ext["extensions.yml hooks"]
+    Const["constitution + phase-exits + confidence-checks"]
+    Policy[".specify/orchestrator.json"]
   end
   subgraph global [Machine global ~/.cursor]
     Orch["sdd-orchestrator skill"]
-    Ctl["sdd-orchestrator-ctl policy + sdd-run"]
+    Ctl["sdd-orchestrator-ctl: sdd-ctl + sdd-run"]
     Router["skill router hooks"]
   end
   subgraph artifacts [Feature artifacts]
@@ -30,11 +30,12 @@ flowchart TB
   Skills --> Entry
   Entry --> Orch
   Orch --> Skills
-  Orch --> PE
+  Orch --> Ctl
+  Ctl --> PE
   WF --> Orch
   Orch --> Spec
   Conf --> CM
-  Ctl --> Orch
+  Policy --> Ctl
   Router --> Entry
 ```
 
@@ -42,9 +43,9 @@ flowchart TB
 
 | Surface | Command / verb | Who owns gating |
 |---------|----------------|-----------------|
-| **Chat** | `Start SDD: …` / `Continue SDD` | `sdd-entry` → **`sdd-orchestrator`** per phase |
-| **CLI interactive** | `specify workflow run sdd …` | Workflow YAML human gates + orchestrator preamble on each step |
-| **CLI headless** | `sdd-run --from-phase … --to-phase …` | Orchestrator control plane only (no workflow gates) |
+| **Chat** | `Start SDD: …` / `Continue SDD` | `sdd-entry` → **`sdd-orchestrator`** (`auto_chain`) |
+| **CLI interactive** | `specify workflow run sdd …` | Workflow sequencing + orchestrator `single_phase` per step |
+| **CLI headless** | `sdd-run --from-phase … --to-phase …` | Orchestrator control plane only |
 
 Bare `speckit-*` skills are **workers**. They are not a front door.
 
@@ -56,7 +57,7 @@ After `specify init . --integration cursor-agent --here --script sh`:
 - `.specify/templates/` — spec, plan, tasks, checklist, constitution templates
 - `.cursor/skills/speckit-{specify,clarify,plan,tasks,analyze,implement,constitution,checklist,taskstoissues}/`
 - Bundled workflow **`speckit`**: specify → plan → tasks → implement (2 human gates only)
-- Optional **`agent-context`** extension (refresh SPECKIT block in a rule file)
+- Optional **`agent-context`** extension
 - Preset catalog cache under `.specify/presets/.cache/`
 
 ## What we added (org)
@@ -65,17 +66,19 @@ After `specify init . --integration cursor-agent --here --script sh`:
 |-------|----------------|
 | Workflows | **`sdd`**, **`sdd-remote`** with flags — [templates/spec-kit/](../templates/spec-kit/) |
 | Chat entry | **`sdd-entry`** — [templates/skills/sdd-entry/](../templates/skills/sdd-entry/) |
-| Phase exits | Binary gates in six phase skills + `phase-exits-template.md` |
-| Confidence | **`speckit-confidence`**, **`confidence-checks`**, learning log, **`speckit-confidence-improve`** — templates in [../templates/skills/](../templates/skills/) |
-| Constitution | Compiled from `.cursor/rules/`; SDD quality gates 1–6 |
-| Extensions | `after_specify` / `after_plan` → agent-context; `after_implement` → confidence; `after_confidence` → improve — [extensions.yml.template](../templates/spec-kit/extensions.yml.template) |
+| Phase exits | Binary checklists; **orchestrator** sole writer of `phase-exits.md` |
+| Confidence | **`speckit-confidence`**, swarms + advocate via ctl, **`speckit-confidence-improve`** |
+| Repo policy | `.specify/orchestrator.json` — [orchestrator.json](../templates/spec-kit/orchestrator.json) |
+| Constitution | Compiled from `.cursor/rules/`; SDD quality gates |
 | Remote | `sdd-remote` + `remote-agent-handoff` + handoff scripts |
-| Global | Multi-model **`sdd-orchestrator`** + **`sdd-orchestrator-ctl`** |
+| Global | **`sdd-orchestrator`** + **`sdd-ctl` / `sdd-run`** from GitHub |
 
 ## What we deliberately did *not* change
 
 - Spec Kit CLI engine / hash manifests
 - Upstream bundled `speckit` workflow (left installed, **undocumented** for daily use)
-- Enabling orchestrator `shadow` / `epsilon` (stay off until Slice D human GO)
+- Treating this guide as the orchestrator SSOT — that is [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator)
+
+Cost / shadow / swarm knobs: see [orchestrator.md](./orchestrator.md) and the ctl README after `git pull`.
 
 Next: [quick-start.md](./quick-start.md) · [managed-vs-custom.md](./managed-vs-custom.md)

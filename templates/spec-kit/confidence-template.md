@@ -9,6 +9,10 @@ confidence across three axes (Accuracy, Complexity, Performance) on a 1–5 scal
 plus this feature's own re-compiled effort checks (`confidence-checks.md`, pass/fail, `in_authority`/`escalate`),
 and records the reflect-and-loop history. Max iterations: 3.
 
+**CF-05 format contract**: Preserve the Scoreboard, every Iteration section (Effort checks, Findings,
+Actions, Decision), and Final Decision headings/tables. Fill them in place; do not replace this template
+with a free-form summary.
+
 <!--
   ============================================================================
   IMPORTANT: Append ONE "Iteration N" block per loop. Never overwrite prior
@@ -20,7 +24,7 @@ and records the reflect-and-loop history. Max iterations: 3.
 
 ## Scoreboard
 
-| Iteration | Accuracy | Complexity | Performance | Effort Checks (in_authority pass/total) | Gates (lint/test) | Decision |
+| Iteration | Accuracy | Complexity | Performance | Effort Checks (in_authority pass/total) | Gates (ruff/pytest) | Decision |
 |-----------|----------|------------|-------------|------------------------------------------|---------------------|----------|
 | 1         | [1-5]    | [1-5]      | [1-5]       | [x/y]                                    | [pass/fail]         | [loop/exit/escape] |
 
@@ -29,7 +33,7 @@ and records the reflect-and-loop history. Max iterations: 3.
 ## Iteration 1
 
 **Scores**: Accuracy [1-5] · Complexity [1-5] · Performance [1-5]
-**Quality gates**: `{LINT_CMD}` [pass/fail] · `{TEST_CMD}` [pass/fail]
+**Quality gates**: `uv run ruff check` [pass/fail] · `pytest tests/ -x -q` [pass/fail]
 
 ### Effort checks (re-compiled from confidence-checks.md)
 
