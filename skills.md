@@ -210,11 +210,11 @@ Add one **custom bridge skill** ([templates/skills/sdd-entry/SKILL.md](templates
 
 - Chat front door: `Start SDD` / `Continue SDD`
 - Resolves `FEATURE_DIR` + next `PHASE`
-- **Must** run `~/.cursor/skills/sdd-orchestrator/` for that phase — never call bare `speckit-*` as the top-level skill
+- **Must** run `~/.cursor/skills/sdd-orchestrator/` in `auto_chain` — never call bare `speckit-*` as the top-level skill
 
-**Global control plane:** `sdd-orchestrator` (Task path) + `~/.cursor/sdd-orchestrator-ctl/` (`bin/sdd-run` for headless ranges).
+**Global control plane:** `sdd-orchestrator` (Task path) + `~/.cursor/sdd-orchestrator-ctl/` (`bin/sdd-ctl` deterministic verbs; `bin/sdd-run` for headless ranges). Clone from [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator).
 
-CLI: `specify workflow run sdd` / `sdd-remote` (not the old eight-pipeline matrix).
+CLI: `specify workflow run sdd` / `sdd-remote` only (deprecated aliases removed from the gold registry).
 
 See **[specify/](./specify/)** for the full Spec Kit story. Summary:
 

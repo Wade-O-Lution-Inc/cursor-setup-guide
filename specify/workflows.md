@@ -2,22 +2,25 @@
 
 Definitions live in the consuming repo under `.specify/workflows/<id>/workflow.yml`. Org templates: [../templates/spec-kit/sdd-workflow.yml](../templates/spec-kit/sdd-workflow.yml), [sdd-remote-workflow.yml](../templates/spec-kit/sdd-remote-workflow.yml).
 
+Registered workflows in the gold repo: **`sdd`**, **`sdd-remote`**, plus upstream **`speckit`** (undocumented for daily use).
+
 ## Canonical IDs
 
 ### `sdd` (local)
 
+Each named phase invokes the orchestrator in **`single_phase`** mode; this workflow owns sequencing and `stop_at`. Passing phases do **not** require a human go/no-go from the orchestrator — they auto-continue inside the workflow’s next step. Exhausted repair caps stop the run.
+
 **Full path (`mode=full`):**
 
-1. `speckit.specify` (orchestrator) → **review-spec** gate  
-2. `speckit.clarify`  
-3. `speckit.plan` → **review-plan** gate  
-4. If `stop_at=plan` → done prompt (no implement)  
-5. Else `speckit.tasks` → `speckit.analyze` → **review-tasks** gate  
-6. If `issues=true` → `speckit.taskstoissues` → stop  
-7. Else if `stop_at=tasks` → done prompt  
-8. Else lint (`continue_on_error`) → `speckit.implement` → pytest → `speckit.confidence` → handoff prompt  
+1. Orchestrator **specify** (optional Spec Kit human `review-spec` if present in YAML)  
+2. **clarify** → **plan** (optional `review-plan`)  
+3. If `stop_at=plan` → end report (`sdd-ctl report`)  
+4. Else **tasks** → **analyze** (optional `review-tasks`)  
+5. If `issues=true` → `speckit.taskstoissues` → stop  
+6. Else if `stop_at=tasks` → end report  
+7. Else implement hooks / **implement** → **confidence** → end report  
 
-**Test-fix path (`mode=test-fix`):** implement → pytest → while fail (max 5) fix+retest → confidence → handoff.
+**Test-fix path (`mode=test-fix`):** implement → pytest retry loop → confidence → end report.
 
 Every `speckit.*` command step includes the ALWAYS-ON ORCHESTRATOR preamble pointing at `~/.cursor/skills/sdd-orchestrator/SKILL.md`.
 
@@ -25,32 +28,34 @@ Every `speckit.*` command step includes the ALWAYS-ON ORCHESTRATOR preamble poin
 
 | Branch | Behavior |
 |--------|----------|
-| `transfer_only=false` | Laptop: same gated path through **review-tasks**, then **approve-transfer**, then shell handoff to Mac mini |
+| `transfer_only=false` | Laptop: orchestrated path through tasks (and any YAML transfer gate), then shell handoff to Mac mini |
 | `transfer_only=true` | Skip laptop phases; handoff only |
 
 Inputs: `remote_phase`, `interval`, `model`, `scope`, optional `spec`.
 
-Pairs with repo skill `remote-agent-handoff` and scripts under `scripts/handoff_to_mac_mini.sh`, `scripts/start_remote_sdd_handoff.sh`, etc. Details: [remote-handoff.md](./remote-handoff.md).
+Pairs with repo skill `remote-agent-handoff` and scripts under `scripts/handoff_to_mac_mini.sh`, `scripts/start_remote_sdd_handoff.sh`. Details: [remote-handoff.md](./remote-handoff.md).
 
-## Human gates vs orchestrator gates
+## Human workflow gates vs orchestrator
 
 | Gate | Mechanism | Resume |
 |------|-----------|--------|
-| `review-spec` / `review-plan` / `review-tasks` / `approve-transfer` | Spec Kit workflow `type: gate` | `specify workflow resume <run_id>` |
-| Orchestrator `gate: hard` | After judge pass | Human go/no-go in chat (Task path) |
-| Orchestrator `gate: soft` | After judge pass | Auto-continue to next phase |
+| Spec Kit `type: gate` steps (if any remain in YAML) | Workflow pause | `specify workflow resume <run_id>` |
+| Orchestrator pass | `continue` / return to workflow | Automatic (default `gate_mode: automatic`) |
+| Orchestrator fail under repair cap | `repair` | Automatic re-worker |
+| Orchestrator fail at repair cap | `stop` | Human intervention |
+| Orchestrator `gate_mode: interactive` | `pause` after pass | Human Continue |
 
 ## Upstream `speckit` workflow
 
 Installed by `specify init`. Four phases, no clarify/analyze/confidence, no orchestrator preamble, `scope` uses `backend-only` (we use `api-only`). **Do not document it for daily use.**
 
-## Deprecated aliases
+## Deprecated aliases (migration only)
 
-Still registered in meeting_notes `workflow-registry.json` with `DEPRECATED` descriptions. Prefer flags on `sdd` / `sdd-remote` ([quick-start.md](./quick-start.md)).
+Removed from the meeting_notes registry. Prefer flags on `sdd` / `sdd-remote` — [deprecated-aliases.md](../templates/spec-kit/deprecated-aliases.md) · [quick-start.md](./quick-start.md).
 
 ## Run state
 
-Gitignored: `.specify/workflows/runs/<run_id>/` (`workflow.yml`, `inputs.json`, `state.json`, `log.jsonl`).
+Gitignored: `.specify/workflows/runs/<run_id>/`, `.specify/orchestrator-runs/`.
 
 ```bash
 specify workflow status

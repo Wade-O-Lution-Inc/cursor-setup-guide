@@ -8,14 +8,15 @@ Add routing block:
 
 **SDD** (Spec-Driven Development — see repo SDD user guide)
 - Entry = `.cursor/skills/sdd-entry/SKILL.md` only (Start SDD / Continue SDD). Never invoke bare `speckit-*` as the top-level skill.
-- Every phase goes through **`sdd-orchestrator`** (worker → D-hooks → judge → `phase-exits.md` gate). Worker procedure = matching `speckit-*` skill.
-- Resolve `FEATURE_DIR` (`specs/NNN-*`) + next `PHASE`, then run the orchestrator for that phase.
-- Phase order: specify → **clarify** (before plan) → plan → tasks → **analyze** (before implement if 3+ boundaries) → implement → **confidence** (reflect-and-loop terminal; max 3 iterations; writes `confidence.md`).
+- Every phase goes through **`sdd-orchestrator`** + **`sdd-ctl`** (plan → worker → hooks → judge/swarm → record). Worker procedure = matching `speckit-*` skill. Workers never write `phase-exits.md`.
+- Resolve `FEATURE_DIR` (`specs/NNN-*`) + next `PHASE`, then run the orchestrator for that phase (`auto_chain` from chat; `single_phase` from Spec Kit workflows).
+- Phase order: specify → **clarify** (before plan) → plan → tasks → **analyze** (before implement if 3+ boundaries) → implement → **confidence**.
+- Passing phases auto-continue. Failures repair up to the configured cap, then stop. Optional `"gate_mode": "interactive"` in `.specify/orchestrator.json` pauses after pass.
 - Do not skip clarify before plan; do not implement without `tasks.md`.
-- Quality gates: `{LINT_CMD}` and `{TEST_CMD}`.
-- CLI: `specify workflow run sdd` (flags: `scope`, `stop_at`, `issues`, `mode`) or `sdd-remote`. Deprecated aliases still work one release.
+- Quality gates: `{LINT_CMD}` and `{TEST_CMD}` (also via `.specify/orchestrator.json` `implement_hooks` when `allow_repo_commands: true`).
+- CLI: `specify workflow run sdd` (flags: `scope`, `stop_at`, `issues`, `mode`) or `sdd-remote`. Alias workflow IDs are removed — use flags ([deprecated-aliases.md](../spec-kit/deprecated-aliases.md)).
 - On compact/checkpoint during SDD: include `tasks.md` progress (completed/total) in handoff.
 
-Requires global `~/.cursor/skills/sdd-orchestrator/` + `~/.cursor/sdd-orchestrator-ctl/` — see [global-env.md](../../global-env.md).
+Requires global `~/.cursor/skills/sdd-orchestrator/` (symlink) + clone of [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) at `~/.cursor/sdd-orchestrator-ctl/` — see [day1-setup.md](../../day1-setup.md).
 
-Reference: [meeting_notes_workflow/.cursor/rules/00-orchestrator.mdc](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/staging/.cursor/rules/00-orchestrator.mdc)
+Reference: [meeting_notes_workflow/.cursor/rules/00-orchestrator.mdc](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/main/.cursor/rules/00-orchestrator.mdc)

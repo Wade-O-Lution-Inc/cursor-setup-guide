@@ -140,7 +140,20 @@ See [global-env.md](./global-env.md) and [scope.md](scope.md). Install:
 
 - Skill router: [templates/global/hooks/](templates/global/hooks/) + [templates/global/hooks.json](templates/global/hooks.json)
 - Always-on rules: [templates/global/rules/](templates/global/rules/)
-- Ops skills (`lab-host-ssh`, …) and `sdd-orchestrator-ctl` from a known-good machine
+- Ops skills (`lab-host-ssh`, …)
+- Orchestrator: `gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl` + skill symlink — [day1-setup.md](./day1-setup.md)
+
+```bash
+# Deterministic smoke (no API key)
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help
+
+# Headless range (needs ctl venv + CURSOR_API_KEY for non-mock)
+~/.cursor/sdd-orchestrator-ctl/.venv/bin/python \
+  ~/.cursor/sdd-orchestrator-ctl/bin/sdd-run \
+  --cwd /path/to/repo --feature-dir specs/NNN-name \
+  --from-phase specify --to-phase tasks \
+  --feature-description "what and why" --mock
+```
 
 Do **not** store API keys in skills.
 

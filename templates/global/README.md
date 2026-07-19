@@ -8,10 +8,13 @@ Copy onto a developer machine under `~/.cursor/`:
 | `hooks/*.sh` | `~/.cursor/hooks/` (`chmod +x`) |
 | `rules/*.mdc` | `~/.cursor/rules/` |
 
-Also install (not fully vendored here — large / evolving):
+Also install (not vendored here):
 
-- `~/.cursor/skills/sdd-orchestrator/`
-- `~/.cursor/sdd-orchestrator-ctl/`
-- Ops skills (`lab-host-ssh`, …) and Spec Kit pointer stubs as needed
+```bash
+gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
+ln -sfn ~/.cursor/sdd-orchestrator-ctl/skills/sdd-orchestrator ~/.cursor/skills/sdd-orchestrator
+```
 
-See [../../global-env.md](../../global-env.md).
+Plus ops skills (`lab-host-ssh`, …) and Spec Kit pointer stubs as needed.
+
+See [../../day1-setup.md](../../day1-setup.md) · [../../global-env.md](../../global-env.md).

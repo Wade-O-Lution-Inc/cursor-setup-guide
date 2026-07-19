@@ -2,11 +2,13 @@ schema_version: "1.0"
 workflow:
   id: "sdd-remote"
   name: "SDD Remote"
-  version: "2.0.0"
+  version: "3.0.0"
   author: "Integrity"
   description: >-
-    Laptop gated SDD through tasks (orchestrator-gated), then Mac mini handoff
-    for implement/confidence. Set transfer_only=true to skip laptop phases.
+    Laptop SDD auto-continues through tasks, then Mac mini handoff runs
+    implement/confidence. Exhausted repair caps stop the run. Set
+    transfer_only=true to skip laptop phases. Each named phase invokes the
+    orchestrator in single_phase mode; this workflow owns sequencing.
 
 requires:
   speckit_version: ">=0.10.0"
@@ -63,13 +65,6 @@ steps:
           Remote agent should use sdd-orchestrator for each phase (always-on).
           If phase is confidence, reference speckit.confidence (max 3 iterations).
 
-      - id: approve-transfer-only
-        type: gate
-        message: >-
-          Review session-handoff.md. Approve to push and start Mac mini remote loop.
-        options: [approve, reject]
-        on_reject: abort
-
       - id: preflight-local-only
         type: shell
         run: "bash scripts/remote_agent_preflight.sh --local"
@@ -92,6 +87,15 @@ steps:
         run: "bash scripts/handoff_to_mac_mini.sh --status"
         continue_on_error: true
 
+      - id: end-report-only
+        type: prompt
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Run the absolute-path sdd-ctl report command from
+          ~/.cursor/sdd-orchestrator-ctl for the active feature and present the SDD remote
+          transfer end report, including branch, feature path, transfer status,
+          phase outcomes, residual risks, and Next Exact Steps.
+
     else:
       - id: specify
         command: speckit.specify
@@ -102,12 +106,6 @@ steps:
             and run phase=specify through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-specify/SKILL.md.
             Feature: {{ inputs.spec }}
-
-      - id: review-spec
-        type: gate
-        message: "Review specs/*/spec.md before planning. Approve to continue."
-        options: [approve, reject]
-        on_reject: abort
 
       - id: clarify
         command: speckit.clarify
@@ -129,12 +127,6 @@ steps:
             .cursor/skills/speckit-plan/SKILL.md.
             Scope: {{ inputs.scope }}. {{ inputs.spec }}
 
-      - id: review-plan
-        type: gate
-        message: "Review plan.md before tasks."
-        options: [approve, reject]
-        on_reject: abort
-
       - id: tasks
         command: speckit.tasks
         integration: "{{ inputs.integration }}"
@@ -155,17 +147,9 @@ steps:
             .cursor/skills/speckit-analyze/SKILL.md.
             Context: {{ inputs.spec }}
 
-      - id: review-tasks
-        type: gate
-        message: >-
-          Review tasks.md before remote transfer. Approve to hand off
-          {{ inputs.remote_phase }} to the Mac mini.
-        options: [approve, reject]
-        on_reject: abort
-
       - id: lint-check
         type: shell
-        run: "{LINT_CMD}"
+        run: "uv run ruff check"
         continue_on_error: true
 
       - id: handoff
@@ -178,14 +162,6 @@ steps:
           Include specs path, tasks.md progress, branch, and a Resume Prompt that
           tells the remote agent to run each phase via sdd-orchestrator (always-on).
           Reference .cursor/skills/remote-agent-handoff/SKILL.md.
-
-      - id: approve-transfer
-        type: gate
-        message: >-
-          Review session-handoff.md. Approve to push branch and start the detached
-          remote loop on the Mac mini.
-        options: [approve, reject]
-        on_reject: abort
 
       - id: preflight-local
         type: shell
@@ -208,3 +184,12 @@ steps:
         type: shell
         run: "bash scripts/handoff_to_mac_mini.sh --status"
         continue_on_error: true
+
+      - id: end-report
+        type: prompt
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Run the absolute-path sdd-ctl report command from
+          ~/.cursor/sdd-orchestrator-ctl for the active feature and present the SDD remote
+          transfer end report, including branch, feature path, transfer status,
+          phase outcomes, residual risks, and Next Exact Steps.

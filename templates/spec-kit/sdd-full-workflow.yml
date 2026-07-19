@@ -1,7 +1,0 @@
-# DEPRECATED alias of sdd (full defaults)
-# Prefer templates/spec-kit/sdd-workflow.yml → .specify/workflows/sdd/workflow.yml
-# Keep this file only for historical links; do not install as a live workflow.
-#
-# Equivalent:
-#   specify workflow run sdd -i spec="..." -i integration=cursor-agent \
-#     plus the flags implied by the old ID (see specify/quick-start.md)
