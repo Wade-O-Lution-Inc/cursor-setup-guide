@@ -48,6 +48,11 @@ inputs:
     default: "false"
     enum: ["true", "false"]
     prompt: "true = skip laptop specify→tasks; hand off current branch only"
+  model_profile:
+    type: string
+    default: "balanced"
+    enum: ["lean", "balanced", "frontier", "legacy"]
+    prompt: "Model profile: lean (cheap), balanced (default), frontier (max reliability)"
 
 steps:
   - id: route-transfer
@@ -106,7 +111,7 @@ steps:
             and run phase=specify through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-specify/SKILL.md.
             Feature: {{ inputs.spec }}
-
+            model_profile={{ inputs.model_profile }}.
       - id: clarify
         command: speckit.clarify
         integration: "{{ inputs.integration }}"
@@ -116,7 +121,7 @@ steps:
             and run phase=clarify through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-clarify/SKILL.md.
             Context: {{ inputs.spec }}
-
+            model_profile={{ inputs.model_profile }}.
       - id: plan
         command: speckit.plan
         integration: "{{ inputs.integration }}"
@@ -126,7 +131,7 @@ steps:
             and run phase=plan through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-plan/SKILL.md.
             Scope: {{ inputs.scope }}. {{ inputs.spec }}
-
+            model_profile={{ inputs.model_profile }}.
       - id: tasks
         command: speckit.tasks
         integration: "{{ inputs.integration }}"
@@ -136,7 +141,7 @@ steps:
             and run phase=tasks through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-tasks/SKILL.md.
             Scope: {{ inputs.scope }}. {{ inputs.spec }}
-
+            model_profile={{ inputs.model_profile }}.
       - id: analyze
         command: speckit.analyze
         integration: "{{ inputs.integration }}"
@@ -146,7 +151,7 @@ steps:
             and run phase=analyze through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-analyze/SKILL.md.
             Context: {{ inputs.spec }}
-
+            model_profile={{ inputs.model_profile }}.
       - id: lint-check
         type: shell
         run: "uv run ruff check"
@@ -161,6 +166,7 @@ steps:
           Remote phase: {{ inputs.remote_phase }}.
           Include specs path, tasks.md progress, branch, and a Resume Prompt that
           tells the remote agent to run each phase via sdd-orchestrator (always-on).
+          Prefer model_profile={{ inputs.model_profile }}.
           Reference .cursor/skills/remote-agent-handoff/SKILL.md.
 
       - id: preflight-local

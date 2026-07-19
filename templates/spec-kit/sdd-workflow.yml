@@ -5,7 +5,7 @@ workflow:
   version: "3.0.0"
   author: "Integrity"
   description: >-
-    Canonical local SDD cycle. Flags: scope, stop_at, issues, mode.
+    Canonical local SDD cycle. Flags: scope, stop_at, issues, mode, model_profile.
     Passing phases auto-continue via sdd-orchestrator; exhausted repair caps stop
     the run. Each named workflow phase uses orchestrator single_phase mode so
     this workflow alone owns sequencing and stop_at. The final step produces an
@@ -48,6 +48,11 @@ inputs:
     default: "full"
     enum: ["full", "test-fix"]
     prompt: "full = new/continue cycle; test-fix = implement + pytest retry + confidence"
+  model_profile:
+    type: string
+    default: "balanced"
+    enum: ["lean", "balanced", "frontier", "legacy"]
+    prompt: "Model profile: lean (cheap), balanced (default), frontier (max reliability)"
 
 # Shared instruction baked into every agent step (always-on orchestrator).
 # Workers follow the matching speckit-* skill; the orchestrator owns gates/exits.
@@ -68,6 +73,7 @@ steps:
               judge + phase-exits.md). Do not skip the orchestrator. Worker follows
               .cursor/skills/speckit-implement/SKILL.md.
               Context: {{ inputs.spec }}
+              model_profile={{ inputs.model_profile }}.
 
         - id: test-tf
           type: shell
@@ -99,6 +105,7 @@ steps:
               and run phase=confidence through sdd-orchestrator. Worker follows
               .cursor/skills/speckit-confidence/SKILL.md.
               Context: {{ inputs.spec }}
+              model_profile={{ inputs.model_profile }}.
 
         - id: end-report-tf
           type: prompt
@@ -120,6 +127,7 @@ steps:
             judge + phase-exits.md). Do not skip the orchestrator. Worker follows
             .cursor/skills/speckit-specify/SKILL.md.
             Feature: {{ inputs.spec }}
+            model_profile={{ inputs.model_profile }}.
 
       - id: clarify
         command: speckit.clarify
@@ -130,6 +138,7 @@ steps:
             and run phase=clarify through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-clarify/SKILL.md.
             Context: {{ inputs.spec }}
+            model_profile={{ inputs.model_profile }}.
 
       - id: plan
         command: speckit.plan
@@ -140,6 +149,7 @@ steps:
             and run phase=plan through sdd-orchestrator. Worker follows
             .cursor/skills/speckit-plan/SKILL.md.
             Scope: {{ inputs.scope }}. {{ inputs.spec }}
+            model_profile={{ inputs.model_profile }}.
 
       - id: after-plan
         type: if
@@ -163,6 +173,7 @@ steps:
                 and run phase=tasks through sdd-orchestrator. Worker follows
                 .cursor/skills/speckit-tasks/SKILL.md.
                 Scope: {{ inputs.scope }}. {{ inputs.spec }}
+                model_profile={{ inputs.model_profile }}.
 
           - id: analyze
             command: speckit.analyze
@@ -173,6 +184,7 @@ steps:
                 and run phase=analyze through sdd-orchestrator. Worker follows
                 .cursor/skills/speckit-analyze/SKILL.md.
                 Context: {{ inputs.spec }}
+                model_profile={{ inputs.model_profile }}.
 
           - id: maybe-issues
             type: if
@@ -220,6 +232,7 @@ steps:
                         and run phase=implement through sdd-orchestrator. Worker follows
                         .cursor/skills/speckit-implement/SKILL.md.
                         Scope: {{ inputs.scope }}. {{ inputs.spec }}
+                        model_profile={{ inputs.model_profile }}.
 
                   - id: test-suite
                     type: shell
@@ -234,6 +247,7 @@ steps:
                         and run phase=confidence through sdd-orchestrator. Worker follows
                         .cursor/skills/speckit-confidence/SKILL.md.
                         Context: {{ inputs.spec }}
+                        model_profile={{ inputs.model_profile }}.
 
                   - id: end-report
                     type: prompt

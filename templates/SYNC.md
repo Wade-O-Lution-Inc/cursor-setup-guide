@@ -9,7 +9,7 @@
 
 **This guide:** adoption copies under `templates/`. After any SDD harness PR lands in meeting_notes, resync the paths below and bump **Last synced**.
 
-**Last synced:** 2026-07-19 (post meeting_notes #545 / portable `sdd-ctl` + swarm integration)
+**Last synced:** 2026-07-19 (model_profile lean/balanced/frontier + evaluated default `balanced`)
 
 ## Path map
 
