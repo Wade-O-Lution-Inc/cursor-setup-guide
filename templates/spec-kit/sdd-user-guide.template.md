@@ -1,12 +1,8 @@
 # SDD User Guide
 
-<!-- Template synced from meeting_notes_workflow/docs/agents/SDD_USER_GUIDE.md — see templates/SYNC.md.
-     After copy: adapt Doppler/lint/test commands and deep-reference links for this repo.
-     Optional deep reference: docs/agents/SPEC_DRIVEN_DEVELOPMENT.md (create or omit). -->
-
 **Keep this file open** while learning Spec-Driven Development (SDD) in this repo.
 
-Deep reference (if present): [SPEC_DRIVEN_DEVELOPMENT.md](./SPEC_DRIVEN_DEVELOPMENT.md) · org adoption: [cursor-setup-guide/specify/](https://github.com/Wade-O-Lution-Inc/cursor-setup-guide/tree/main/specify)
+Deep reference: [SPEC_DRIVEN_DEVELOPMENT.md](./SPEC_DRIVEN_DEVELOPMENT.md)
 
 ---
 
@@ -41,13 +37,16 @@ terminal phase, `sdd-ctl report` produces the end report.
 | `stop_at` | `confidence` \| `tasks` \| `plan` | Early exit (RFC ≈ `plan` or `tasks`) |
 | `issues` | `true` \| `false` | After tasks, emit GitHub issues and stop |
 | `mode` | `full` \| `test-fix` | `test-fix` = implement + pytest retry + confidence |
+| `model_profile` | `lean` \| `balanced` \| `frontier` | Cost/reliability intent (default `balanced`) |
 | `transfer_only` | on `sdd-remote` | Skip laptop phases; handoff only |
 
 ```bash
 specify workflow run sdd -i spec="..." -i integration=cursor-agent \
-  -i scope=full -i stop_at=confidence -i issues=false -i mode=full
+  -i scope=full -i stop_at=confidence -i issues=false -i mode=full \
+  -i model_profile=balanced
 
-specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
+specify workflow run sdd-remote -i spec="..." -i remote_phase=implement \
+  -i interval=600 -i model_profile=lean
 ```
 
 Registered workflows are `sdd`, `sdd-remote`, and upstream `speckit`.
@@ -85,13 +84,31 @@ Constitution: `.specify/memory/constitution.md`. Mac mini handoff setup: [`.curs
 
 ```
 Start SDD: <what and why — no tech stack yet>
+Start SDD: <what and why>. Use balanced.
 Continue SDD
+Continue SDD using frontier.
+Show SDD profile.
+Explain current SDD routing.
 Revise spec: <feedback>
 compact
 Stop SDD; switch to normal fix mode for <narrow bug>
 ```
 
-Optional: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`, `test-fix mode`.
+Optional: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`,
+`test-fix mode`, `Use lean|balanced|frontier`.
+
+### Model profiles
+
+| Profile | When to use |
+|---------|-------------|
+| `lean` | Cheap clarify/tasks-heavy exploration |
+| `balanced` | Default (evaluated ctl default; repo policy) |
+| `frontier` | Highest correctness priority |
+
+Choose a **profile**, not individual model IDs. Precedence: chat/CLI session →
+feature pin → `.specify/orchestrator.json` → ctl default. Mid-feature switches
+need an explicit confirmation. Full matrix lives in
+`~/.cursor/sdd-orchestrator-ctl/phase-models.json` (do not duplicate here).
 
 ---
 

@@ -26,7 +26,22 @@ orchestrator invokes — not a separate front door.
 Aliases that mean the same: `Spec this feature: …`, `Continue SDD on branch …`.
 
 Optional natural-language flags: `scope=api`, `stop at plan`, `emit issues`,
-`remote after tasks`, `test-fix mode`.
+`remote after tasks`, `test-fix mode`, `Use lean|balanced|frontier`.
+
+Profile helpers:
+
+```text
+Start SDD: <what/why>. Use balanced.
+Continue SDD using frontier.
+Show SDD profile.
+Explain current SDD routing.
+```
+
+Profiles are the normal cost/reliability choice (`lean` / `balanced` /
+`frontier`). Reject raw model-name overrides in chat; recommend a profile.
+Repo default lives in `.specify/orchestrator.json` → `model_profile`
+(currently `balanced`, the evaluated ctl default). Mid-feature profile switches
+require explicit confirmation and are runlogged via the feature pin.
 
 ## Procedure (every chat turn)
 
@@ -53,10 +68,11 @@ Headless twin of Continue: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`
 ```bash
 specify workflow run sdd -i spec="..." -i integration=cursor-agent \
   -i scope=full|api-only|frontend-only \
-  -i stop_at=confidence|tasks|plan -i issues=false -i mode=full|test-fix
+  -i stop_at=confidence|tasks|plan -i issues=false -i mode=full|test-fix \
+  -i model_profile=balanced
 
 specify workflow run sdd-remote -i spec="..." -i remote_phase=implement \
-  -i interval=600
+  -i interval=600 -i model_profile=lean
 # transfer only: -i transfer_only=true
 ```
 

@@ -8,14 +8,20 @@ Passing phases **auto-continue**. Failures repair up to the configured cap, then
 
 ```
 Start SDD: <what and why — no tech stack yet>
+Start SDD: <what and why>. Use balanced.
 Continue SDD
+Continue SDD using frontier.
+Show SDD profile.
+Explain current SDD routing.
 I've reviewed spec.md — proceed to plan
 Revise spec: <feedback>
 compact
 Stop SDD; switch to normal fix mode for <narrow bug>
 ```
 
-Optional natural-language flags: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`, `test-fix mode`.
+Optional natural-language flags: `scope=api`, `stop at plan`, `emit issues`,
+`remote after tasks`, `test-fix mode`, `Use lean|balanced|frontier`.
+Choose a **profile**, not individual model IDs (see [orchestrator.md](./orchestrator.md)).
 
 Flow: **`sdd-entry` → `sdd-orchestrator` (`auto_chain`) → `speckit-*` worker** · visible Task subagents · `sdd-ctl` for plan/hooks/record/report.
 
@@ -28,7 +34,8 @@ specify workflow list          # expect sdd + sdd-remote (+ upstream speckit)
 
 # Full local cycle
 specify workflow run sdd -i spec="..." -i integration=cursor-agent \
-  -i scope=full -i stop_at=confidence -i issues=false -i mode=full
+  -i scope=full -i stop_at=confidence -i issues=false -i mode=full \
+  -i model_profile=balanced
 
 # Stop early (RFC-style)
 specify workflow run sdd -i spec="..." -i stop_at=plan

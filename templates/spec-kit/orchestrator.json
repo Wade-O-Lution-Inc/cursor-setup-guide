@@ -1,5 +1,6 @@
 {
   "gate_mode": "automatic",
+  "model_profile": "balanced",
   "allow_repo_commands": true,
   "implement_hooks": [
     "uv run ruff check",

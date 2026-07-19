@@ -33,12 +33,27 @@ Machine bootstrap: [../day1-setup.md](../day1-setup.md) · [../global-env.md](..
 
 Anti-patterns: pasting chat history into Tasks; worker self-judging; worker writing `phase-exits.md`; skipping D-hooks.
 
+## Model profiles
+
+Canonical IDs: `lean`, `balanced`, `frontier` (plus `legacy` baseline).
+
+| Profile | Intent |
+|---------|--------|
+| `lean` | Minimize tokens; keep independent semantic checks |
+| `balanced` | Evaluated default — intelligence per dollar |
+| `frontier` | Minimize correctness risk; cost secondary |
+
+Precedence: chat/CLI session → feature pin → `.specify/orchestrator.json`
+`model_profile` → ctl `default_model_profile`. Normal users choose a **profile**,
+not individual model IDs. The live matrix is only in ctl `phase-models.json`.
+
 ## `sdd-ctl` verbs
 
 ```bash
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase \
   --repo-root /repo --feature-dir /repo/specs/NNN-feature --phase plan \
   --feature-description "what and why"   # required for new specify
+  # optional: --model-profile balanced --human
 
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl hooks \
   --repo-root /repo --feature-dir /repo/specs/NNN-feature --phase plan
@@ -48,6 +63,7 @@ python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl record \
 
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl report \
   --repo-root /repo --feature-dir /repo/specs/NNN-feature
+  # optional: --json --profile balanced --compare-profiles
 ```
 
 `sdd-ctl` uses only the Python stdlib, makes **no** LLM/API calls, and needs no API key.
@@ -72,6 +88,7 @@ Optional `.specify/orchestrator.json` deep-merges over ctl defaults:
 ```json
 {
   "gate_mode": "automatic",
+  "model_profile": "balanced",
   "allow_repo_commands": true,
   "implement_hooks": [
     "uv run ruff check",
@@ -122,10 +139,13 @@ Requires `CURSOR_API_KEY` for non-mock runs. Prefer the ctl venv (`cursor-sdk`);
 
 | Knob | Where |
 |------|-------|
-| Models, repair_cap, swarm roles, shadow_rate | ctl `phase-models.json` (+ optional repo `phases` overrides) |
+| Cost/reliability profile | `.specify/orchestrator.json` → `model_profile` (`lean`/`balanced`/`frontier`) |
+| Role matrix / default profile | ctl `phase-models.json` `model_profiles` (+ evaluated `default_model_profile`) |
+| Advanced per-phase model overrides | optional repo `phases.*.worker_model` (after profile) |
+| repair_cap, swarm roles, shadow_rate | ctl `phase-models.json` (+ optional repo `phases` overrides) |
 | Gate auto vs pause-after-pass | `.specify/orchestrator.json` → `gate_mode` |
 | Implement lint/test commands | `.specify/orchestrator.json` → `implement_hooks` + `allow_repo_commands` |
 | Checklists / prompts | ctl `checklists/`, `prompts/` |
-| Promotion eval criteria | ctl `promotion-thresholds.json` |
+| Promotion eval criteria | ctl `promotion-thresholds.json` + `eval/model-routing/` |
 
 Next: [phase-model.md](./phase-model.md) · [managed-vs-custom.md](./managed-vs-custom.md)

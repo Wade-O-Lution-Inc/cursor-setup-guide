@@ -14,7 +14,8 @@ Each named phase invokes the orchestrator in **`single_phase`** mode; this workf
 
 1. Orchestrator **specify** (optional Spec Kit human `review-spec` if present in YAML)  
 2. **clarify** → **plan** (optional `review-plan`)  
-3. If `stop_at=plan` → end report (`sdd-ctl report`)  
+3. Optional `model_profile=lean|balanced|frontier` (session override; default from repo policy / ctl)  
+4. If `stop_at=plan` → end report (`sdd-ctl report`)  
 4. Else **tasks** → **analyze** (optional `review-tasks`)  
 5. If `issues=true` → `speckit.taskstoissues` → stop  
 6. Else if `stop_at=tasks` → end report  
