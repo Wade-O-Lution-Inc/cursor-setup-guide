@@ -40,6 +40,12 @@ terminal phase, `sdd-ctl report` produces the end report.
 | `model_profile` | `lean` \| `balanced` \| `frontier` | Cost/reliability intent (default `balanced`) |
 | `transfer_only` | on `sdd-remote` | Skip laptop phases; handoff only |
 
+`persona_comms` (in `.specify/orchestrator.json`) is independent of
+`model_profile`. Channels — dissent resolution, repair dialogue, and
+cross-phase carry-forward — use the same caps under lean / balanced /
+frontier. Ctl defaults are fail-closed off; enable per repo. Transcripts:
+`.specify/orchestrator-runs/<feature>.messages.jsonl`.
+
 ```bash
 specify workflow run sdd -i spec="..." -i integration=cursor-agent \
   -i scope=full -i stop_at=confidence -i issues=false -i mode=full \
@@ -56,10 +62,10 @@ Registered workflows are `sdd`, `sdd-remote`, and upstream `speckit`.
 ## One-time setup
 
 ```bash
-uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.13.0
 gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
-mkdir -p ~/.cursor/skills
-ln -sfn ~/.cursor/sdd-orchestrator-ctl/skills/sdd-orchestrator ~/.cursor/skills/sdd-orchestrator
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
 specify integration status
 specify workflow list   # expect sdd + sdd-remote + speckit
 ```
@@ -73,8 +79,10 @@ uv venv .venv
 uv pip install --python .venv/bin/python cursor-sdk
 ```
 
-Update the shared engine with
-`git -C ~/.cursor/sdd-orchestrator-ctl pull --ff-only`.
+**Keep every machine on `origin/main`.** Prefer `sdd-ctl sync` (not a bare
+`git pull` on a random branch). `plan-phase` fails closed on install drift.
+Adopting SDD in another product repo:
+[sdd-orchestrator ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md).
 
 Constitution: `.specify/memory/constitution.md`. Mac mini handoff setup: [`.cursor/skills/remote-agent-handoff/SKILL.md`](../../.cursor/skills/remote-agent-handoff/SKILL.md) (`CURSOR_API_KEY` in Doppler `mac_mini`).
 

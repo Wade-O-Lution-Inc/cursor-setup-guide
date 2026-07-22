@@ -50,18 +50,25 @@ require explicit confirmation and are runlogged via the feature pin.
    - On branch `NNN-*` or with an existing feature dir → use it.
    - Start SDD with no dir yet → FEATURE_DIR is created by the specify worker.
 3. Resolve next **PHASE** (one of: specify → clarify → plan → tasks → analyze →
-   implement → confidence). Do not skip clarify before plan; do not implement
-   without `tasks.md`. Honor stop flags (`stop at plan` / `stop at tasks`).
-4. **Must** read and follow `~/.cursor/skills/sdd-orchestrator/SKILL.md` for
+   implement → **converge** → confidence). Do not skip clarify before plan; do
+   not implement without `tasks.md`. Honor stop flags (`stop at plan` /
+   `stop at tasks`).
+4. Ensure the global ctl is on clean `origin/main` (orchestrator skill runs
+   `sdd-ctl sync` + `preflight`; `plan-phase` fails closed on drift).
+5. **Must** read and follow `~/.cursor/skills/sdd-orchestrator/SKILL.md` for
    that PHASE (FEATURE_DIR + PHASE) in `auto_chain` mode. Preserve the original
    Start SDD what/why as `--feature-description` for specify. Do **not** call
    `speckit-*` as the top-level skill.
-5. Passing phases auto-continue. Stop only when `sdd-ctl` returns `stop`
+6. Passing phases auto-continue. Stop only when `sdd-ctl` returns `stop`
    (repair cap exhausted), the requested `stop_at` boundary is reached, or the
    repository opts into `gate_mode: interactive`.
 
+`persona_comms` (if present in `.specify/orchestrator.json`) is independent of
+`model_profile` — same channel caps under lean / balanced / frontier.
+
 Headless twin of Continue: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`
-(see `~/.cursor/sdd-orchestrator-ctl/README.md`).
+(see `~/.cursor/sdd-orchestrator-ctl/README.md` and
+`docs/ADOPTION.md` in that repo for multi-repo enablement).
 
 ## CLI — two workflows
 

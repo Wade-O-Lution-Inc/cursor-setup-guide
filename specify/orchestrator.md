@@ -2,7 +2,7 @@
 
 Every Spec Kit phase transition goes through the **global** multi-model orchestrator. Project workflows and `sdd-entry` only *invoke* it; they do not replace it.
 
-**Runtime SSOT:** [Wade-O-Lution-Inc/sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) cloned at `~/.cursor/sdd-orchestrator-ctl`. Do not copy a private tree from another laptop as the primary install — clone and `git pull`.
+**Runtime SSOT:** [Wade-O-Lution-Inc/sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) cloned at `~/.cursor/sdd-orchestrator-ctl`. One install serves every Spec Kit product repo. Always track **`origin/main`** via `sdd-ctl sync` (not a bare `git pull` on a random branch).
 
 | Path | Location |
 |------|----------|
@@ -10,9 +10,18 @@ Every Spec Kit phase transition goes through the **global** multi-model orchestr
 | Control plane | `~/.cursor/sdd-orchestrator-ctl/` |
 | Deterministic CLI | `~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl` |
 | Headless SDK CLI | `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run` |
+| Any-repo adoption | ctl [docs/ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md) |
 | Operator README | ctl `README.md` / GitHub README |
 
 Machine bootstrap: [../day1-setup.md](../day1-setup.md) · [../global-env.md](../global-env.md).
+
+```bash
+# Before Start/Continue SDD (skill also runs this)
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
+```
+
+`plan-phase` fails closed if the install is dirty, not on `main`, or not identical to `origin/main`.
 
 ## Driver modes
 
@@ -23,15 +32,17 @@ Machine bootstrap: [../day1-setup.md](../day1-setup.md) · [../global-env.md](..
 
 ## Loop (Task path)
 
+0. `sdd-ctl sync` + `preflight` — install must be clean `origin/main`  
 1. `sdd-ctl plan-phase` — resolve policy, render prompts, emit worker / judge / expert / advocate / shadow requests  
 2. **Worker Task** — model from plan; follows matching `speckit-*` skill  
 3. `sdd-ctl hooks` — D-hooks + optional implement commands (**no LLM**)  
 4. **Judge or swarm** — ordinary judge, or independent experts + merge (analyze / confidence); optional advocate; optional shadow sample  
-5. `sdd-ctl record` — sole writer of `phase-exits.md` + JSONL under `.specify/orchestrator-runs/`  
-6. Obey action: `continue` | `repair` | `stop` | `pause` (interactive only)  
-7. After confidence: `sdd-ctl report`
+5. Optional **persona_comms** rounds (`relay` / schema-validated messages) when repo policy enables them  
+6. `sdd-ctl record` — sole writer of `phase-exits.md` + JSONL under `.specify/orchestrator-runs/`  
+7. Obey action: `continue` | `repair` | `stop` | `pause` (interactive only)  
+8. After confidence: `sdd-ctl report`
 
-Anti-patterns: pasting chat history into Tasks; worker self-judging; worker writing `phase-exits.md`; skipping D-hooks.
+Anti-patterns: pasting chat history into Tasks; worker self-judging; worker writing `phase-exits.md`; skipping D-hooks; leaving ctl on a feature branch.
 
 ## Model profiles
 
@@ -50,6 +61,9 @@ not individual model IDs. The live matrix is only in ctl `phase-models.json`.
 ## `sdd-ctl` verbs
 
 ```bash
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
+
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase \
   --repo-root /repo --feature-dir /repo/specs/NNN-feature --phase plan \
   --feature-description "what and why"   # required for new specify
@@ -64,6 +78,10 @@ python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl record \
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl report \
   --repo-root /repo --feature-dir /repo/specs/NNN-feature
   # optional: --json --profile balanced --compare-profiles
+
+# persona_comms (when enabled in repo policy)
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl messages \
+  --repo-root /repo --feature-dir /repo/specs/NNN-feature
 ```
 
 `sdd-ctl` uses only the Python stdlib, makes **no** LLM/API calls, and needs no API key.
@@ -93,11 +111,30 @@ Optional `.specify/orchestrator.json` deep-merges over ctl defaults:
   "implement_hooks": [
     "uv run ruff check",
     "doppler run -- uv run python -m pytest tests/ -x -q"
-  ]
+  ],
+  "persona_comms": {
+    "dissent_resolution": { "enabled": true, "dissent_rounds": 1 },
+    "repair_dialogue": { "enabled": true, "repair_questions": 1 },
+    "carry_forward": { "enabled": true, "phases": ["analyze", "converge"] }
+  }
 }
 ```
 
 `implement_hooks` run only when `allow_repo_commands: true` is set in that same file (explicit trust boundary). Template: [../templates/spec-kit/orchestrator.json](../templates/spec-kit/orchestrator.json).
+
+### `persona_comms` (portable, opt-in)
+
+Independent of `model_profile`. Ctl defaults are fail-closed off; each product
+repo opts in. Channels:
+
+| Channel | Role |
+|---------|------|
+| Dissent resolution | Bounded challenge→response after swarm experts disagree |
+| Repair dialogue | One clarifying Q before a rewrite |
+| Carry-forward | Typed findings → next phase via `{{CARRY_FORWARD}}` (not chat history) |
+
+Transcripts: `.specify/orchestrator-runs/<feature>.messages.jsonl`. Same caps
+under lean / balanced / frontier / legacy.
 
 ## Swarms, advocate, shadow
 
@@ -140,6 +177,7 @@ Requires `CURSOR_API_KEY` for non-mock runs. Prefer the ctl venv (`cursor-sdk`);
 | Knob | Where |
 |------|-------|
 | Cost/reliability profile | `.specify/orchestrator.json` → `model_profile` (`lean`/`balanced`/`frontier`) |
+| Persona channels | `.specify/orchestrator.json` → `persona_comms` (orthogonal to profile) |
 | Role matrix / default profile | ctl `phase-models.json` `model_profiles` (+ evaluated `default_model_profile`) |
 | Advanced per-phase model overrides | optional repo `phases.*.worker_model` (after profile) |
 | repair_cap, swarm roles, shadow_rate | ctl `phase-models.json` (+ optional repo `phases` overrides) |
@@ -147,5 +185,6 @@ Requires `CURSOR_API_KEY` for non-mock runs. Prefer the ctl venv (`cursor-sdk`);
 | Implement lint/test commands | `.specify/orchestrator.json` → `implement_hooks` + `allow_repo_commands` |
 | Checklists / prompts | ctl `checklists/`, `prompts/` |
 | Promotion eval criteria | ctl `promotion-thresholds.json` + `eval/model-routing/` |
+| Engine version on machine | `sdd-ctl sync` → clean `origin/main` |
 
 Next: [phase-model.md](./phase-model.md) · [managed-vs-custom.md](./managed-vs-custom.md)

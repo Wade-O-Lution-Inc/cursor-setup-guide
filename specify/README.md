@@ -1,6 +1,6 @@
 # Specify Workflow & Customizations
 
-Canonical documentation for how Wade-O-Lution uses GitHub [Spec Kit](https://github.com/github/spec-kit) (`specify` CLI v0.10.2) — what upstream gives you, what we customized, and what you can still change.
+Canonical documentation for how Wade-O-Lution uses GitHub [Spec Kit](https://github.com/github/spec-kit) (`specify` CLI v0.13.0) — what upstream gives you, what we customized, and what you can still change.
 
 | Source of truth | Link |
 |-----------------|------|

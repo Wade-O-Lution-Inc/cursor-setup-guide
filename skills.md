@@ -212,7 +212,7 @@ Add one **custom bridge skill** ([templates/skills/sdd-entry/SKILL.md](templates
 - Resolves `FEATURE_DIR` + next `PHASE`
 - **Must** run `~/.cursor/skills/sdd-orchestrator/` in `auto_chain` — never call bare `speckit-*` as the top-level skill
 
-**Global control plane:** `sdd-orchestrator` (Task path) + `~/.cursor/sdd-orchestrator-ctl/` (`bin/sdd-ctl` deterministic verbs; `bin/sdd-run` for headless ranges). Clone from [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator).
+**Global control plane:** `sdd-orchestrator` (Task path) + `~/.cursor/sdd-orchestrator-ctl/` (`bin/sdd-ctl` deterministic verbs including `sync` / `preflight` / `relay`; `bin/sdd-run` for headless ranges). Clone from [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator); keep on `origin/main` via `sdd-ctl sync`. Any-repo adoption: ctl `docs/ADOPTION.md`.
 
 CLI: `specify workflow run sdd` / `sdd-remote` only (deprecated aliases removed from the gold registry).
 

@@ -47,7 +47,7 @@ Usual causes: missing `CURSOR_API_KEY` in Doppler `mac_mini`; handoff **Resume P
 - Runlog: `.specify/orchestrator-runs/*.jsonl` in the **product repo** (gitignored)  
 - Confirm symlink `~/.cursor/skills/sdd-orchestrator` → ctl skill  
 - Confirm ctl exists: `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help`  
-- Update ctl: `git -C ~/.cursor/sdd-orchestrator-ctl pull --ff-only`
+- Update ctl: `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync` then `preflight` (must be clean `origin/main`)
 
 ## `sdd-ctl record` returns exit 3
 

@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart TB
-  subgraph upstream [Upstream Spec Kit 0.10.2]
+  subgraph upstream [Upstream Spec Kit 0.13.0]
     CLI["specify CLI"]
     Init[".specify/ scripts + templates"]
     Skills["Managed speckit-* skills"]

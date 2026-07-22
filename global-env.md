@@ -123,8 +123,8 @@ Install:
 
 ```bash
 gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
-ln -sfn ~/.cursor/sdd-orchestrator-ctl/skills/sdd-orchestrator ~/.cursor/skills/sdd-orchestrator
-git -C ~/.cursor/sdd-orchestrator-ctl pull --ff-only   # updates
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync      # main + skill symlink
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight # fails closed on drift
 ```
 
 CLI in repos: `specify workflow run sdd` / `sdd-remote` — [specify/workflows.md](./specify/workflows.md).
@@ -144,10 +144,10 @@ Prefer the checklist in **[day1-setup.md](./day1-setup.md)**. Short form:
 1. Copy [templates/global/hooks.json](./templates/global/hooks.json) → `~/.cursor/hooks.json`
 2. Copy [templates/global/hooks/*.sh](./templates/global/hooks/) → `~/.cursor/hooks/` and `chmod +x`
 3. Copy [templates/global/rules/*.mdc](./templates/global/rules/) → `~/.cursor/rules/`
-4. Clone [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) → `~/.cursor/sdd-orchestrator-ctl` and symlink the skill
-5. Install Spec Kit 0.10.2; optional pointer stubs from meeting_notes
+4. Clone [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) → `~/.cursor/sdd-orchestrator-ctl` and run `sdd-ctl sync` + `preflight`
+5. Install Spec Kit 0.13.0; optional pointer stubs from meeting_notes
 6. Run `bash ~/.cursor/hooks/workspace-skill-router.test.sh` if present
-7. Smoke: `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help`
+7. Smoke: `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight` then `plan-phase --help`
 
 ---
 
