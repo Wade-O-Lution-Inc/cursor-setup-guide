@@ -98,8 +98,46 @@ Or the Notion workspace plugin:
 
 Plugin MCP servers are managed by Cursor; you toggle them in `settings.json`.
 
+## IntegrityKB Company MCP (team)
+
+Read-only company/customer context for FE + sales/PM. Full guide: **[company-mcp-cursor-guide.md](./company-mcp-cursor-guide.md)**.  
+Agent skill template: [templates/skills/company-mcp/](./templates/skills/company-mcp/).
+
+### Team account (preferred)
+
+1. Doppler: `API_SECRET_KEY` for the target env (`stg` / `prd`).
+2. Cursor Dashboard → **Integrations & MCP** → add remote server:
+   - **URL:** `https://web-staging-56c0.up.railway.app/mcp-company` (public; **not** lab)
+   - **Header:** `Authorization: Bearer <API_SECRET_KEY>`
+3. **Add to Team Marketplace** so IDE / CLI can install it.
+4. Teammates: Customize → MCPs → enable (green).
+
+`kb.lab.integrityus.ai` is Tailscale + internal TLS — Team/Cloud Agents get **fetch failed**. Lab is Desktop-only.
+
+### Local / repo override
+
+```json
+{
+  "mcpServers": {
+    "integrity-kb-company": {
+      "url": "https://web-staging-56c0.up.railway.app/mcp-company",
+      "headers": {
+        "Authorization": "Bearer ${env:INTEGRITY_KB_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+`INTEGRITY_KB_API_KEY` is a **client alias** — value must equal Doppler `API_SECRET_KEY`. Do not add a separate Doppler secret with that name.
+
+### Agent procedure
+
+Do not freestyle company facts. Skill + router encode: resolve → `get_company_context_pack` → cite. Keywords route via `workspace-skill-router.sh` → `meeting_notes_workflow/.cursor/skills/company-mcp/`.
+
 ## Security Notes
 
 - `mcp.json` should only contain `localhost` URLs or URLs that don't embed credentials
 - If an MCP server requires authentication, it should use environment variables or OAuth — never inline tokens in `mcp.json`
 - The file is safe to commit to git as long as it contains no secrets
+- Team MCP Bearer secrets live in the Cursor dashboard, not in git

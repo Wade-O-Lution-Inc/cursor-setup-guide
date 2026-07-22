@@ -226,6 +226,19 @@ See **[specify/](./specify/)** for the full Spec Kit story. Summary:
 
 **CLI:** `specify workflow run sdd` / `sdd-remote` — [specify/workflows.md](./specify/workflows.md).
 
+## Company MCP skill (IntegrityKB)
+
+Pack-first, resolve → cite procedure for customer/company context in Cursor.
+
+| Artifact | Path |
+|----------|------|
+| Canonical (gold) | `meeting_notes_workflow/.cursor/skills/company-mcp/` |
+| Template (this repo) | [templates/skills/company-mcp/](templates/skills/company-mcp/) |
+| Human guide | [company-mcp-cursor-guide.md](./company-mcp-cursor-guide.md) |
+| Auto-routing | `workspace-skill-router.sh` keywords → `company-mcp` |
+
+Copy the template into a product repo (or use the FE pointer skill). Prefer Company MCP over ops `/mcp` for customer UI and briefings. Team auth / URL: [mcp.md](./mcp.md#integritykb-company-mcp-team).
+
 ## When to Create a New Skill
 
 Create a skill when you notice:
