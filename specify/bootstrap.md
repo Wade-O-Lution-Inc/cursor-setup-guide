@@ -11,11 +11,10 @@ Day-1 checklist (machine): [../day1-setup.md](../day1-setup.md).
 1. Spec Kit CLI + orchestrator clone + global harness — follow [../day1-setup.md](../day1-setup.md).
 
 ```bash
-uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.13.0
 gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
-mkdir -p ~/.cursor/skills
-ln -sfn ~/.cursor/sdd-orchestrator-ctl/skills/sdd-orchestrator ~/.cursor/skills/sdd-orchestrator
-python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
 ```
 
 2. Global hooks/rules from [../templates/global/](../templates/global/) — [../global-env.md](../global-env.md).
@@ -24,7 +23,12 @@ python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help
 
 4. Verify router: `bash ~/.cursor/hooks/workspace-skill-router.test.sh` (if present).
 
-Do **not** treat “copy ctl from a known-good machine” as the primary path — clone GitHub, then `git pull` to update.
+Do **not** treat “copy ctl from a known-good machine” as the primary path — clone
+GitHub, then keep on **`origin/main` via `sdd-ctl sync`**. Never leave a feature
+branch checked out in `~/.cursor/sdd-orchestrator-ctl` on operator hosts.
+
+Portable architecture (shared engine vs per-repo policy):
+[sdd-orchestrator ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md).
 
 ## Repo
 
@@ -63,8 +67,13 @@ specify workflow info sdd
 ```bash
 cp "$GUIDE/spec-kit/orchestrator.json" .specify/orchestrator.json
 # Edit implement_hooks; keep allow_repo_commands: true only if you trust those commands
+# persona_comms is opt-in (template enables bounded dissent/repair/carry-forward)
+# Channels are independent of model_profile; ctl defaults are fail-closed off
 echo '.specify/orchestrator-runs/' >> .gitignore
 ```
+
+Gold reference policy (including `persona_comms`):
+`meeting_notes_workflow` → `.specify/orchestrator.json`.
 
 ### Org templates
 

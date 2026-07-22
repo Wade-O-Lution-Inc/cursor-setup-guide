@@ -4,6 +4,11 @@
   "allow_repo_commands": true,
   "implement_hooks": [
     "uv run ruff check",
-    "doppler run -- uv run python -m pytest tests/ -x -q"
-  ]
+    "uv run python -m pytest tests/ -x -q"
+  ],
+  "persona_comms": {
+    "dissent_resolution": { "enabled": true, "dissent_rounds": 1 },
+    "repair_dialogue": { "enabled": true, "repair_questions": 1 },
+    "carry_forward": { "enabled": true, "phases": ["analyze", "converge"] }
+  }
 }

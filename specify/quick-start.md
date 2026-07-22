@@ -23,7 +23,15 @@ Optional natural-language flags: `scope=api`, `stop at plan`, `emit issues`,
 `remote after tasks`, `test-fix mode`, `Use lean|balanced|frontier`.
 Choose a **profile**, not individual model IDs (see [orchestrator.md](./orchestrator.md)).
 
-Flow: **`sdd-entry` → `sdd-orchestrator` (`auto_chain`) → `speckit-*` worker** · visible Task subagents · `sdd-ctl` for plan/hooks/record/report.
+Flow: **`sdd-entry` → `sdd-orchestrator` (`auto_chain`) → `speckit-*` worker** ·
+visible Task subagents · `sdd-ctl` for sync/preflight/plan/hooks/record/report
+(+ optional `persona_comms` relay). Phase order includes **converge** before
+confidence.
+
+Before first Start SDD on a machine: `sdd-ctl sync` && `sdd-ctl preflight`
+([day1-setup.md](../day1-setup.md)). Other teams / other repos:
+[bootstrap.md](./bootstrap.md) ·
+[ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md).
 
 ## CLI
 

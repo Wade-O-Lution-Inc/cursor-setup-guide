@@ -48,7 +48,9 @@ Without that, `scripts/remote_agent_loop.sh` fails closed for `sdd-implement` / 
 
 Runtime on mini (gitignored): `.cursor/remote-agent.pid`, `.cursor/remote-agent-state.json`, `.cursor/session-handoff.md`, `logs/remote-agent.log`.
 
-Mini also needs `~/.cursor/sdd-orchestrator-ctl` (clone of [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator)) and a working self-hosted Actions runner for pipeline Mac mini gates.
+Mini also needs `~/.cursor/sdd-orchestrator-ctl` (clone of [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator))
+on clean **`origin/main`** (`sdd-ctl sync` + `preflight` in bootstrap) and a
+working self-hosted Actions runner for pipeline Mac mini gates.
 
 ## Auth
 

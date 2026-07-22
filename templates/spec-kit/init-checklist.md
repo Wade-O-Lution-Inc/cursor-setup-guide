@@ -6,7 +6,8 @@
 
 ## 1. Machine (once)
 
-- [ ] Spec Kit 0.10.2
+- [ ] Spec Kit 0.13.0
+- [ ] `sdd-ctl sync` + `preflight` green (ctl on `origin/main`)
 - [ ] Clone `sdd-orchestrator` → `~/.cursor/sdd-orchestrator-ctl` + skill symlink
 - [ ] Global hooks/rules from `templates/global/`
 - [ ] `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help`

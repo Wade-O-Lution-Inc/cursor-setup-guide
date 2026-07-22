@@ -14,7 +14,8 @@ Also install (not vendored here):
 
 ```bash
 gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
-ln -sfn ~/.cursor/sdd-orchestrator-ctl/skills/sdd-orchestrator ~/.cursor/skills/sdd-orchestrator
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
 ```
 
 Plus ops skills (`lab-host-ssh`, …) and Spec Kit pointer stubs as needed.

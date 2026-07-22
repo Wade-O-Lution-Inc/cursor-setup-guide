@@ -22,27 +22,33 @@ Optional (lab / remote SDD):
 ## 1. Spec Kit CLI
 
 ```bash
-uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
-specify --version   # expect 0.10.2 family
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.13.0
+specify --version   # expect 0.13.0 family
 ```
 
 ---
 
-## 2. Portable SDD orchestrator
+## 2. Portable SDD orchestrator (one install, every repo)
+
+The engine is **machine-global**, not per product repo. Always track **`origin/main`**.
 
 ```bash
 gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
-mkdir -p ~/.cursor/skills
-ln -sfn ~/.cursor/sdd-orchestrator-ctl/skills/sdd-orchestrator ~/.cursor/skills/sdd-orchestrator
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
 ```
+
+`sync` checks out `main`, ff-only pulls `origin/main`, and refreshes
+`~/.cursor/skills/sdd-orchestrator`. Prefer this over a bare `git pull`.
+Never leave a feature branch checked out in the runtime clone — develop ctl
+changes in a separate worktree.
 
 Smoke (stdlib only — no API key):
 
 ```bash
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
 ```
-
-Update later: `git -C ~/.cursor/sdd-orchestrator-ctl pull --ff-only`.
 
 **Headless `sdd-run` only** (interactive Cursor UI does not need this):
 
@@ -51,6 +57,9 @@ cd ~/.cursor/sdd-orchestrator-ctl
 uv venv .venv
 uv pip install --python .venv/bin/python cursor-sdk
 ```
+
+Adoption for a new product repo: [specify/bootstrap.md](./specify/bootstrap.md) ·
+ctl [ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md).
 
 ---
 
@@ -96,6 +105,7 @@ Open a multi-root window that matches how you work (typical: `meeting_notes_work
 ## 6. Smoke
 
 - [ ] `specify workflow list` shows `sdd` and `sdd-remote`
+- [ ] `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync` then `preflight` both exit 0
 - [ ] `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl plan-phase --help` exits 0
 - [ ] A Cursor chat that triggers skill routing shows an agent message starting with `MANDATORY SKILL ROUTING`
 - [ ] (Optional) Doppler: `doppler configs` lists `dev` / `stg` / `prd` / `mac_mini` when linked

@@ -178,7 +178,7 @@ Some teams copy these markdown files into **`your-repo/.cursor/guide/`** (plus a
 **Canonical docs:** [specify/quick-start.md](./specify/quick-start.md) · [specify/workflows.md](./specify/workflows.md).
 
 ```bash
-uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.13.0
 specify workflow run sdd -i spec="..." -i integration=cursor-agent
 specify workflow run sdd -i spec="..." -i stop_at=plan
 specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600

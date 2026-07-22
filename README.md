@@ -10,7 +10,8 @@ This repo is **not** the runtime source of truth. It teaches adopters and ships 
 | Product-facing daily SDD guide | [meeting_notes_workflow `SDD_USER_GUIDE.md`](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/main/docs/agents/SDD_USER_GUIDE.md) | Portable template under `templates/spec-kit/` |
 | Working workflows / skills in a product repo | That product repo (gold: meeting_notes) | Synced starters — see [templates/SYNC.md](./templates/SYNC.md) |
 
-**CLI pin:** Spec Kit **`0.10.2`** (`uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.10.2`).
+**CLI pin:** Spec Kit **`0.13.0`** (`uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.13.0`).  
+**Orchestrator install:** always `sdd-ctl sync` → clean `origin/main` (see [day1-setup.md](./day1-setup.md)).
 
 ---
 
