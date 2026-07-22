@@ -9,6 +9,8 @@
 
 **This guide:** adoption copies under `templates/`. After any SDD harness PR lands in meeting_notes, resync the paths below and bump **Last synced**.
 
+After syncing `global/hooks/workspace-skill-router*.sh` into this repo, **tell the team to refresh** `~/.cursor/hooks/` on each machine — templates are not live. See [../global-env.md](../global-env.md#live-routing-is-per-machine-team-must-refresh).
+
 **Last synced:** 2026-07-22 (Company MCP skill + guide + skill-router company-mcp keywords)
 
 ## Path map

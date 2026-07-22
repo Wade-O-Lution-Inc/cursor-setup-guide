@@ -47,6 +47,37 @@ Every prompt runs a global `beforeSubmitPrompt` hook that injects an **agent_mes
 
 Repo-local `beforeSubmitPrompt` hooks (e.g. meeting_notes) may add repo-only suggestions; the global router is the cross-repo source of truth. Integrity_Lab may use a repo-local router for lab skills to avoid duplicate mandatory lists — see that repo’s orchestrator rule.
 
+### Live routing is per-machine (team must refresh)
+
+**Important for the team:** Cursor does **not** load auto-routing from this git repo at runtime. Live keyword → skill routing runs from each developer’s (or Cloud Agent VM’s) local copy:
+
+```text
+~/.cursor/hooks/workspace-skill-router.sh
+```
+
+Merging router updates into `cursor-setup-guide` (or `meeting_notes_workflow`) only updates the **templates**. Other machines keep the old router until someone copies the template onto that machine.
+
+After any PR that changes `templates/global/hooks/workspace-skill-router.sh` (or the test), each teammate should refresh their harness:
+
+```bash
+# From a clone of cursor-setup-guide on main (or the PR branch)
+GUIDE="$(pwd)"   # …/cursor-setup-guide
+
+cp "$GUIDE/templates/global/hooks/workspace-skill-router.sh" \
+   ~/.cursor/hooks/workspace-skill-router.sh
+cp "$GUIDE/templates/global/hooks/workspace-skill-router.test.sh" \
+   ~/.cursor/hooks/workspace-skill-router.test.sh
+cp "$GUIDE/templates/global/hooks/route-skills-before-prompt.sh" \
+   ~/.cursor/hooks/route-skills-before-prompt.sh
+chmod +x ~/.cursor/hooks/*.sh
+
+bash ~/.cursor/hooks/workspace-skill-router.test.sh
+```
+
+Smoke: in Cursor, ask for a “company context pack” — you should see `MANDATORY SKILL ROUTING` listing `meeting_notes_workflow/.cursor/skills/company-mcp/SKILL.md`.
+
+Cloud Agent VMs / new laptops: run the day-1 copy from [day1-setup.md](./day1-setup.md) §3 (same templates → `~/.cursor/hooks/`). Do not assume a teammate’s laptop update applies to yours.
+
 ---
 
 ## Always-on global rules

@@ -8,6 +8,8 @@ Copy onto a developer machine under `~/.cursor/`:
 | `hooks/*.sh` | `~/.cursor/hooks/` (`chmod +x`) |
 | `rules/*.mdc` | `~/.cursor/rules/` |
 
+**Live skill auto-routing** uses `~/.cursor/hooks/workspace-skill-router.sh` on that machine. Updating these templates in git does not change other laptops until they re-copy — see [../../global-env.md](../../global-env.md#live-routing-is-per-machine-team-must-refresh).
+
 Also install (not vendored here):
 
 ```bash

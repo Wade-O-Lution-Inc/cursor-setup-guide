@@ -133,7 +133,7 @@ Agent skill template: [templates/skills/company-mcp/](./templates/skills/company
 
 ### Agent procedure
 
-Do not freestyle company facts. Skill + router encode: resolve → `get_company_context_pack` → cite. Keywords route via `workspace-skill-router.sh` → `meeting_notes_workflow/.cursor/skills/company-mcp/`.
+Do not freestyle company facts. Skill + router encode: resolve → `get_company_context_pack` → cite. Keywords route via each machine’s `~/.cursor/hooks/workspace-skill-router.sh` → `meeting_notes_workflow/.cursor/skills/company-mcp/`. Templates in this repo are the distribution copy — teammates must refresh local hooks after router PRs ([global-env.md](./global-env.md#live-routing-is-per-machine-team-must-refresh)).
 
 ## Security Notes
 

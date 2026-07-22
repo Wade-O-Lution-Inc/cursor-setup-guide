@@ -235,9 +235,12 @@ Pack-first, resolve → cite procedure for customer/company context in Cursor.
 | Canonical (gold) | `meeting_notes_workflow/.cursor/skills/company-mcp/` |
 | Template (this repo) | [templates/skills/company-mcp/](templates/skills/company-mcp/) |
 | Human guide | [company-mcp-cursor-guide.md](./company-mcp-cursor-guide.md) |
-| Auto-routing | `workspace-skill-router.sh` keywords → `company-mcp` |
+| Auto-routing (live) | **Per-machine** `~/.cursor/hooks/workspace-skill-router.sh` → `company-mcp` |
+| Auto-routing (template) | [templates/global/hooks/workspace-skill-router.sh](templates/global/hooks/workspace-skill-router.sh) |
 
 Copy the template into a product repo (or use the FE pointer skill). Prefer Company MCP over ops `/mcp` for customer UI and briefings. Team auth / URL: [mcp.md](./mcp.md#integritykb-company-mcp-team).
+
+**Team:** after router keyword PRs merge, refresh `~/.cursor/hooks/` from the templates — git alone does not update live routing. See [global-env.md → Live routing is per-machine](./global-env.md#live-routing-is-per-machine-team-must-refresh).
 
 ## When to Create a New Skill
 
