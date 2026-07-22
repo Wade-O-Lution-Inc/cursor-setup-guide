@@ -113,6 +113,8 @@ Wade-O-Lution machines register a **global** (user-level) `beforeSubmitPrompt` h
 
 **Templates:** [templates/global/hooks/](templates/global/hooks/) and [templates/global/hooks.json](templates/global/hooks.json). Full behavior: [global-env.md](./global-env.md).
 
+**Team note — templates ≠ live routing.** Merging router changes into this repo updates `templates/global/hooks/` only. Each machine (and each Cloud Agent VM) must copy those files into `~/.cursor/hooks/` to pick up new keywords (e.g. Company MCP). Refresh steps: [global-env.md → Live routing is per-machine](./global-env.md#live-routing-is-per-machine-team-must-refresh).
+
 Repo hooks remain the place for **blocking** security (secrets, `--no-verify`, sensitive reads). Do not replace the security trio with the router.
 
 ## Session handoff pattern (compact / checkpoint)

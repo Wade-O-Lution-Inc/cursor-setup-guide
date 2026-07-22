@@ -43,6 +43,8 @@ If tools never appear: check Cursor **Settings → MCP** (or team plugin admin) 
 
 **Agent skill (auto-routed):** copy [templates/skills/company-mcp/](./templates/skills/company-mcp/) into the product repo (gold: `meeting_notes_workflow/.cursor/skills/company-mcp/`). FE repos can use the thin pointer [`fe-pointer.SKILL.md`](./templates/skills/company-mcp/fe-pointer.SKILL.md).
 
+**Auto-routing is per-machine.** Keyword routing for “context pack” / “customer context” runs from your local `~/.cursor/hooks/workspace-skill-router.sh`. Shipping the skill in git does **not** update teammates’ routers — each person (or Cloud Agent VM) must refresh hooks from this guide’s templates. Steps: [global-env.md → Live routing is per-machine](./global-env.md#live-routing-is-per-machine-team-must-refresh).
+
 Reference shape (local / personal override only): [meeting_notes `.cursor/mcp.json.example`](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow/blob/main/.cursor/mcp.json.example).
 
 ---

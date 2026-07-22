@@ -68,6 +68,8 @@ Copy from this guide’s [templates/global/](./templates/global/):
 chmod +x ~/.cursor/hooks/*.sh
 ```
 
+**This is the live auto-router.** Cursor reads `~/.cursor/hooks/workspace-skill-router.sh` on every prompt — not the template sitting in git. When the team merges router keyword updates (e.g. `company-mcp`), pull `cursor-setup-guide` and **re-copy** those hook files onto your machine (see [global-env.md → Live routing is per-machine](./global-env.md#live-routing-is-per-machine-team-must-refresh)).
+
 Details: [global-env.md](./global-env.md).
 
 ---

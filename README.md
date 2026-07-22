@@ -89,7 +89,7 @@ For multi-step features, continue with [specify/bootstrap.md](./specify/bootstra
 | [skills.md](./skills.md) | Skill anatomy; `speckit-*` vs `sdd-entry` vs orchestrator |
 | [hooks.md](./hooks.md) | Blocking trio + global skill router + compact handoff |
 | [scope.md](./scope.md) | Repo vs `~/.cursor/` + multi-repo ownership |
-| [global-env.md](./global-env.md) | Bootstrap a developer machine |
+| [global-env.md](./global-env.md) | Bootstrap a developer machine; **refresh `~/.cursor/hooks` after router PRs** |
 | [agents.md](./agents.md) | Cloud Agent `AGENTS.md` |
 | [mcp.md](./mcp.md) | MCP connections (incl. IntegrityKB Company MCP team auth) |
 | [company-mcp-cursor-guide.md](./company-mcp-cursor-guide.md) | Company MCP pack-first guide (FE / sales / PM) |
