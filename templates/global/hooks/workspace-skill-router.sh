@@ -409,6 +409,16 @@ route_prompt_keywords() {
       ;;
   esac
   case "$LOWER" in
+    *linear*|*kb-intake*|*work\ review*|*work-review*|*backlog\ groom*|*cycle\ planning*|*sprint\ planning*|*canonical\ project*|*linear\ asks*|*coding\ session*|*delegate\ to\ cursor*|*pi\ agent*|*pi\ env*)
+      add_repo_skill "meeting_notes_workflow" "linear-project-management"
+      ;;
+  esac
+  case "$LOWER" in
+    *company\ mcp*|*company-mcp*|*context\ pack*|*get_company_context_pack*|*ask_company_context*|*company\ dossier*|*customer\ context*|*who\ knows*|*who_knows*|*integritykb-company*|*integrity-kb-company*)
+      add_repo_skill "meeting_notes_workflow" "company-mcp"
+      ;;
+  esac
+  case "$LOWER" in
     *mac\ mini*|*mammoth*|*tailscale*|*alloy*|*caddy*|*phase-gate*|*phase1-gate*|*phase2-lab-gate*|*k3s\ lab*)
       # Integrity_Lab's own route-lab-skills-before-prompt.sh hook already
       # suggests repo-local Lab skills (relative paths) for these keywords;

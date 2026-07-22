@@ -41,7 +41,7 @@ Every prompt runs a global `beforeSubmitPrompt` hook that injects an **agent_mes
 |------|------|
 | `~/.cursor/hooks.json` | Registers `hooks/route-skills-before-prompt.sh` |
 | `route-skills-before-prompt.sh` | `exec` into the router |
-| `workspace-skill-router.sh` | Detects repo (`meeting_notes_workflow`, `Integrity_Lab`, `repo-index`, platform repos…) and prompt keywords; suggests repo + global skills |
+| `workspace-skill-router.sh` | Detects repo (`meeting_notes_workflow`, `Integrity_Lab`, `repo-index`, platform repos…) and prompt keywords; suggests repo + global skills (incl. `company-mcp` for context pack / customer context) |
 
 **Rule:** [skill-routing-mandate.mdc](./templates/global/rules/skill-routing-mandate.mdc) (`alwaysApply: true`) — agents must read every listed path before implementing.
 

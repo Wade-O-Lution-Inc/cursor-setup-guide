@@ -9,7 +9,7 @@
 
 **This guide:** adoption copies under `templates/`. After any SDD harness PR lands in meeting_notes, resync the paths below and bump **Last synced**.
 
-**Last synced:** 2026-07-19 (model_profile lean/balanced/frontier + evaluated default `balanced`)
+**Last synced:** 2026-07-22 (Company MCP skill + guide + skill-router company-mcp keywords)
 
 ## Path map
 
@@ -25,6 +25,10 @@
 | `skills/speckit-confidence/SKILL.md` | `.cursor/skills/speckit-confidence/SKILL.md` |
 | `skills/speckit-confidence-improve/SKILL.md` | `.cursor/skills/speckit-confidence-improve/SKILL.md` |
 | `skills/speckit-agent-context-update/SKILL.md` | `.cursor/skills/speckit-agent-context-update/SKILL.md` |
+| `skills/company-mcp/*` | `.cursor/skills/company-mcp/*` |
+| `../company-mcp-cursor-guide.md` (adoption copy) | `docs/getting-started/COMPANY_MCP_CURSOR_GUIDE.md` |
+| `global/hooks/workspace-skill-router.sh` | `~/.cursor/hooks/workspace-skill-router.sh` (machine gold; keep in sync) |
+| `global/hooks/workspace-skill-router.test.sh` | `~/.cursor/hooks/workspace-skill-router.test.sh` |
 
 Pedagogy docs under `specify/` and root `*.md` are **authored in this repo** (not byte-copied). Keep them aligned with gold behavior, but they may summarize rather than duplicate.
 
@@ -41,6 +45,14 @@ cp "$MNW/.specify/orchestrator.json" "$GUIDE/templates/spec-kit/orchestrator.jso
 cp "$MNW/docs/agents/SDD_USER_GUIDE.md" "$GUIDE/templates/spec-kit/sdd-user-guide.template.md"
 cp "$MNW/.cursor/skills/sdd-entry/SKILL.md" "$GUIDE/templates/skills/sdd-entry/SKILL.md"
 # …other skill rows as needed
+
+mkdir -p "$GUIDE/templates/skills/company-mcp"
+cp "$MNW/.cursor/skills/company-mcp/"* "$GUIDE/templates/skills/company-mcp/"
+cp "$MNW/docs/getting-started/COMPANY_MCP_CURSOR_GUIDE.md" "$GUIDE/company-mcp-cursor-guide.md"
+# Re-apply adoption-hub preface / absolute links in company-mcp-cursor-guide.md after copy.
+
+cp "${HOME}/.cursor/hooks/workspace-skill-router.sh" "$GUIDE/templates/global/hooks/workspace-skill-router.sh"
+cp "${HOME}/.cursor/hooks/workspace-skill-router.test.sh" "$GUIDE/templates/global/hooks/workspace-skill-router.test.sh"
 
 # Then edit Last synced date above and open a docs PR on cursor-setup-guide.
 ```

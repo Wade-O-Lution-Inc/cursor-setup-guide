@@ -62,4 +62,16 @@ assert_contains "$out" '.cursor/skills/browser-automation/SKILL.md' 'ops discove
 out="$(run_hook_in "${WADE_ROOT}/meeting_notes_workflow" 'how do I enable Notion MCP for this session')"
 assert_contains "$out" 'meeting_notes_workflow/.cursor/skills/notion-integration/SKILL.md' 'ops discovery: enable Notion MCP'
 
+# 9. Linear / backlog grooming -> repo linear-project-management
+out="$(run_hook_in "${WADE_ROOT}/meeting_notes_workflow" 'triage the Linear backlog and fix kb-intake duplicates')"
+assert_contains "$out" 'meeting_notes_workflow/.cursor/skills/linear-project-management/SKILL.md' 'ops discovery: Linear backlog triage'
+
+# 10. Company MCP / context pack -> repo company-mcp (also from FE workspaces)
+out="$(run_hook_in "${WADE_ROOT}/meeting_notes_workflow" 'get the company context pack for Aligned')"
+assert_contains "$out" 'meeting_notes_workflow/.cursor/skills/company-mcp/SKILL.md' 'ops discovery: company context pack'
+if [[ -d "${WADE_ROOT}/integrity-ts" ]]; then
+  out="$(run_hook_in "${WADE_ROOT}/integrity-ts" 'pull customer context pack for account UI')"
+  assert_contains "$out" 'meeting_notes_workflow/.cursor/skills/company-mcp/SKILL.md' 'FE workspace: company-mcp cross-repo'
+fi
+
 echo "workspace-skill-router.test: all fixtures passed"

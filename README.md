@@ -57,11 +57,13 @@ cursor-setup-guide/
 ├── global-env.md            # Machine ~/.cursor harness
 ├── scope.md                 # Project vs global + multi-repo map
 ├── rules.md / skills.md / hooks.md / agents.md / mcp.md
+├── company-mcp-cursor-guide.md  # IntegrityKB Company MCP (FE/sales/PM)
 ├── EXAMPLES.md              # Snippets (incl. specify + sdd-ctl)
 └── templates/               # Copy-paste starters (see SYNC.md)
     ├── spec-kit/            # sdd + sdd-remote YAMLs, policy example, …
     ├── global/              # Skill router + alwaysApply rules
     ├── skills/sdd-entry/
+    ├── skills/company-mcp/  # pack-first Company MCP skill
     └── rules/sdd-orchestrator-snippet.mdc
 ```
 
@@ -89,7 +91,8 @@ For multi-step features, continue with [specify/bootstrap.md](./specify/bootstra
 | [scope.md](./scope.md) | Repo vs `~/.cursor/` + multi-repo ownership |
 | [global-env.md](./global-env.md) | Bootstrap a developer machine |
 | [agents.md](./agents.md) | Cloud Agent `AGENTS.md` |
-| [mcp.md](./mcp.md) | MCP connections |
+| [mcp.md](./mcp.md) | MCP connections (incl. IntegrityKB Company MCP team auth) |
+| [company-mcp-cursor-guide.md](./company-mcp-cursor-guide.md) | Company MCP pack-first guide (FE / sales / PM) |
 | [EXAMPLES.md](./EXAMPLES.md) | Concrete JSON / CLI examples |
 | [templates/SYNC.md](./templates/SYNC.md) | How templates stay aligned with meeting_notes |
 
