@@ -16,8 +16,7 @@ Read-only company knowledge for Cursor via the **IntegrityKB-Company** MCP
 (`Integrity-kb-company` / `integrity-kb-company` / `user-integrity-kb-company`).
 Auth and URL live in Cursor Team MCP (or local `mcp.json`) — not in this skill.
 
-Human guide (gold): `meeting_notes_workflow/docs/getting-started/COMPANY_MCP_CURSOR_GUIDE.md`  
-Adoption-hub copy: `cursor-setup-guide/company-mcp-cursor-guide.md`  
+Human guide: `docs/getting-started/COMPANY_MCP_CURSOR_GUIDE.md`  
 FE install pointer: [fe-pointer.SKILL.md](fe-pointer.SKILL.md)
 
 **Do not freestyle company facts.** Resolve → retrieve cited evidence → then synthesize.
@@ -106,7 +105,6 @@ Prompt patterns → [prompt-patterns.md](prompt-patterns.md)
 
 ## Related
 
-- Guide (gold): `meeting_notes_workflow/docs/getting-started/COMPANY_MCP_CURSOR_GUIDE.md`
-- Guide (adoption hub): `cursor-setup-guide/company-mcp-cursor-guide.md`
+- Guide: `docs/getting-started/COMPANY_MCP_CURSOR_GUIDE.md`
 - Architecture: `docs/platform/ARCHITECTURE.md` (§ Company MCP)
 - Spec: `specs/084-kb-company-mcp/`

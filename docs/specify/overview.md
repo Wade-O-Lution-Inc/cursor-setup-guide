@@ -64,11 +64,11 @@ After `specify init . --integration cursor-agent --here --script sh`:
 
 | Layer | Customization |
 |-------|----------------|
-| Workflows | **`sdd`**, **`sdd-remote`** with flags — [templates/spec-kit/](../templates/spec-kit/) |
-| Chat entry | **`sdd-entry`** — [templates/skills/sdd-entry/](../templates/skills/sdd-entry/) |
+| Workflows | **`sdd`**, **`sdd-remote`** with flags — [templates/spec-kit/](../../templates/spec-kit/) |
+| Chat entry | **`sdd-entry`** — [templates/skills/sdd-entry/](../../templates/skills/sdd-entry/) |
 | Phase exits | Binary checklists; **orchestrator** sole writer of `phase-exits.md` |
 | Confidence | **`speckit-confidence`**, swarms + advocate via ctl, **`speckit-confidence-improve`** |
-| Repo policy | `.specify/orchestrator.json` — [orchestrator.json](../templates/spec-kit/orchestrator.json) |
+| Repo policy | `.specify/orchestrator.json` — [orchestrator.json](../../templates/spec-kit/orchestrator.json) |
 | Constitution | Compiled from `.cursor/rules/`; SDD quality gates |
 | Remote | `sdd-remote` + `remote-agent-handoff` + handoff scripts |
 | Global | **`sdd-orchestrator`** + **`sdd-ctl` / `sdd-run`** from GitHub |
@@ -81,4 +81,4 @@ After `specify init . --integration cursor-agent --here --script sh`:
 
 Cost / shadow / swarm knobs: see [orchestrator.md](./orchestrator.md) and the ctl README after `git pull`.
 
-Next: [quick-start.md](./quick-start.md) · [managed-vs-custom.md](./managed-vs-custom.md)
+Next: [bootstrap.md](./bootstrap.md) (adopt once) · [quick-start.md](./quick-start.md) (daily) · [phase-model.md](./phase-model.md)

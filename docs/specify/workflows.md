@@ -1,6 +1,6 @@
 # Workflows reference
 
-Definitions live in the consuming repo under `.specify/workflows/<id>/workflow.yml`. Org templates: [../templates/spec-kit/sdd-workflow.yml](../templates/spec-kit/sdd-workflow.yml), [sdd-remote-workflow.yml](../templates/spec-kit/sdd-remote-workflow.yml).
+Definitions live in the consuming repo under `.specify/workflows/<id>/workflow.yml`. Org templates: [../templates/spec-kit/sdd-workflow.yml](../../templates/spec-kit/sdd-workflow.yml), [sdd-remote-workflow.yml](../../templates/spec-kit/sdd-remote-workflow.yml).
 
 Registered workflows in the gold repo: **`sdd`**, **`sdd-remote`**, plus upstream **`speckit`** (undocumented for daily use).
 
@@ -52,7 +52,7 @@ Installed by `specify init`. Four phases, no clarify/analyze/confidence, no orch
 
 ## Deprecated aliases (migration only)
 
-Removed from the meeting_notes registry. Prefer flags on `sdd` / `sdd-remote` — [deprecated-aliases.md](../templates/spec-kit/deprecated-aliases.md) · [quick-start.md](./quick-start.md).
+Removed from the meeting_notes registry. Prefer flags on `sdd` / `sdd-remote` — [deprecated-aliases.md](../../templates/spec-kit/deprecated-aliases.md) · [quick-start.md](./quick-start.md).
 
 ## Run state
 

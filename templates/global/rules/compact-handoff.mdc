@@ -1,0 +1,44 @@
+---
+description: Use when the user asks to compact, checkpoint, handoff, resume, summarize progress, or prepare the next session.
+alwaysApply: false
+---
+
+# Compact Handoff
+
+Generate a compact, continuation-focused session handoff. For CLI/Desktop bridge and plan capture, read `~/.cursor/skills/session-handoff/SKILL.md`.
+
+## Trigger phrases
+
+compact · compact handoff · checkpoint · create handoff · resume packet · summarize progress · prep next session · handoff · continue later
+
+## Behavior
+
+1. Read `.cursor/auto-context.md` in each active repo if it exists.
+2. Inspect git status/diff per repo when needed.
+3. Preserve task intent, completed work, blockers, verification, and **Next Exact Steps**.
+4. **Multi-repo:** separate subsection per repo (branch, files, commands, open checks).
+5. On request, write `.cursor/session-handoff.md` in the repo being handed off.
+6. Point CLI users at `cursor agent --workspace <repo> "Read .cursor/session-handoff.md …"` (see session-handoff skill).
+
+## Required output format
+
+```markdown
+# Compact Handoff
+
+## Goal
+## Current State
+## Files That Matter
+## Decisions Locked In
+## Open Issues
+## Verification
+## Next Exact Steps
+## Resume Prompt
+## Plan bridge (optional)
+Path to `.cursor/out/last-plan.md` or cloud agentId/run.id if applicable.
+```
+
+## Compression rules
+
+- Dense, operational, 250–700 words unless asked otherwise.
+- Preserve paths, commands, branches, and failure messages exactly.
+- Do not invent completion status; mark uncertainty explicitly.

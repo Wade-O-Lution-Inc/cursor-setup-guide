@@ -1,0 +1,71 @@
+---
+description: Team Topologies four-perspective review loop before handoff (all repos)
+alwaysApply: false
+---
+
+# Team Topologies Review Loop
+
+Source: [Team Topologies - key concepts](https://teamtopologies.com/key-concepts)
+
+Use this loop to stress-test risky or cross-cutting work from four perspectives before handoff.
+
+## Trigger the loop
+
+Run when any of these are true:
+
+- Change spans **2+ boundaries** (code, tests, docs, `.cursor/` harness, CI/tooling).
+- Change touches **auth/session/profile**, **API contracts**, or **multi-repo** consumers.
+- Change affects **multiple services or industry surfaces** in one effort.
+- Reviewer or user asks for deeper pre-merge hardening.
+
+## Spawn and sequence subagents
+
+Default order (one subagent per pass, shared diff context):
+
+1. **Stream-aligned** — product/user outcomes
+2. **Platform** — security, contracts, shared standards
+3. **Complicated-subsystem** — only if deep technical domain changed (queries, charts, topology, 3D, aggregation)
+4. **Enabling** — tests, docs, developer flow
+
+After one full pass, synthesize findings, apply fixes, then rerun only perspectives with unresolved risks.
+
+## Required perspective checks
+
+### Stream-aligned
+
+- End-user / operator journey continuity.
+- Loading, error, and role-appropriate behavior.
+- Backward compatibility for existing consumers.
+
+### Platform
+
+- Auth chain and fail-closed behavior.
+- Contract alignment (DTOs, OpenAPI, snake_case, pagination).
+- No hidden coupling across shared modules.
+
+### Complicated-subsystem (when applicable)
+
+- Correctness under edge cases and realistic data volume.
+- Performance, caching, timeouts, fallback paths.
+- Algorithm / bucket / layout semantics.
+
+### Enabling
+
+- Test adequacy for changed behavior.
+- Documentation at the correct hierarchy level.
+- Readable boundaries for the next contributor.
+
+## Synthesis and exit criteria
+
+Merge only when:
+
+- No unresolved high-risk issues from any perspective.
+- Security and contract invariants hold after fixes.
+- Repo **quality gates** pass (see each repo’s `quality-gates.mdc`).
+
+**Priority on conflict:** Stream-aligned user impact → Platform security/contracts → Complicated-subsystem correctness → Enabling improvements. Document tradeoffs in handoff notes.
+
+## Repo-specific examples
+
+- **data-api:** `.cursor/rules/team-topologies-backend-examples.mdc` (when present)
+- **integrity-ts:** `.cursor/rules/team-topologies-frontend-examples.mdc` (when present)

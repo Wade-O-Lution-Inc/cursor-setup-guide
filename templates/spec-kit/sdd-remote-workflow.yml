@@ -2,16 +2,17 @@ schema_version: "1.0"
 workflow:
   id: "sdd-remote"
   name: "SDD Remote"
-  version: "3.0.0"
+  version: "3.1.0"
   author: "Integrity"
   description: >-
     Laptop SDD auto-continues through tasks, then Mac mini handoff runs
-    implement/confidence. Exhausted repair caps stop the run. Set
-    transfer_only=true to skip laptop phases. Each named phase invokes the
-    orchestrator in single_phase mode; this workflow owns sequencing.
+    implement → converge → confidence (default remote_phase=implement).
+    Exhausted repair caps stop the run. Set transfer_only=true to skip laptop
+    phases. Each named phase invokes the orchestrator in single_phase mode;
+    this workflow owns sequencing.
 
 requires:
-  speckit_version: ">=0.10.0"
+  speckit_version: ">=0.13.0"
   integrations:
     any:
       - "cursor-agent"
@@ -41,8 +42,8 @@ inputs:
   remote_phase:
     type: string
     default: "implement"
-    enum: ["implement", "confidence", "test-fix"]
-    prompt: "Remote phase after transfer"
+    enum: ["implement", "converge", "confidence", "test-fix"]
+    prompt: "Remote phase after transfer (implement runs through converge→confidence on mini)"
   transfer_only:
     type: string
     default: "false"
@@ -68,7 +69,10 @@ steps:
           Remote phase: {{ inputs.remote_phase }}.
           Include tasks.md progress, specs path, and a Resume Prompt for the Mac mini.
           Remote agent should use sdd-orchestrator for each phase (always-on).
-          If phase is confidence, reference speckit.confidence (max 3 iterations).
+          If phase is implement, remote should continue through converge (round
+          cap 2) then confidence. If phase is converge, reference
+          speckit.converge. If phase is confidence, reference speckit.confidence
+          (max 3 iterations).
 
       - id: preflight-local-only
         type: shell
@@ -166,8 +170,10 @@ steps:
           Remote phase: {{ inputs.remote_phase }}.
           Include specs path, tasks.md progress, branch, and a Resume Prompt that
           tells the remote agent to run each phase via sdd-orchestrator (always-on).
-          Prefer model_profile={{ inputs.model_profile }}.
+          When remote_phase=implement, continue through converge (round cap 2) then
+          confidence. Prefer model_profile={{ inputs.model_profile }}.
           Reference .cursor/skills/remote-agent-handoff/SKILL.md.
+          Require specify-cli >= 0.13.0 on the mini.
 
       - id: preflight-local
         type: shell

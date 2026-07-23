@@ -1,0 +1,48 @@
+---
+description: Prefer OO base abstractions and GoF patterns for extensible platform code (all repos)
+alwaysApply: false
+---
+
+# Design Pattern Guardrails
+
+## 1) Prefer object-oriented design around base abstractions
+
+- Use a base class, protocol, or interface when two or more implementations share lifecycle steps, contracts, or invariants.
+- Keep inheritance shallow: one base abstraction plus focused subclasses or composed collaborators.
+- Put variability behind explicit methods or collaborators instead of branching logic spread across routers, pages, or handlers.
+
+### When to use
+
+- Multiple industry/customer variants follow the same flow but differ in mapping, validation, or query logic.
+- A model or DTO family should evolve consistently.
+- You need one place to enforce fail-closed behavior at a boundary (API adapter, auth, scope).
+
+### When not to use
+
+- A single concrete implementation with no planned extension point.
+- Small pure transforms clearer as standalone functions.
+- Composition (strategy function/object) is simpler than inheritance.
+
+## 2) Use GoF patterns for extensible logic
+
+- **Strategy:** variant algorithms (scope filtering, aggregation, formatting) behind interchangeable strategies — not page/router `if/else` sprawl.
+- **Factory:** centralize construction by context (industry, data source, auth mode).
+- **Template Method:** fixed flow (authorize → fetch → map → respond); override only variable steps.
+- **Adapter:** normalize external systems at boundaries before shared domain types.
+- **Decorator:** cross-cutting concerns (cache, retry, audit) without changing core behavior.
+- **Observer:** secondary effects (invalidation, audit) decoupled from primary handlers.
+
+### When not to use
+
+- Do not apply a named pattern if a direct implementation is smaller and equally maintainable.
+- Do not introduce abstractions before a second concrete extension path exists.
+- Do not duplicate auth/scope logic when a shared abstraction can enforce it once.
+
+## Quick review checklist
+
+- Is shared behavior modeled once?
+- Is variability encapsulated (Strategy/Factory) instead of duplicated branches?
+- Are boundaries thin (routers/pages) with orchestration in services/composers?
+- Will a new customer/industry variant avoid copy-paste across modules?
+
+Repo-specific examples: `AGENTS.md` and `docs/platform/CursorDevelopmentHarness.md` in **data-api** and **integrity-ts**.

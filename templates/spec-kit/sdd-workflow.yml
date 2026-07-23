@@ -2,7 +2,7 @@ schema_version: "1.0"
 workflow:
   id: "sdd"
   name: "SDD"
-  version: "3.0.0"
+  version: "3.1.0"
   author: "Integrity"
   description: >-
     Canonical local SDD cycle. Flags: scope, stop_at, issues, mode, model_profile.
@@ -12,7 +12,7 @@ workflow:
     end report.
 
 requires:
-  speckit_version: ">=0.10.0"
+  speckit_version: ">=0.13.0"
   integrations:
     any:
       - "cursor-agent"
@@ -95,6 +95,18 @@ steps:
             - id: retest-tf
               type: shell
               run: "doppler run -- uv run python -m pytest tests/ -x -q"
+
+        - id: converge-tf
+          command: speckit.converge
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+              and run phase=converge through sdd-orchestrator. Worker follows
+              .cursor/skills/speckit-converge/SKILL.md. Obey next_phase from
+              sdd-ctl record (implement if gaps under round cap, else confidence).
+              Context: {{ inputs.spec }}
+              model_profile={{ inputs.model_profile }}.
 
         - id: confidence-tf
           command: speckit.confidence
@@ -237,6 +249,18 @@ steps:
                   - id: test-suite
                     type: shell
                     run: "doppler run -- uv run python -m pytest tests/ -x -q"
+
+                  - id: converge
+                    command: speckit.converge
+                    integration: "{{ inputs.integration }}"
+                    input:
+                      args: >-
+                        ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+                        and run phase=converge through sdd-orchestrator. Worker follows
+                        .cursor/skills/speckit-converge/SKILL.md. Obey next_phase from
+                        sdd-ctl record (implement if gaps under round cap max 2, else
+                        confidence). Context: {{ inputs.spec }}
+                        model_profile={{ inputs.model_profile }}.
 
                   - id: confidence
                     command: speckit.confidence

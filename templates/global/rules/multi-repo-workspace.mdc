@@ -1,0 +1,81 @@
+---
+description: Wade-O-Lution multi-repo workspace (data-api + integrity-ts + related repos)
+alwaysApply: false
+---
+
+# Wade-O-Lution workspace
+
+This workspace commonly includes **data-api** (backend), **integrity-ts** (frontend), **data-api-terraform-provider**, **core-cluster-charts**, **device-configuration**, and **data-api-sdk** (stub).
+
+## Harness layout
+
+| Scope | Location |
+|-------|----------|
+| Platform (all repos) | `~/.cursor/rules/`, `~/.cursor/skills/` |
+| Backend | `data-api/.cursor/` |
+| Frontend | `integrity-ts/.cursor/` |
+| Terraform provider | `data-api-terraform-provider/AGENTS.md` + `.cursor/rules/` |
+| Helm / ArgoCD | `core-cluster-charts/AGENTS.md` + `.cursor/rules/` |
+| Device config API | `device-configuration/AGENTS.md` + `.cursor/rules/` |
+| SDK (placeholder) | No harness until code exists |
+| Meeting notes KB platform | `meeting_notes_workflow/.cursor/` (`00-orchestrator.mdc` + `project.mdc`) |
+| Mac mini lab infra | `Integrity_Lab/.cursor/` (`agent-orchestrator.mdc` + `project.mdc`) |
+| Swarm composition plane | `repo-index/.cursor/` (`swarm-protocol.mdc`) |
+
+**Spec Kit ownership:** `meeting_notes_workflow/.cursor/skills/speckit-*` (and `overengineering-*`, `skill-supply-chain-review`, `notion-integration`) are **repo-canonical**. The matching `~/.cursor/skills/<name>/SKILL.md` copies are short pointer stubs with `disable-model-invocation: true` — they exist for non-repo chats/other machines, not as a second source of truth. Edit the meeting_notes copy; do not hand-edit the global stub body beyond the pointer + minimal fallback.
+
+## Cross-repo work
+
+- Contracts: `integrity-ts/.cursor/skills/cross-repo-contract-sync/SKILL.md` (canonical)
+- Live cutover: `integrity-ts/.cursor/skills/contract-graduation/SKILL.md` (canonical)
+- data-api stubs: `.cursor/skills/cross-repo-contract-sync/`, `contract-graduation/` (pointers only)
+- Handoff: `~/.cursor/rules/compact-handoff.mdc` + `~/.cursor/skills/session-handoff/SKILL.md`
+
+Edit the **integrity-ts canonical** skill when changing cross-repo procedure; data-api stubs must stay pointers only.
+
+## Automatic skill routing
+
+| Layer | Path |
+|-------|------|
+| Router script | `~/.cursor/hooks/workspace-skill-router.sh` |
+| User hook | `~/.cursor/hooks.json` (schema **version 1**) → `beforeSubmitPrompt` |
+| Per-repo hook | `<repo>/.cursor/hooks.json` (version 1; sets `WADE_REPO_KEY` via wrapper script) |
+| Mandate rule | `~/.cursor/rules/skill-routing-mandate.mdc` |
+
+On each prompt, hooks emit **MANDATORY SKILL ROUTING** with absolute paths to skills/rules to read before edits. Extend keywords in `workspace-skill-router.sh` when adding skills.
+
+**Cursor:** Enable **Hooks** in Cursor Settings if routing does not appear. Reload the window after harness changes.
+
+Override workspace root: `export WADE_O_LUTION_WORKSPACE=/path/to/Wade-O-Lution-Inc`
+
+Any recognized repo above (`ACTIVE_REPO` non-empty) also gets this rule
+itself added once per prompt via `add_global_rule` in
+`route_repo_context_boost` — a cheap, always-on cross-repo context boost, not
+a global `alwaysApply`.
+
+## Quality gates (by repo)
+
+- **data-api:** `uv run pytest`, `basedpyright`, `ruff`
+- **integrity-ts:** `npm run build`, `npm run test`
+
+## MCP: intentionally empty
+
+`~/.cursor/mcp.json` has `"mcpServers": {}` on purpose, not by omission. Live
+MCP tool descriptors cost real context per session (e.g. Notion's plugin is
+~28K tokens — see `notion-integration` skill), and most cross-service work in
+this workspace goes through in-repo service layers or dedicated CLIs
+(Doppler, Supabase, Grafana, Fireflies) instead. Enable a specific MCP
+plugin/server only for the session that actually needs live calls; do not
+leave servers registered globally "just in case."
+
+## CLI permissions posture
+
+`~/.cursor/cli-config.json`: `approvalMode: "allowlist"`, `sandbox.mode:
+"disabled"`. Sandbox is off deliberately — agents in this workspace need
+full local tooling (`doppler run`, `uv`, `supabase`, `terraform`, ssh to the
+mac mini) that a sandbox would block or require constant re-approval for;
+this is a conscious "trust the allowlist, not the sandbox" tradeoff, not an
+oversight. The allowlist itself stays **minimal and read-only**: `Shell(ls)`,
+`Shell(git status)`, `Shell(git diff)`, `Shell(git log)`. Do not add
+installers, `git push --force`, `terraform apply`, or anything destructive to
+the allowlist — those stay one approval click away on purpose.
