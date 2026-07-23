@@ -45,30 +45,40 @@ require explicit confirmation and are runlogged via the feature pin.
 
 ## Procedure (every chat turn)
 
-1. Confirm `.specify/` exists (`specify integration status` if unsure).
-2. Resolve **FEATURE_DIR** (absolute path to `specs/NNN-*`):
+1. **Sync the shared engine to `origin/main`** (required on every Start /
+   Continue). Runtime installs must not sit on feature branches:
+
+   ```bash
+   python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+   python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
+   ```
+
+   If sync fails (dirty tree / diverged history), stop and report — do not
+   continue SDD on a stale or branched ctl. Escape hatch for *developing*
+   sdd-orchestrator itself only: `SDD_CTL_SKIP_INSTALL_PREFLIGHT=1` or
+   `plan-phase --skip-install-preflight` (never on laptop/mini operator hosts).
+2. Confirm `.specify/` exists (`specify integration status` if unsure).
+3. Resolve **FEATURE_DIR** (absolute path to `specs/NNN-*`):
    - On branch `NNN-*` or with an existing feature dir → use it.
    - Start SDD with no dir yet → FEATURE_DIR is created by the specify worker.
-3. Resolve next **PHASE** (one of: specify → clarify → plan → tasks → analyze →
-   implement → **converge** → confidence). Do not skip clarify before plan; do
-   not implement without `tasks.md`. Honor stop flags (`stop at plan` /
-   `stop at tasks`).
-4. Ensure the global ctl is on clean `origin/main` (orchestrator skill runs
-   `sdd-ctl sync` + `preflight`; `plan-phase` fails closed on drift).
+4. Resolve next **PHASE** (one of: specify → clarify → plan → tasks → analyze →
+   implement → converge → confidence). Do not skip clarify before plan; do not implement
+   without `tasks.md`. Honor stop flags (`stop at plan` / `stop at tasks`).
 5. **Must** read and follow `~/.cursor/skills/sdd-orchestrator/SKILL.md` for
    that PHASE (FEATURE_DIR + PHASE) in `auto_chain` mode. Preserve the original
    Start SDD what/why as `--feature-description` for specify. Do **not** call
    `speckit-*` as the top-level skill.
-6. Passing phases auto-continue. Stop only when `sdd-ctl` returns `stop`
-   (repair cap exhausted), the requested `stop_at` boundary is reached, or the
-   repository opts into `gate_mode: interactive`.
-
-`persona_comms` (if present in `.specify/orchestrator.json`) is independent of
-`model_profile` — same channel caps under lean / balanced / frontier.
+6. Passing phases auto-continue. Prefer `next_phase` from `sdd-ctl record`
+   (converge may return `implement` under the round cap, else `confidence`).
+   Stop only when `sdd-ctl` returns `stop` (repair cap exhausted), the
+   requested `stop_at` boundary is reached, or the repository opts into
+   `gate_mode: interactive`. After a `stop`, do **not** leave the SDD chain
+   for ad-hoc implementation: fix the artifact, then **Continue SDD** so the
+   driver re-enters the same failing phase with `--repairs-used` from history
+   (escalated attempt when `repair_cap >= 2`).
 
 Headless twin of Continue: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`
-(see `~/.cursor/sdd-orchestrator-ctl/README.md` and
-`docs/ADOPTION.md` in that repo for multi-repo enablement).
+(see `~/.cursor/sdd-orchestrator-ctl/README.md`).
 
 ## CLI — two workflows
 

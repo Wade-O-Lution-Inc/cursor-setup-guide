@@ -43,8 +43,11 @@ terminal phase, `sdd-ctl report` produces the end report.
 `persona_comms` (in `.specify/orchestrator.json`) is independent of
 `model_profile`. Channels — dissent resolution, repair dialogue, and
 cross-phase carry-forward — use the same caps under lean / balanced /
-frontier. Ctl defaults are fail-closed off; enable per repo. Transcripts:
-`.specify/orchestrator-runs/<feature>.messages.jsonl`.
+frontier / legacy. Defaults in the orchestrator ctl are fail-closed
+(`enabled: false`); this repo enables them for analyze/converge carry-forward
+plus bounded dissent/repair rounds. Transcripts land in
+`.specify/orchestrator-runs/<feature>.messages.jsonl` via `sdd-ctl relay` /
+`record` (no LLM).
 
 ```bash
 specify workflow run sdd -i spec="..." -i integration=cursor-agent \
@@ -64,8 +67,12 @@ Registered workflows are `sdd`, `sdd-remote`, and upstream `speckit`.
 ```bash
 uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.13.0
 gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
+# Always track main (never leave a feature branch checked out on operator hosts)
+git -C ~/.cursor/sdd-orchestrator-ctl checkout main
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
-python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
+mkdir -p ~/.cursor/skills
+# sync refreshes the skill symlink; keep this for first-time boots before sync:
+ln -sfn ~/.cursor/sdd-orchestrator-ctl/skills/sdd-orchestrator ~/.cursor/skills/sdd-orchestrator
 specify integration status
 specify workflow list   # expect sdd + sdd-remote + speckit
 ```
@@ -79,10 +86,17 @@ uv venv .venv
 uv pip install --python .venv/bin/python cursor-sdk
 ```
 
-**Keep every machine on `origin/main`.** Prefer `sdd-ctl sync` (not a bare
-`git pull` on a random branch). `plan-phase` fails closed on install drift.
-Adopting SDD in another product repo:
-[sdd-orchestrator ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md).
+**Keep every machine on `origin/main`.** Start/Continue SDD runs
+`sdd-ctl sync` then `sdd-ctl preflight`. `plan-phase` fails closed if the
+install is dirty, not on `main`, or not identical to `origin/main`.
+
+```bash
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
+python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
+```
+
+Do not develop ctl changes inside the runtime clone — use a separate worktree.
+Ctl developers may set `SDD_CTL_SKIP_INSTALL_PREFLIGHT=1` locally only.
 
 Constitution: `.specify/memory/constitution.md`. Mac mini handoff setup: [`.cursor/skills/remote-agent-handoff/SKILL.md`](../../.cursor/skills/remote-agent-handoff/SKILL.md) (`CURSOR_API_KEY` in Doppler `mac_mini`).
 
@@ -146,7 +160,7 @@ bash scripts/handoff_to_mac_mini.sh --status
 
 ## Long runs / close laptop
 
-Laptop: specify → clarify → plan → tasks auto-continue through the orchestrator. Mini: implement + confidence via `sdd-remote` / handoff scripts.
+Laptop: specify → clarify → plan → tasks auto-continue through the orchestrator. Mini: implement → converge → confidence via `sdd-remote` / handoff scripts (specify-cli ≥ 0.13.0 on the mini).
 
 | Step | Where | Action |
 |------|-------|--------|
@@ -166,7 +180,10 @@ Runtime on mini (gitignored): `.cursor/remote-agent.pid`, `.cursor/remote-agent-
 2. **Clarify** — before plan on multi-boundary work.
 3. **Plan / tasks / analyze** — `plan.md`, `tasks.md`, consistency check. Honor `stop_at`.
 4. **Implement** — only with `tasks.md`; mark `[X]`; ruff + pytest.
-5. **Confidence** — scores 1–5 (complexity inverted); loops ≤3; writes `confidence.md`.
+5. **Converge** — assess code vs spec/plan/tasks; append-only Convergence tasks if gaps remain. May re-enter implement up to **2** rounds, then advances to confidence (residual gaps named).
+6. **Confidence** — scores 1–5 (complexity inverted); loops ≤3; writes `confidence.md`.
+
+Requires `specify-cli` **v0.13.0+**. Upgrade CLI with `specify self upgrade --tag v0.13.0`.
 
 After each validated phase, only `sdd-ctl record` appends one line to
 `specs/NNN-*/phase-exits.md`; workers never write it. The repair cap stops a
@@ -179,9 +196,23 @@ end report. PR: `NNN-*` → **staging**.
 | Plan | `plan.md`, `research.md`, `confidence-checks.md` |
 | Tasks | `tasks.md` |
 | Implement | app code + `[X]` |
+| Converge | append-only Convergence section in `tasks.md` (or no change) |
 | Confidence | `confidence.md` |
 | Every phase | `phase-exits.md` |
 | Always | `.cursor/auto-context.md` Spec Progress |
+
+---
+
+## Other teams / other repos
+
+This guide is the **product** quick start. The engine is shared:
+
+1. Machine once — [cursor-setup-guide docs/day1.md](https://github.com/Wade-O-Lution-Inc/cursor-setup-guide/blob/main/docs/day1.md) (`./bin/cursor-setup install-global` + `sdd-ctl sync` → clean `main`).
+2. New Spec Kit product — [`cursor-setup adopt-sdd`](https://github.com/Wade-O-Lution-Inc/cursor-setup-guide/blob/main/docs/specify/bootstrap.md) + ctl [ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md).
+3. Copy/adapt `.specify/orchestrator.json` (including optional `persona_comms`) and repo-local `sdd-entry`; do **not** vendor `lib/` or `phase-models.json`.
+4. Mac mini / Cloud Agents — same `sync` + `preflight` before remote SDD.
+
+Architecture boundaries: [SPEC_DRIVEN_DEVELOPMENT.md](./SPEC_DRIVEN_DEVELOPMENT.md).
 
 ---
 
@@ -192,7 +223,8 @@ end report. PR: `NNN-*` → **staging**.
 | Wrong branch | `git checkout NNN-feature-name` |
 | Skipped clarify | Continue SDD → clarify before plan |
 | Interactive workflow paused | `specify workflow resume <run_id>` |
-| Repair cap exhausted | Read the end report, resolve the blocker, then resume |
+| Repair cap exhausted | Fix the failing artifact, then `Continue SDD` — retries the **same** failing phase (do not implement off-chain). Early phases use `repair_cap: 2` in `.specify/orchestrator.json` so the escalated attempt runs before stop. |
+| Ctl preflight fails | `sdd-ctl sync` — install must be clean `origin/main` (not a feature branch) |
 | Tests fail | `sdd -i mode=test-fix` or fix in chat |
 | Context full | `compact` |
 | Closing laptop | `sdd-remote` |
@@ -205,4 +237,5 @@ end report. PR: `NNN-*` → **staging**.
 - Skip clarify on multi-boundary features
 - Implement before `tasks.md`
 - Call bare `speckit-*` as the chat front door (use `sdd-entry` → orchestrator)
+- Leave `~/.cursor/sdd-orchestrator-ctl` on a feature branch
 - Merge to staging without pytest + ruff green

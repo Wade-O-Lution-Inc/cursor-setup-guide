@@ -1,8 +1,15 @@
 # Troubleshooting
 
+## Triage order
+
+1. `specify workflow status` / `specify integration status`  
+2. `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight` (then `sync` if dirty)  
+3. Skill router: chat should show `MANDATORY SKILL ROUTING` with `sdd-entry`  
+4. Remote: [remote-handoff.md](./remote-handoff.md) Resume Prompt + mini ctl  
+
 ## `specify integration status` shows WARNING
 
-**Expected** on meeting_notes while org edits to managed `speckit-*` skills / `plan-template.md` remain. Before `specify integration upgrade --force`, diff those files and re-apply Phase Exit Gate deltas ([speckit-managed-deltas.md](../templates/skills/speckit-managed-deltas.md)).
+**Expected** on meeting_notes while org edits to managed `speckit-*` skills / `plan-template.md` remain. Before `specify integration upgrade --force`, diff those files and re-apply Phase Exit Gate deltas ([speckit-managed-deltas.md](../../templates/skills/speckit-managed-deltas.md)).
 
 ## Workflow paused
 
@@ -18,7 +25,7 @@ Reject on a Spec Kit YAML gate **aborts** the run (per `on_reject: abort`). Orch
 Chat front door must be **`sdd-entry`**. Confirm:
 
 1. Global skill router fired (`MANDATORY SKILL ROUTING` lists `sdd-entry` + `sdd-orchestrator`)
-2. Orchestrator rule SDD block matches [../templates/rules/sdd-orchestrator-snippet.mdc](../templates/rules/sdd-orchestrator-snippet.mdc)
+2. Orchestrator rule SDD block matches [../../templates/product/rules/sdd-orchestrator-snippet.mdc](../../templates/product/rules/sdd-orchestrator-snippet.mdc)
 3. You said `Start SDD` / `Continue SDD` (or Spec this feature)
 
 ## Skipped clarify / implemented without tasks

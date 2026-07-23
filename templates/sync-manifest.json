@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "last_synced": "2026-07-22",
+  "gold": {
+    "product_repo": "meeting_notes_workflow",
+    "orchestrator_repo": "sdd-orchestrator",
+    "note": "Orchestrator runtime is not vendored; document install only."
+  },
+  "paths": [
+    {
+      "template": "spec-kit/sdd-workflow.yml",
+      "gold": ".specify/workflows/sdd/workflow.yml",
+      "source": "mnw"
+    },
+    {
+      "template": "spec-kit/sdd-remote-workflow.yml",
+      "gold": ".specify/workflows/sdd-remote/workflow.yml",
+      "source": "mnw"
+    },
+    {
+      "template": "spec-kit/workflow-registry.template.json",
+      "gold": ".specify/workflows/workflow-registry.json",
+      "source": "mnw"
+    },
+    {
+      "template": "spec-kit/orchestrator.json",
+      "gold": ".specify/orchestrator.json",
+      "source": "mnw"
+    },
+    {
+      "template": "spec-kit/sdd-user-guide.template.md",
+      "gold": "docs/agents/SDD_USER_GUIDE.md",
+      "source": "mnw"
+    },
+    {
+      "template": "spec-kit/confidence-template.md",
+      "gold": ".specify/templates/confidence-template.md",
+      "source": "mnw"
+    },
+    {
+      "template": "skills/sdd-entry/SKILL.md",
+      "gold": ".cursor/skills/sdd-entry/SKILL.md",
+      "source": "mnw"
+    },
+    {
+      "template": "skills/speckit-confidence/SKILL.md",
+      "gold": ".cursor/skills/speckit-confidence/SKILL.md",
+      "source": "mnw"
+    },
+    {
+      "template": "skills/speckit-confidence-improve/SKILL.md",
+      "gold": ".cursor/skills/speckit-confidence-improve/SKILL.md",
+      "source": "mnw"
+    },
+    {
+      "template": "skills/speckit-agent-context-update/SKILL.md",
+      "gold": ".cursor/skills/speckit-agent-context-update/SKILL.md",
+      "source": "mnw"
+    },
+    {
+      "template": "skills/company-mcp",
+      "gold": ".cursor/skills/company-mcp",
+      "source": "mnw",
+      "type": "dir"
+    },
+    {
+      "template": "product/hooks/orchestrator-pre-shell.sh",
+      "gold": ".cursor/hooks/orchestrator-pre-shell.sh",
+      "source": "mnw"
+    },
+    {
+      "template": "product/hooks/orchestrator-post-tool.sh",
+      "gold": ".cursor/hooks/orchestrator-post-tool.sh",
+      "source": "mnw"
+    },
+    {
+      "template": "global/hooks/workspace-skill-router.sh",
+      "gold": "hooks/workspace-skill-router.sh",
+      "source": "machine"
+    },
+    {
+      "template": "global/hooks/workspace-skill-router.test.sh",
+      "gold": "hooks/workspace-skill-router.test.sh",
+      "source": "machine"
+    }
+  ],
+  "global_rules": [
+    "git-safety.mdc",
+    "mixed-concern-guardrail.mdc",
+    "platform-inheritance.mdc",
+    "skill-routing-mandate.mdc",
+    "supply-chain-defense.mdc",
+    "compact-handoff.mdc",
+    "design-pattern-guardrails.mdc",
+    "multi-repo-workspace.mdc",
+    "team-topologies-review-loop.mdc"
+  ],
+  "stub_skill_names": [
+    "speckit-specify",
+    "speckit-clarify",
+    "speckit-plan",
+    "speckit-tasks",
+    "speckit-analyze",
+    "speckit-implement",
+    "speckit-confidence",
+    "speckit-confidence-improve",
+    "notion-integration",
+    "overengineering-audit",
+    "overengineering-review",
+    "skill-supply-chain-review",
+    "session-handoff"
+  ],
+  "personal_skills_never_overwrite": [
+    "lab-host-ssh",
+    "browser-automation",
+    "sdd-orchestrator"
+  ]
+}

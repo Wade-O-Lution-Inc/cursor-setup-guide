@@ -1,23 +1,23 @@
-# Global harness templates
+# Global templates → `~/.cursor/`
 
-Copy onto a developer machine under `~/.cursor/`:
+```bash
+cd /path/to/cursor-setup-guide
+./bin/cursor-setup install-global
+./bin/cursor-setup refresh-global   # after router PRs
+./bin/cursor-setup doctor
+```
 
 | Source | Destination |
 |--------|-------------|
 | `hooks.json` | `~/.cursor/hooks.json` |
-| `hooks/*.sh` | `~/.cursor/hooks/` (`chmod +x`) |
+| `hooks/*.sh` | `~/.cursor/hooks/` (executable) |
 | `rules/*.mdc` | `~/.cursor/rules/` |
 
-**Live skill auto-routing** uses `~/.cursor/hooks/workspace-skill-router.sh` on that machine. Updating these templates in git does not change other laptops until they re-copy — see [../../global-env.md](../../global-env.md#live-routing-is-per-machine-team-must-refresh).
-
-Also install (not vendored here):
+Also clone ctl (if missing):
 
 ```bash
 gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
-python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
 ```
 
-Plus ops skills (`lab-host-ssh`, …) and Spec Kit pointer stubs as needed.
-
-See [../../day1-setup.md](../../day1-setup.md) · [../../global-env.md](../../global-env.md).
+Docs: [../../docs/day1.md](../../docs/day1.md) · [../../docs/ownership.md](../../docs/ownership.md#machine-scope-cursor)

@@ -7,7 +7,7 @@ metadata:
   source: "local: speckit-confidence (reflect-and-loop terminal phase)"
 ---
 
-<!-- After copy: replace {LINT_CMD} and {TEST_CMD} with your repo's quality gate commands. -->
+
 ## User Input
 
 ```text
@@ -63,6 +63,8 @@ This command MUST run only after `/speckit-implement` has produced a working tre
 - **Practice the complexity principle.** Loop-back edits must themselves be surgical and in-scope (see `.cursor/rules/engineering-discipline.mdc`). Do not add abstraction to "fix" a complexity finding.
 - **Bounded.** Never exceed the max-iteration cap (default **3**). When the cap is hit, take the diminishing-returns escape — record residual risk; do not loop forever.
 - **Re-clarify is the exception.** Only loop back to `/speckit-clarify` when scope is genuinely ambiguous; default loop-back targets are plan/tasks/implement.
+- **Template format is mandatory (CF-05).** `confidence.md` MUST use `.specify/templates/confidence-template.md` with its Scoreboard, per-iteration Effort Checks/Findings/Actions/Decision sections, and Final Decision. Do not substitute a free-form summary or remove required headings/tables.
+- **Phase-exit ownership is external.** The worker MUST NOT create, append, or edit `phase-exits.md`; after validation, only `sdd-ctl record` through the SDD orchestrator writes it.
 
 ## Confidence Rubric
 
@@ -111,7 +113,7 @@ Are there performance concerns or unvalidated hot paths?
 Exit the loop and finalize when **ALL** of the following hold:
 
 1. **Accuracy = 5**, **Complexity = 5**, **Performance = 5**.
-2. Quality gates green: `{LINT_CMD}` passes **and** `{TEST_CMD}` passes.
+2. Quality gates green: `uv run ruff check` passes **and** `doppler run -- uv run python -m pytest tests/ -x -q` passes.
 3. No open CRITICAL/HIGH findings remain in the current iteration.
 4. Every `in_authority` check in `confidence-checks.md` (if present) is `pass`. **`escalate`-tagged checks never block this bar** — they are recorded as residual risk immediately (see Step 2) and do not enter the loop-back table.
 
@@ -140,8 +142,8 @@ If `confidence-checks.md` does not exist (older feature, or plan predates this m
 
 Run both gates and capture pass/fail + key output:
 
-- `{LINT_CMD}`
-- `{TEST_CMD}`
+- `uv run ruff check`
+- `doppler run -- uv run python -m pytest tests/ -x -q`
 
 (If Python was not touched this cycle, ruff/pytest should be unaffected — still run them to confirm.)
 
@@ -188,7 +190,7 @@ Write the iteration's scores, findings, and the actions you will take to `confid
 
 ### 8. Write the Confidence Report
 
-Create or update `confidence.md` from `.specify/templates/confidence-template.md`. Append one **Iteration N** block per iteration (never overwrite prior iterations) with: per-axis scores, the effort-checks results table, gate results, findings table, actions taken, and the iteration decision. On the final iteration, fill the **Final Decision** section (`HIGHLY_CONFIDENT` or `RESIDUAL_RISK_ACCEPTED` with the residual low-confidence items listed, including any `escalate`-tagged effort checks).
+Create or update `confidence.md` from `.specify/templates/confidence-template.md`. Template conformance is mandatory for CF-05: preserve the required headings and table columns. Append one **Iteration N** block per iteration (never overwrite prior iterations) with: per-axis scores, the effort-checks results table, gate results, findings table, actions taken, and the iteration decision. On the final iteration, fill the **Final Decision** section (`HIGHLY_CONFIDENT` or `RESIDUAL_RISK_ACCEPTED` with the residual low-confidence items listed, including any `escalate`-tagged effort checks).
 
 ### 9. Check for extension hooks
 
@@ -245,10 +247,11 @@ Report final status: number of iterations run, final per-axis scores, the final 
 
 - [ ] `confidence-checks.md` re-compiled (orphans dropped/escalated, diff-derived checks added, every check classified `in_authority`/`escalate`) — when the file exists
 - [ ] All three axes scored 1–5 for the final iteration with evidence
-- [ ] Quality gates run (`{LINT_CMD}` + `{TEST_CMD}`)
+- [ ] Quality gates run (`uv run ruff check` + `doppler run -- uv run python -m pytest tests/ -x -q`)
 - [ ] Least-confident items captured as findings (location + why + action + loop-back target); `escalate`-tagged effort checks recorded as residual directly, never as loop-back findings
 - [ ] Loop-back performed for sub-bar iterations, or escape taken at the cap / on diminishing returns / on escalation-only remaining items
 - [ ] `confidence.md` written with per-iteration history, effort-checks results, and a Final Decision
+- [ ] CF-05 passes: `confidence.md` conforms to `.specify/templates/confidence-template.md`
 - [ ] One row appended to `docs/assessments/SDD_CONFIDENCE_LEARNING_LOG.md`
 - [ ] Extension hooks dispatched or skipped per Mandatory Post-Execution Hooks
 - [ ] Completion reported to user

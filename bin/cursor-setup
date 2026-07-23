@@ -1,0 +1,560 @@
+#!/usr/bin/env python3
+"""Wade-O-Lution Cursor harness installer / doctor / sync-check.
+
+Run from a clone of cursor-setup-guide:
+
+  ./bin/cursor-setup doctor
+  ./bin/cursor-setup install-global
+  ./bin/cursor-setup scaffold-repo /path/to/repo
+  ./bin/cursor-setup adopt-sdd /path/to/repo
+  ./bin/cursor-setup sync-check [--mnw PATH]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shutil
+import stat
+import subprocess
+import sys
+from pathlib import Path
+
+GUIDE_ROOT = Path(__file__).resolve().parent.parent
+TEMPLATES = GUIDE_ROOT / "templates"
+MANIFEST_PATH = TEMPLATES / "sync-manifest.json"
+CURSOR_HOME = Path(os.environ.get("CURSOR_HOME", Path.home() / ".cursor"))
+
+
+def _load_manifest() -> dict:
+    if not MANIFEST_PATH.is_file():
+        sys.exit(f"error: missing {MANIFEST_PATH}")
+    return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+
+
+def _chmod_x(path: Path) -> None:
+    mode = path.stat().st_mode
+    path.chmod(mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
+def _copy_tree(src: Path, dst: Path, *, force: bool) -> list[str]:
+    written: list[str] = []
+    if not src.exists():
+        return written
+    if src.is_file():
+        if dst.exists() and not force:
+            return written
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        written.append(str(dst))
+        return written
+    for root, _dirs, files in os.walk(src):
+        rel = Path(root).relative_to(src)
+        for name in files:
+            s = Path(root) / name
+            d = dst / rel / name
+            if d.exists() and not force:
+                continue
+            d.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(s, d)
+            written.append(str(d))
+    return written
+
+
+def _which(cmd: str) -> str | None:
+    return shutil.which(cmd)
+
+
+def cmd_doctor(_: argparse.Namespace) -> int:
+    ok = True
+    checks: list[tuple[str, bool, str]] = []
+
+    for tool, hint in [
+        ("gh", "install GitHub CLI"),
+        ("uv", "curl -LsSf https://astral.sh/uv/install.sh | sh"),
+        ("specify", "uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.13.0"),
+    ]:
+        path = _which(tool)
+        checks.append((tool, bool(path), path or hint))
+
+    ctl = CURSOR_HOME / "sdd-orchestrator-ctl" / "bin" / "sdd-ctl"
+    checks.append(("sdd-ctl", ctl.is_file(), str(ctl) if ctl.is_file() else "run install-global / day1 ctl clone"))
+
+    hooks_json = CURSOR_HOME / "hooks.json"
+    router = CURSOR_HOME / "hooks" / "workspace-skill-router.sh"
+    checks.append(("~/.cursor/hooks.json", hooks_json.is_file(), str(hooks_json)))
+    checks.append(("skill router", router.is_file(), str(router)))
+    if router.is_file():
+        executable = bool(router.stat().st_mode & stat.S_IXUSR)
+        checks.append(
+            (
+                "router executable",
+                executable,
+                str(router) if executable else "chmod +x ~/.cursor/hooks/*.sh",
+            )
+        )
+
+    for label, passed, detail in checks:
+        mark = "OK" if passed else "FAIL"
+        if not passed:
+            ok = False
+        print(f"[{mark}] {label}: {detail}")
+
+    # Router unit test if present
+    test_sh = TEMPLATES / "global" / "hooks" / "workspace-skill-router.test.sh"
+    live_test = CURSOR_HOME / "hooks" / "workspace-skill-router.test.sh"
+    test_path = live_test if live_test.is_file() else test_sh
+    if test_path.is_file():
+        env = os.environ.copy()
+        env["CURSOR_HOME"] = str(CURSOR_HOME)
+        # Tests often assume scripts next to them under ~/.cursor/hooks
+        proc = subprocess.run(
+            ["bash", str(test_path)],
+            cwd=str(test_path.parent),
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode == 0:
+            print("[OK] workspace-skill-router.test.sh")
+        else:
+            ok = False
+            print("[FAIL] workspace-skill-router.test.sh")
+            if proc.stdout:
+                print(proc.stdout[-2000:])
+            if proc.stderr:
+                print(proc.stderr[-2000:])
+
+    # Stub skill warnings
+    manifest = _load_manifest()
+    stub_names = set(manifest.get("stub_skill_names") or [])
+    skills_dir = CURSOR_HOME / "skills"
+    if skills_dir.is_dir():
+        for name in sorted(stub_names):
+            skill_md = skills_dir / name / "SKILL.md"
+            if not skill_md.is_file():
+                continue
+            text = skill_md.read_text(encoding="utf-8", errors="replace")
+            is_stub = (
+                "pointer" in text.lower()
+                or "canonical" in text.lower()
+                or "disable-model-invocation: true" in text
+                or len(text) < 800
+            )
+            if not is_stub:
+                print(
+                    f"[WARN] ~/.cursor/skills/{name} looks like a full skill body "
+                    "(expected pointer stub; repo-canonical in meeting_notes_workflow)"
+                )
+
+    print()
+    print("Next: ./bin/cursor-setup install-global   # if harness missing")
+    print("      open your product repo in Cursor (MNW clone optional)")
+    return 0 if ok else 1
+
+
+def cmd_install_global(args: argparse.Namespace) -> int:
+    force = bool(args.force)
+    written: list[str] = []
+    global_src = TEMPLATES / "global"
+
+    # hooks.json
+    src_hooks_json = global_src / "hooks.json"
+    dst_hooks_json = CURSOR_HOME / "hooks.json"
+    if src_hooks_json.is_file() and (force or not dst_hooks_json.exists()):
+        CURSOR_HOME.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src_hooks_json, dst_hooks_json)
+        written.append(str(dst_hooks_json))
+
+    # hooks
+    for script in (global_src / "hooks").glob("*"):
+        if script.name.endswith(".md"):
+            continue
+        dst = CURSOR_HOME / "hooks" / script.name
+        if dst.exists() and not force:
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(script, dst)
+        if script.suffix == ".sh" or script.name.endswith(".sh"):
+            _chmod_x(dst)
+        written.append(str(dst))
+
+    # rules
+    for rule in (global_src / "rules").glob("*.mdc"):
+        dst = CURSOR_HOME / "rules" / rule.name
+        if dst.exists() and not force:
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(rule, dst)
+        written.append(str(dst))
+
+    # pointer stubs for discovery (never overwrite personal / full skills)
+    manifest = _load_manifest()
+    never = set(manifest.get("personal_skills_never_overwrite") or [])
+    stub_template = """---
+name: {name}
+description: Pointer stub — canonical skill lives in meeting_notes_workflow/.cursor/skills/{name}/
+disable-model-invocation: true
+---
+
+# {name} (global stub)
+
+Canonical skill: `meeting_notes_workflow/.cursor/skills/{name}/SKILL.md`.
+
+Edit the repo copy. Do not expand this stub into a second source of truth.
+"""
+    for name in manifest.get("stub_skill_names") or []:
+        if name in never:
+            continue
+        skill_dir = CURSOR_HOME / "skills" / name
+        skill_md = skill_dir / "SKILL.md"
+        if skill_md.exists() and not force:
+            # Do not clobber existing full skills unless --force
+            continue
+        if skill_md.exists() and force:
+            text = skill_md.read_text(encoding="utf-8", errors="replace")
+            if name in never or "lab-host" in name:
+                continue
+        skill_dir.mkdir(parents=True, exist_ok=True)
+        skill_md.write_text(stub_template.format(name=name), encoding="utf-8")
+        written.append(str(skill_md))
+
+    ctl = CURSOR_HOME / "sdd-orchestrator-ctl"
+    if not (ctl / "bin" / "sdd-ctl").is_file():
+        print("sdd-orchestrator-ctl missing. Clone and sync:")
+        print(
+            "  gh repo clone Wade-O-Lution-Inc/sdd-orchestrator "
+            f"{ctl}"
+        )
+        print(f"  python3 {ctl}/bin/sdd-ctl sync")
+        print(f"  python3 {ctl}/bin/sdd-ctl preflight")
+    else:
+        print(f"sdd-ctl present at {ctl}/bin/sdd-ctl — run: python3 {ctl}/bin/sdd-ctl sync")
+
+    if written:
+        print(f"Wrote {len(written)} path(s) under {CURSOR_HOME}")
+        for p in written[:30]:
+            print(f"  {p}")
+        if len(written) > 30:
+            print(f"  … +{len(written) - 30} more")
+    else:
+        print("Nothing to write (use --force to overwrite).")
+    print("Done. Open your product repo next (MNW not required for day-1).")
+    return 0
+
+
+def cmd_refresh_global(args: argparse.Namespace) -> int:
+    """Refresh router + global rules only (always overwrite those paths)."""
+    args.force = True
+    # Narrow: only hooks + rules
+    global_src = TEMPLATES / "global"
+    for script in (global_src / "hooks").glob("*"):
+        if script.suffix == ".md":
+            continue
+        dst = CURSOR_HOME / "hooks" / script.name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(script, dst)
+        if script.suffix == ".sh":
+            _chmod_x(dst)
+        print(f"refreshed {dst}")
+    src_hooks_json = global_src / "hooks.json"
+    if src_hooks_json.is_file():
+        shutil.copy2(src_hooks_json, CURSOR_HOME / "hooks.json")
+        print(f"refreshed {CURSOR_HOME / 'hooks.json'}")
+    for rule in (global_src / "rules").glob("*.mdc"):
+        dst = CURSOR_HOME / "rules" / rule.name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(rule, dst)
+        print(f"refreshed {dst}")
+    print("Team reminder: every machine must refresh after router PRs land.")
+    return 0
+
+
+def cmd_scaffold_repo(args: argparse.Namespace) -> int:
+    repo = Path(args.path).expanduser().resolve()
+    force = bool(args.force)
+    if not repo.is_dir():
+        sys.exit(f"error: not a directory: {repo}")
+    product = TEMPLATES / "product"
+    dest = repo / ".cursor"
+    written: list[str] = []
+
+    # Core rules
+    for mdc in product.glob("*.mdc"):
+        dst = dest / "rules" / mdc.name
+        written += _copy_tree(mdc, dst, force=force)
+
+    # Optional nested product rules
+    rules_dir = product / "rules"
+    if rules_dir.is_dir():
+        for mdc in rules_dir.glob("*.mdc"):
+            dst = dest / "rules" / mdc.name
+            written += _copy_tree(mdc, dst, force=force)
+
+    # Hooks (security trio + refresh; orchestrator hooks included as optional)
+    hooks_json = product / "hooks.json"
+    if hooks_json.is_file():
+        written += _copy_tree(hooks_json, dest / "hooks.json", force=force)
+    for script in (product / "hooks").glob("*"):
+        dst = dest / "hooks" / script.name
+        written += _copy_tree(script, dst, force=force)
+        if dst.suffix == ".sh" and dst.is_file():
+            _chmod_x(dst)
+
+    mcp = product / "mcp.json"
+    if mcp.is_file():
+        written += _copy_tree(mcp, dest / "mcp.json", force=force)
+
+    print(f"Scaffolded {dest} ({len(written)} file(s))")
+    print("Next: edit .cursor/rules/project.mdc for this codebase, then commit .cursor/")
+    if any("orchestrator-" in p for p in written):
+        print("Note: orchestrator-pre/post hooks are optional; wire them in hooks.json if desired.")
+    return 0
+
+
+def cmd_adopt_sdd(args: argparse.Namespace) -> int:
+    repo = Path(args.path).expanduser().resolve()
+    if not repo.is_dir():
+        sys.exit(f"error: not a directory: {repo}")
+    force = bool(args.force)
+    lint_cmd = args.lint_cmd or "{LINT_CMD}"
+    test_cmd = args.test_cmd or "{TEST_CMD}"
+
+    print(
+        "WARN: adopt-sdd may run `specify init --force` and overwrite Spec Kit-managed "
+        "files in the target repo. Proceed only for intentional SDD adoption."
+    )
+
+    if _which("specify"):
+        cmd = [
+            "specify",
+            "init",
+            ".",
+            "--integration",
+            "cursor-agent",
+            "--here",
+            "--force",
+            "--script",
+            "sh",
+        ]
+        print("+", " ".join(cmd))
+        subprocess.run(cmd, cwd=str(repo), check=False)
+    else:
+        print("WARN: specify CLI not on PATH — skip specify init; install per docs/day1.md (optional Spec Kit section)")
+
+    # Copy spec-kit pack
+    sk = TEMPLATES / "spec-kit"
+    specify_dir = repo / ".specify"
+    mapping = [
+        (sk / "sdd-workflow.yml", specify_dir / "workflows" / "sdd" / "workflow.yml"),
+        (sk / "sdd-remote-workflow.yml", specify_dir / "workflows" / "sdd-remote" / "workflow.yml"),
+        (sk / "workflow-registry.template.json", specify_dir / "workflows" / "workflow-registry.json"),
+        (sk / "orchestrator.json", specify_dir / "orchestrator.json"),
+        (sk / "phase-exits-template.md", specify_dir / "templates" / "phase-exits-template.md"),
+        (sk / "confidence-template.md", specify_dir / "templates" / "confidence-template.md"),
+        (sk / "confidence-checks-template.md", specify_dir / "templates" / "confidence-checks-template.md"),
+        (sk / "specify-rules-override.mdc", repo / ".cursor" / "rules" / "specify-rules.mdc"),
+    ]
+    for src, dst in mapping:
+        if not src.is_file():
+            continue
+        if dst.exists() and not force:
+            print(f"skip existing {dst}")
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        text = src.read_text(encoding="utf-8")
+        text = text.replace("{LINT_CMD}", lint_cmd).replace("{TEST_CMD}", test_cmd)
+        dst.write_text(text, encoding="utf-8")
+        print(f"wrote {dst}")
+
+    # Skills
+    for skill in ["sdd-entry", "speckit-confidence", "speckit-confidence-improve", "speckit-agent-context-update"]:
+        src = TEMPLATES / "skills" / skill
+        if not src.is_dir():
+            continue
+        dst = repo / ".cursor" / "skills" / skill
+        _copy_tree(src, dst, force=force)
+        print(f"ensured {dst}")
+
+    snippet = TEMPLATES / "product" / "rules" / "sdd-orchestrator-snippet.mdc"
+    if snippet.is_file():
+        dst = repo / ".cursor" / "rules" / "sdd-orchestrator-snippet.mdc"
+        _copy_tree(snippet, dst, force=force)
+
+    print("Adopt SDD complete. Replace remaining placeholders; run: specify workflow list")
+    print("Daily guide template: templates/spec-kit/sdd-user-guide.template.md → docs/agents/SDD_USER_GUIDE.md")
+    return 0
+
+
+def _file_digest(path: Path) -> str:
+    import hashlib
+
+    h = hashlib.sha256()
+    h.update(path.read_bytes())
+    return h.hexdigest()[:12]
+
+
+def _resolve_template_path(rel: str) -> Path:
+    p = Path(rel)
+    if p.is_absolute():
+        return p
+    if rel.startswith("../"):
+        return (TEMPLATES / rel).resolve()
+    return (TEMPLATES / rel).resolve()
+
+
+def cmd_sync_check(args: argparse.Namespace) -> int:
+    manifest = _load_manifest()
+    mnw = Path(args.mnw).expanduser().resolve() if args.mnw else None
+    if mnw is None or not mnw.is_dir():
+        candidate = GUIDE_ROOT.parent / "meeting_notes_workflow"
+        mnw = candidate if candidate.is_dir() else None
+    drift = 0
+
+    print(f"manifest last_synced: {manifest.get('last_synced')}")
+    print(f"CURSOR_HOME: {CURSOR_HOME}")
+    print(f"MNW gold: {mnw or '(not found — pass --mnw)'}")
+    print()
+
+    for entry in manifest.get("paths") or []:
+        rel = entry["template"]
+        tmpl = _resolve_template_path(rel)
+        source = entry.get("source")
+        gold_rel = entry["gold"]
+        etype = entry.get("type", "file")
+
+        if source == "mnw":
+            if not mnw:
+                print(f"[SKIP] {rel} (no MNW path)")
+                continue
+            gold = mnw / gold_rel
+            if etype == "dir":
+                if not tmpl.is_dir():
+                    print(f"[DRIFT] missing template dir {tmpl}")
+                    drift += 1
+                    continue
+                if not gold.is_dir():
+                    print(f"[DRIFT] missing gold dir {gold}")
+                    drift += 1
+                    continue
+                t_skill = tmpl / "SKILL.md"
+                g_skill = gold / "SKILL.md"
+                if t_skill.is_file() and g_skill.is_file():
+                    if _file_digest(t_skill) != _file_digest(g_skill):
+                        print(f"[DRIFT] {rel}/SKILL.md ≠ gold")
+                        drift += 1
+                    else:
+                        print(f"[OK]    {rel}/SKILL.md")
+                else:
+                    print(f"[OK]    {rel}/ (dir present)")
+                continue
+            if not tmpl.is_file():
+                print(f"[DRIFT] missing template {tmpl}")
+                drift += 1
+                continue
+            if not gold.is_file():
+                print(f"[DRIFT] missing gold {gold}")
+                drift += 1
+                continue
+            if _file_digest(tmpl) != _file_digest(gold):
+                print(f"[DRIFT] {rel} ≠ {gold_rel}")
+                drift += 1
+            else:
+                print(f"[OK]    {rel}")
+        elif source == "machine":
+            gold = CURSOR_HOME / gold_rel
+            if not tmpl.is_file():
+                print(f"[DRIFT] missing template {tmpl}")
+                drift += 1
+                continue
+            if not gold.is_file():
+                print(f"[DRIFT] machine missing {gold} (run refresh-global)")
+                drift += 1
+                continue
+            if _file_digest(tmpl) != _file_digest(gold):
+                print(f"[DRIFT] {rel} ≠ ~/.cursor/{gold_rel}")
+                drift += 1
+            else:
+                print(f"[OK]    {rel} ↔ ~/.cursor/{gold_rel}")
+
+    # Global rules presence on machine
+    print()
+    for name in manifest.get("global_rules") or []:
+        tmpl = TEMPLATES / "global" / "rules" / name
+        live = CURSOR_HOME / "rules" / name
+        if not tmpl.is_file():
+            print(f"[DRIFT] template missing global rule {name}")
+            drift += 1
+            continue
+        if not live.is_file():
+            print(f"[DRIFT] ~/.cursor/rules/{name} missing (install-global / refresh-global)")
+            drift += 1
+        elif _file_digest(tmpl) != _file_digest(live):
+            print(f"[DRIFT] ~/.cursor/rules/{name} differs from template")
+            drift += 1
+        else:
+            print(f"[OK]    global rule {name}")
+
+    print()
+    if drift:
+        print(f"{drift} drift finding(s). Pull gold → templates (SYNC.md) or refresh-global.")
+        return 1
+    print("No drift.")
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="cursor-setup",
+        description="Install and verify Wade-O-Lution Cursor harness (global + product).",
+        epilog=(
+            "Day-1: doctor, install-global, refresh-global. "
+            "Product: scaffold-repo, adopt-sdd. "
+            "Maintainers: sync-check (templates vs MNW / ~/.cursor). "
+            "Docs: docs/day1.md"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    p_doc = sub.add_parser("doctor", help="Preflight machine setup")
+    p_doc.set_defaults(func=cmd_doctor)
+
+    p_ig = sub.add_parser("install-global", help="Install templates/global → ~/.cursor")
+    p_ig.add_argument("--force", action="store_true")
+    p_ig.set_defaults(func=cmd_install_global)
+
+    p_rg = sub.add_parser("refresh-global", help="Overwrite router + global rules from templates")
+    p_rg.set_defaults(func=cmd_refresh_global)
+
+    p_sc = sub.add_parser("scaffold-repo", help="Copy product .cursor baseline into a repo")
+    p_sc.add_argument("path")
+    p_sc.add_argument("--force", action="store_true")
+    p_sc.set_defaults(func=cmd_scaffold_repo)
+
+    p_ad = sub.add_parser(
+        "adopt-sdd",
+        help="specify init + copy spec-kit pack (may --force overwrite managed files)",
+    )
+    p_ad.add_argument("path")
+    p_ad.add_argument("--force", action="store_true")
+    p_ad.add_argument("--lint-cmd", default="")
+    p_ad.add_argument("--test-cmd", default="")
+    p_ad.set_defaults(func=cmd_adopt_sdd)
+
+    p_sy = sub.add_parser(
+        "sync-check",
+        help="Maintainer: compare templates to MNW gold and ~/.cursor",
+    )
+    p_sy.add_argument("--mnw", default="", help="Path to meeting_notes_workflow gold clone")
+    p_sy.set_defaults(func=cmd_sync_check)
+
+    args = parser.parse_args(argv)
+    if args.cmd == "sync-check" and not args.mnw:
+        args.mnw = ""
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    sys.exit(main())

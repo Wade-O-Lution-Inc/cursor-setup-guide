@@ -4,11 +4,33 @@
   "allow_repo_commands": true,
   "implement_hooks": [
     "uv run ruff check",
-    "uv run python -m pytest tests/ -x -q"
+    "uv run python -m pytest tests/ -x -q -m \"not integration\""
   ],
   "persona_comms": {
     "dissent_resolution": { "enabled": true, "dissent_rounds": 1 },
     "repair_dialogue": { "enabled": true, "repair_questions": 1 },
     "carry_forward": { "enabled": true, "phases": ["analyze", "converge"] }
+  },
+  "phases": {
+    "specify": {
+      "repair_cap": 2,
+      "escalation_judge_model": "gpt-5.6-terra-medium"
+    },
+    "clarify": {
+      "repair_cap": 2
+    },
+    "plan": {
+      "repair_cap": 2,
+      "escalation_judge_model": "gpt-5.6-sol-medium"
+    },
+    "tasks": {
+      "repair_cap": 2
+    },
+    "analyze": {
+      "repair_cap": 2
+    },
+    "converge": {
+      "repair_cap": 2
+    }
   }
 }

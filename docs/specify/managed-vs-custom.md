@@ -8,7 +8,7 @@
 | Hash-tracked managed files | Spec Kit manifests | `specify integration upgrade --force` may overwrite |
 | Org workflows / custom skills / constitution / repo policy | You (product repo) | Safe; not in upstream manifest |
 | Global orchestrator ctl | [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) | `git pull` in `~/.cursor/sdd-orchestrator-ctl` |
-| This guide’s templates | Adoption copies | Sync from meeting_notes — [SYNC.md](../templates/SYNC.md) |
+| This guide’s templates | Adoption copies | Sync from meeting_notes — [SYNC.md](../../templates/SYNC.md) |
 
 ## Manifest-tracked (managed)
 
@@ -18,26 +18,25 @@ Tracked under `.cursor/skills/`:
 
 `speckit-specify`, `clarify`, `plan`, `tasks`, `analyze`, `implement`, `constitution`, `checklist`, `taskstoissues`
 
-**Currently modified in meeting_notes (expected WARNING):** specify, clarify, plan, tasks, analyze, implement — Phase Exit Gate sections (workers must **not** write `phase-exits.md`; orchestrator does).
+Gold (meeting_notes) may show `specify integration status` **WARNING** for org Phase Exit Gate edits on managed skills — expected. Workers must **not** write `phase-exits.md`; the orchestrator does.
 
 ### Shared `speckit` infrastructure
 
-Scripts + templates under `.specify/`. **Modified:** `.specify/templates/plan-template.md` (Confidence Checks draft section).
+Scripts + templates under `.specify/`. Org often patches `plan-template.md` (Confidence Checks). After upstream bumps:
 
 ```bash
-specify integration status          # WARNING with modified_managed_files is OK for reference repo
-# After upstream bump:
-specify integration upgrade --force
-# Then re-apply org deltas — see [../templates/skills/speckit-managed-deltas.md](../templates/skills/speckit-managed-deltas.md)
+specify integration status
+specify integration upgrade --force   # review diffs first
+# Re-apply org deltas — [speckit-managed-deltas.md](../../templates/skills/speckit-managed-deltas.md)
 ```
 
 ## Fully custom (safe to own)
 
 | Asset | Notes |
 |-------|-------|
-| `.specify/workflows/sdd/`, `sdd-remote/` | Local registry — [workflow-registry.template.json](../templates/spec-kit/workflow-registry.template.json) |
-| `.specify/orchestrator.json` | Repo policy for ctl — [orchestrator.json](../templates/spec-kit/orchestrator.json) |
-| `.cursor/skills/sdd-entry/` | Chat front door — [templates/skills/sdd-entry/](../templates/skills/sdd-entry/) |
+| `.specify/workflows/sdd/`, `sdd-remote/` | Local registry — [workflow-registry.template.json](../../templates/spec-kit/workflow-registry.template.json) |
+| `.specify/orchestrator.json` | Repo policy for ctl — [orchestrator.json](../../templates/spec-kit/orchestrator.json) |
+| `.cursor/skills/sdd-entry/` | Chat front door — [templates/skills/sdd-entry/](../../templates/skills/sdd-entry/) |
 | `speckit-confidence`, `speckit-confidence-improve`, `speckit-agent-context-update` | Not in Spec Kit manifest |
 | `remote-agent-handoff` | Mini ops — copy from meeting_notes if needed |
 | `.specify/memory/constitution.md` | Compiled from rules |

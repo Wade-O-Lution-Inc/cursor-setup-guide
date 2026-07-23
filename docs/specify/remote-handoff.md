@@ -38,6 +38,9 @@ Without that, `scripts/remote_agent_loop.sh` fails closed for `sdd-implement` / 
 
 ## Repo skill + scripts
 
+Handoff shell scripts (`scripts/handoff_to_mac_mini.sh`, `remote_agent_loop.sh`, …) live in **product repos** that adopted them (gold: meeting_notes). Copy from gold or your adopt pack — they are not shipped as this guide’s day-1 baseline.
+
+
 | Asset | Role |
 |-------|------|
 | `.cursor/skills/remote-agent-handoff/SKILL.md` | Procedure + Doppler `mac_mini` / `CURSOR_API_KEY` |
