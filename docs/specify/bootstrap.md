@@ -64,3 +64,46 @@ specify workflow list   # sdd, sdd-remote
 Portable ctl adoption notes: [sdd-orchestrator ADOPTION.md](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator/blob/main/docs/ADOPTION.md).
 
 Short checklist: [../../templates/spec-kit/init-checklist.md](../../templates/spec-kit/init-checklist.md).
+
+---
+
+## What you can change
+
+| Layer | Owned by | Upgrade risk |
+|-------|----------|--------------|
+| `specify` CLI | Upstream Spec Kit | `specify self upgrade` |
+| Hash-tracked managed files | Spec Kit manifests | `specify integration upgrade --force` may overwrite |
+| Org workflows / custom skills / constitution / repo policy | You (product repo) | Safe; not in upstream manifest |
+| Global orchestrator ctl | [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) | `sdd-ctl sync` → `origin/main` |
+| This guide’s templates | Adoption copies | Sync from meeting_notes — [SYNC.md](../../templates/SYNC.md) |
+
+### Fully custom (safe to own)
+
+| Asset | Notes |
+|-------|-------|
+| `.specify/workflows/sdd/`, `sdd-remote/` | Local registry |
+| `.specify/orchestrator.json` | Repo policy for ctl |
+| `.cursor/skills/sdd-entry/` | Chat front door |
+| `speckit-confidence`, `speckit-confidence-improve`, `speckit-agent-context-update` | Not in Spec Kit manifest |
+| `.specify/memory/constitution.md` | Compiled from rules |
+| Orchestrator snippet / `specify-rules.mdc` | Repo harness |
+| `~/.cursor/sdd-orchestrator-ctl` | Clone of GitHub; not product git |
+
+### Customization surfaces
+
+| Want to change… | Edit |
+|-----------------|------|
+| Flags / stop points / remote flow | Workflow YAML + registry |
+| Lint/test commands | Workflow shells **and** `orchestrator.json` `implement_hooks` |
+| Auto-continue vs pause-after-pass | `gate_mode` in `.specify/orchestrator.json` |
+| Models / swarms / shadow_rate / repair_cap | ctl `phase-models.json` (+ optional repo `phases` overrides) |
+| Judge/worker/expert prompts | ctl `prompts/` |
+
+Managed `speckit-*` skills may show `specify integration status` **WARNING** when org Phase Exit Gate edits diverge — expected. After upstream bumps, review diffs then re-apply [speckit-managed-deltas.md](../../templates/skills/speckit-managed-deltas.md).
+
+### Do not
+
+- Vendor a second copy of the orchestrator into a product repo  
+- Daily-use the upstream `speckit` workflow  
+- Let `confidence-improve` auto-edit skills or constitution  
+- Treat `specs/` as durable product docs

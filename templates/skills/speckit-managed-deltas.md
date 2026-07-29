@@ -31,4 +31,4 @@ specify integration status            # expect WARNING on modified_managed_files
 
 ## Global stub pattern
 
-Keep thin pointer stubs under `~/.cursor/skills/speckit-*/` that say "read canonical body in owning repo" — see [managed-vs-custom.md](../../specify/managed-vs-custom.md).
+Keep thin pointer stubs under `~/.cursor/skills/speckit-*/` that say "read canonical body in owning repo" — see [bootstrap.md](../../docs/specify/bootstrap.md#what-you-can-change).

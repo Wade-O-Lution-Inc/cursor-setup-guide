@@ -70,4 +70,4 @@ working self-hosted Actions runner for pipeline Mac mini gates.
 
 Do **not** `scp` application trees to the mini — git pull only.
 
-Next: [workflows.md](./workflows.md) · [orchestrator.md](./orchestrator.md)
+Next: [quick-start.md](./quick-start.md#workflow-control-flow-essentials) · [orchestrator.md](./orchestrator.md)

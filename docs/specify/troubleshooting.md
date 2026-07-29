@@ -106,4 +106,4 @@ Handoff should include `tasks.md` progress (completed/total). Resume with `Conti
 - [ ] Committing `.specify/workflows/runs/` or `.specify/orchestrator-runs/`  
 - [ ] Putting secrets in skills or this guide  
 
-Next: [quick-start.md](./quick-start.md) · [managed-vs-custom.md](./managed-vs-custom.md)
+Next: [quick-start.md](./quick-start.md) · [bootstrap.md](./bootstrap.md#what-you-can-change)
