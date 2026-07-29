@@ -29,6 +29,10 @@ Choose a **profile**, not model IDs — [orchestrator.md](./orchestrator.md).
 
 Flow: `sdd-entry` → `sdd-orchestrator` (`auto_chain`) → `speckit-*` worker.
 
+Expect two inject-only agent messages on Start/Continue: `MANDATORY SKILL ROUTING` then `MANDATORY SDD PREFLIGHT` (machine hooks — [../hooks.md](../hooks.md)).
+
+On swarm phases (analyze / confidence), experts must dispatch **concurrently** in one message; recorded verdicts need `attempt_kind`, second-precision `wall_s`, and swarm `dispatch_mode` — [orchestrator.md](./orchestrator.md).
+
 ---
 
 ## Three CLI recipes

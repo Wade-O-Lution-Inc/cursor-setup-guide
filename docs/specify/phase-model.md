@@ -21,10 +21,10 @@ constitution (once per repo)
 | clarify | Updates `spec.md` | Binary |
 | plan | `plan.md`, `research.md`, drafts `confidence-checks.md` | Binary |
 | tasks | `tasks.md` | Binary |
-| analyze | Consistency report | Binary + optional expert swarm |
-| implement | App code + `[X]` in `tasks.md` | Binary (higher `repair_cap`) |
-| converge | Gap assessment; may append `tasks.md` | Binary; may loop implement |
-| confidence | `confidence.md`; re-compile checks | **1–5 axes** + effort checks; swarm + advocate |
+| analyze | Consistency report | Binary + optional expert swarm; **`repair_cap` 1** (late-phase pin) |
+| implement | App code + `[X]` in `tasks.md` | Binary (ctl `repair_cap` 2) |
+| converge | Gap assessment; may append `tasks.md` | Binary; may loop implement; **`repair_cap` 1** (late-phase pin) |
+| confidence | `confidence.md`; re-compile checks | **1–5 axes** + effort checks; swarm + advocate (ctl `repair_cap` 2) |
 
 Also: `.cursor/auto-context.md` Spec Progress on `NNN-*` branches (optional hook). Runlog: `.specify/orchestrator-runs/` (gitignored).
 

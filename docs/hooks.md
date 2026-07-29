@@ -9,6 +9,7 @@ Hard stops and side-effects. Prefer **fail-open** observation for non-security h
 | Layer | Install | Events |
 |-------|---------|--------|
 | **Global** skill router | `install-global` / `refresh-global` | `beforeSubmitPrompt` → `workspace-skill-router.sh` |
+| **Global** SDD specify preflight | `install-global` / `refresh-global` | `beforeSubmitPrompt` → `sdd-specify-preflight.sh` (**inject-only**) |
 | **Product** security + compact context | `scaffold-repo` | prompt / shell / tab read / afterFileEdit / stop |
 | **Optional product** orchestrator | scripts in `templates/product/hooks/`; wire yourself | `beforeShellExecution`, `subagentStop` |
 
@@ -45,8 +46,25 @@ Wire like meeting_notes `.cursor/hooks.json` when you want them.
 ## Global skill router
 
 ```bash
-./bin/cursor-setup refresh-global   # after router keyword PRs
+./bin/cursor-setup refresh-global   # after router / global-hook PRs
 ```
+
+`~/.cursor/hooks.json` (from `templates/global/hooks.json`) runs **two** `beforeSubmitPrompt` commands, in order:
+
+1. `hooks/route-skills-before-prompt.sh` → injects `MANDATORY SKILL ROUTING…`
+2. `hooks/sdd-specify-preflight.sh` → on Start/Continue SDD (and similar), injects `MANDATORY SDD PREFLIGHT…`
+
+### SDD specify preflight (inject-only)
+
+Does **not** block the prompt (`continue: true`). When the user kicks off SDD it:
+
+- runs `sdd-ctl sync` + `preflight` (reports skip if `SDD_CTL_SKIP_INSTALL_PREFLIGHT` is set)
+- checks the global `sdd-orchestrator` skill symlink
+- per workspace root: `.specify/`, `sdd-entry`, `orchestrator.json`, vendored skill warning
+
+Smoke: chat `Continue SDD` in an adopted repo and confirm an agent message starting with `MANDATORY SDD PREFLIGHT`. Missing `.specify/` should tell you to run `cursor-setup adopt-sdd`.
+
+After this guide lands router/hook PRs: every machine must `./bin/cursor-setup refresh-global` or the new hook will be missing / wiped.
 
 ### Gold dual-router pattern
 

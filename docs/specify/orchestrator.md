@@ -70,9 +70,29 @@ Orthogonal to `model_profile`. Ctl defaults fail-closed off; product repos opt i
 
 Default `gate_mode: automatic` → pass=`continue`, fail=`repair` until cap then `stop`. Spec Kit YAML human gates are separate ([workflows.md](./workflows.md)).
 
+Do **not** document an alternate interactive gate-mode router as live until ctl feature **003** ships; today’s `gate_mode` is still `automatic` | `interactive` pause-on-fail only.
+
+## Repair caps (repo overlays)
+
+Ctl defaults (`phase-models.json`): most phases `1`; **implement** and **confidence** `2`; **analyze** and **converge** pinned at **1**.
+
+The adopt template raises early phases (specify→tasks) to `2` for an escalated attempt, and keeps **analyze/converge at 1**. Do not raise late-phase caps in repo policy unless you knowingly override the late-phase pin from the 2026-07-29 eval remediation.
+
 ## Swarms / cost
 
 Analyze and confidence may use expert swarms; shadow judges are advisory. **Do not** document a fixed “2 LLM calls / phase” rule — see ctl README after `sdd-ctl sync`.
+
+**Interactive swarm dispatch:** when `plan-phase` returns multiple expert roles, the interactive skill must issue **all expert Task dispatches in one message** (`dispatch_mode: "concurrent"`). Sequential expert Tasks forfeit the concurrency barrier — wall time becomes the sum of role latencies (see ctl `gate-reports/e2e-perf-eval-2026-07-29.md` §5 and skill step 7).
+
+### Verdict fields (record)
+
+Every `sdd-ctl record` verdict **MUST** include:
+
+| Field | Rule |
+|-------|------|
+| `attempt_kind` | Required enum: `initial` \| `repair` \| `rejudge` \| `escalated` (fail-closed) |
+| `wall_s` | Non-negative finite seconds from real start/end timestamps (not minute buckets) |
+| `dispatch_mode` | Required on swarm phases: `concurrent` \| `sequential`; omit for non-swarm |
 
 ## Headless Continue
 

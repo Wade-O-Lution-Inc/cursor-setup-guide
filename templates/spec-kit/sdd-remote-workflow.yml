@@ -9,7 +9,8 @@ workflow:
     implement → converge → confidence (default remote_phase=implement).
     Exhausted repair caps stop the run. Set transfer_only=true to skip laptop
     phases. Each named phase invokes the orchestrator in single_phase mode;
-    this workflow owns sequencing.
+    this workflow owns sequencing. Chat front door remains sdd-entry →
+    sdd-orchestrator (never bare speckit-* as the daily entry).
 
 requires:
   speckit_version: ">=0.13.0"

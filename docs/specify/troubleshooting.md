@@ -5,7 +5,31 @@
 1. `specify workflow status` / `specify integration status`  
 2. `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight` (then `sync` if dirty)  
 3. Skill router: chat should show `MANDATORY SKILL ROUTING` with `sdd-entry`  
-4. Remote: [remote-handoff.md](./remote-handoff.md) Resume Prompt + mini ctl  
+4. SDD preflight hook: Start/Continue should show `MANDATORY SDD PREFLIGHT` (if missing → `./bin/cursor-setup refresh-global`)  
+5. Remote: [remote-handoff.md](./remote-handoff.md) Resume Prompt + mini ctl  
+
+## Missing `.specify/` / adopt not detected
+
+`MANDATORY SDD PREFLIGHT` (or `sdd-entry`) says the repo lacks Spec Kit adoption:
+
+```bash
+cd /path/to/cursor-setup-guide
+./bin/cursor-setup adopt-sdd /path/to/your-repo --lint-cmd '…' --test-cmd '…'
+```
+
+Also confirm `~/.cursor/hooks.json` lists both `route-skills-before-prompt.sh` and `sdd-specify-preflight.sh`.
+
+## `SDD_CTL_SKIP_INSTALL_PREFLIGHT` skips sync/preflight
+
+Unset that env var on product machines. It is only for ctl self-development when the runtime clone is intentionally dirty / on a feature branch.
+
+## `attempt_kind` / `wall_s` record failures
+
+`sdd-ctl record` rejects verdicts missing required fields (fail-closed). Ensure the interactive skill step 8 includes `attempt_kind` and second-precision `wall_s`. Swarm phases also need `dispatch_mode`. Sync ctl to `origin/main` (includes 2026-07-29 schema remediation).
+
+## Interactive swarm feels serial / high wall time
+
+Experts were likely dispatched one Task at a time. Re-run with **all expert Tasks in a single message** (`dispatch_mode: concurrent`). Sequential dispatch is a driver bug against the skill contract, not an envelope failure.
 
 ## `specify integration status` shows WARNING
 

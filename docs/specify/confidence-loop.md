@@ -21,6 +21,8 @@ Passing verdicts include a decision (`HIGHLY_CONFIDENT` or `RESIDUAL_RISK_ACCEPT
 
 End of run: **`sdd-ctl report`**.
 
+Confidence inherits ctl `repair_cap: 2`. Analyze/converge stay at **1** (late-phase pin) — see [phase-model.md](./phase-model.md). Swarm experts must dispatch concurrently ([orchestrator.md](./orchestrator.md)).
+
 ## Learning log (product-specific)
 
 Recurring findings belong in **each product’s** docs convention (meeting_notes uses `docs/assessments/SDD_CONFIDENCE_LEARNING_LOG.md`). Do not hardcode that path in other repos.

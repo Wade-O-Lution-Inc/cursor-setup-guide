@@ -22,6 +22,14 @@ specify integration status
 # Chat: Start SDD: smoke adopt …
 ```
 
+Also confirm the machine hook chain (day-1 global install):
+
+1. `./bin/cursor-setup doctor` reports the skill router **and** `sdd-specify-preflight` wired in `~/.cursor/hooks.json`
+2. Chat `Continue SDD` injects `MANDATORY SDD PREFLIGHT` (ctl sync/preflight, `.specify/`, `sdd-entry`, `orchestrator.json`)
+3. Unset `SDD_CTL_SKIP_INSTALL_PREFLIGHT` on product machines — that env var skips ctl install preflight (ctl self-dev only)
+
+If preflight says missing `.specify/`, re-run `adopt-sdd` (or the manual copy table below).
+
 ## Manual equivalent (appendix — prefer CLI)
 
 ```bash

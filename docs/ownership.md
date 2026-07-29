@@ -41,7 +41,7 @@ Each repo has its own `.cursor/`. The **global skill router** (`~/.cursor/hooks/
 
 ```
 ~/.cursor/
-├── hooks.json + hooks/     # Skill router (beforeSubmitPrompt)
+├── hooks.json + hooks/     # Skill router + SDD specify preflight (beforeSubmitPrompt)
 ├── rules/                  # Always-on safety + shared on-demand rules
 ├── skills/                 # Pointer stubs + personal/machine skills
 ├── sdd-orchestrator-ctl/   # Clone of sdd-orchestrator

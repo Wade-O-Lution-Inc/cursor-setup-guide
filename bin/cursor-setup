@@ -83,8 +83,29 @@ def cmd_doctor(_: argparse.Namespace) -> int:
 
     hooks_json = CURSOR_HOME / "hooks.json"
     router = CURSOR_HOME / "hooks" / "workspace-skill-router.sh"
+    sdd_preflight = CURSOR_HOME / "hooks" / "sdd-specify-preflight.sh"
     checks.append(("~/.cursor/hooks.json", hooks_json.is_file(), str(hooks_json)))
     checks.append(("skill router", router.is_file(), str(router)))
+    checks.append(
+        (
+            "sdd specify preflight hook",
+            sdd_preflight.is_file(),
+            str(sdd_preflight)
+            if sdd_preflight.is_file()
+            else "run refresh-global (templates/global/hooks/sdd-specify-preflight.sh)",
+        )
+    )
+    if hooks_json.is_file():
+        hooks_text = hooks_json.read_text(encoding="utf-8", errors="replace")
+        checks.append(
+            (
+                "hooks.json wires sdd-specify-preflight",
+                "sdd-specify-preflight.sh" in hooks_text,
+                str(hooks_json)
+                if "sdd-specify-preflight.sh" in hooks_text
+                else "refresh-global to pick up templates/global/hooks.json",
+            )
+        )
     if router.is_file():
         executable = bool(router.stat().st_mode & stat.S_IXUSR)
         checks.append(
@@ -92,6 +113,15 @@ def cmd_doctor(_: argparse.Namespace) -> int:
                 "router executable",
                 executable,
                 str(router) if executable else "chmod +x ~/.cursor/hooks/*.sh",
+            )
+        )
+    if sdd_preflight.is_file():
+        executable = bool(sdd_preflight.stat().st_mode & stat.S_IXUSR)
+        checks.append(
+            (
+                "sdd preflight executable",
+                executable,
+                str(sdd_preflight) if executable else "chmod +x ~/.cursor/hooks/*.sh",
             )
         )
 
