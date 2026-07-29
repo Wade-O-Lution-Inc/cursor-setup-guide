@@ -20,6 +20,9 @@ Adoption hub for Wade-O-Lution Cursor setup: machine harness, product `.cursor/`
 | **Add / adapt harness on a product repo** | [docs/product-repo.md](./docs/product-repo.md) |
 | **Adopt Spec Kit / SDD** | [docs/specify/bootstrap.md](./docs/specify/bootstrap.md) → [quick-start](./docs/specify/quick-start.md) |
 | **Know what lives where** | [docs/ownership.md](./docs/ownership.md) |
+| **Hooks / security / SDD preflight** | [docs/hooks.md](./docs/hooks.md) |
+| **Company context (FE / PM)** | [docs/company-mcp.md](./docs/company-mcp.md) |
+| **Cloud Agents entrypoint** | [docs/agents.md](./docs/agents.md) |
 | **Maintain templates (maintainers)** | [templates/SYNC.md](./templates/SYNC.md) · `./bin/cursor-setup sync-check` |
 
 meeting_notes is an optional **gold reference**, not a day-1 prerequisite.
@@ -39,16 +42,10 @@ What the CLI touches (command → files): see [docs/day1.md](./docs/day1.md#what
 
 | Layer | Role |
 |-------|------|
-| **Global `~/.cursor/`** | Cross-repo router, safety rules, `sdd-orchestrator` |
+| **Global `~/.cursor/`** | Cross-repo router, SDD preflight, safety rules, `sdd-orchestrator` |
 | **Product `.cursor/`** | Repo rules, hooks, ops skills |
 | **Specify / SDD** | Optional multi-step `spec → plan → tasks → confidence` |
 | **Skills / hooks / MCP** | Procedures, enforcement, live tools |
 | **This guide** | Docs + templates + install CLI |
 
----
-
-## More docs
-
-[day1](./docs/day1.md) · [ownership](./docs/ownership.md) · [product-repo](./docs/product-repo.md) · [rules](./docs/rules.md) · [skills](./docs/skills.md) · [hooks](./docs/hooks.md) · [mcp](./docs/mcp.md) · [company-mcp](./docs/company-mcp.md) · [agents](./docs/agents.md) · [specify/](./docs/specify/) · [CONTENT_EVAL](./docs/CONTENT_EVAL.md) (revamp audit)
-
-Legacy root filenames redirect into `docs/`.
+SDD doc hub: [docs/specify/](./docs/specify/). Legacy root filenames redirect into `docs/`.

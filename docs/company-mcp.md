@@ -17,3 +17,17 @@
 ## Routing
 
 Global skill router recognizes Company MCP keywords after `refresh-global` with latest guide templates.
+
+## MCP placement & safety
+
+Prefer **Team** or **repo** MCP for shared services; keep `~/.cursor/mcp.json` minimal and personal.
+
+| Placement | Use for |
+|-----------|---------|
+| Cursor **Team** MCP | Shared org servers (preferred for IntegrityKB) |
+| `repo/.cursor/mcp.json` (or example) | App-specific servers checked in as examples |
+| `~/.cursor/mcp.json` | Personal only; avoid long-lived tokens in git |
+
+`templates/product/mcp.json` is a placeholder. Gold pattern: `meeting_notes_workflow/.cursor/mcp.json.example`.
+
+Only enable servers your team trusts. Do not install new MCP servers without explicit approval (`supply-chain-defense` global rule).

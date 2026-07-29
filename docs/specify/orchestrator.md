@@ -68,7 +68,7 @@ Orthogonal to `model_profile`. Ctl defaults fail-closed off; product repos opt i
 
 ## Gates
 
-Default `gate_mode: automatic` → pass=`continue`, fail=`repair` until cap then `stop`. Spec Kit YAML human gates are separate ([workflows.md](./workflows.md)).
+Default `gate_mode: automatic` → pass=`continue`, fail=`repair` until cap then `stop`. Spec Kit YAML human gates are separate ([quick-start.md](./quick-start.md#workflow-control-flow-essentials)).
 
 Do **not** document an alternate interactive gate-mode router as live until ctl feature **003** ships; today’s `gate_mode` is still `automatic` | `interactive` pause-on-fail only.
 
@@ -116,4 +116,4 @@ Every `sdd-ctl record` verdict **MUST** include:
 
 Useful verbs: `plan-phase`, `hooks`, `record`, `report`, `messages` — `sdd-ctl --help`.
 
-Next: [managed-vs-custom.md](./managed-vs-custom.md) · [confidence-loop.md](./confidence-loop.md)
+Next: [bootstrap.md](./bootstrap.md#what-you-can-change) · [phase-model.md](./phase-model.md#confidence-contract-terminal-phase)

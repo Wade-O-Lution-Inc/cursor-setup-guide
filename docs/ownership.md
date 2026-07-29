@@ -125,3 +125,5 @@ Scaffold gives you a **starting point**. It is **not** a byte-copy of meeting_no
 | `sdd-orchestrator` + ctl | **Global** |
 
 Deep docs: [specify/](./specify/) · gold: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) · runtime: [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator)
+
+Authoring rules/skills when adapting a product repo: [product-repo.md](./product-repo.md#authoring-rules-mdc).
