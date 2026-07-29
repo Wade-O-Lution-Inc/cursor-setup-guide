@@ -9,7 +9,9 @@ workflow:
     Passing phases auto-continue via sdd-orchestrator; exhausted repair caps stop
     the run. Each named workflow phase uses orchestrator single_phase mode so
     this workflow alone owns sequencing and stop_at. The final step produces an
-    end report.
+    end report. Chat front door remains sdd-entry → sdd-orchestrator (never bare
+    speckit-* skills); workflow steps name Spec Kit commands only as integration
+    hooks that must still run through the orchestrator.
 
 requires:
   speckit_version: ">=0.13.0"

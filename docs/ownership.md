@@ -41,7 +41,7 @@ Each repo has its own `.cursor/`. The **global skill router** (`~/.cursor/hooks/
 
 ```
 ~/.cursor/
-├── hooks.json + hooks/     # Skill router (beforeSubmitPrompt)
+├── hooks.json + hooks/     # Skill router + SDD specify preflight (beforeSubmitPrompt)
 ├── rules/                  # Always-on safety + shared on-demand rules
 ├── skills/                 # Pointer stubs + personal/machine skills
 ├── sdd-orchestrator-ctl/   # Clone of sdd-orchestrator
@@ -125,3 +125,5 @@ Scaffold gives you a **starting point**. It is **not** a byte-copy of meeting_no
 | `sdd-orchestrator` + ctl | **Global** |
 
 Deep docs: [specify/](./specify/) · gold: [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) · runtime: [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator)
+
+Authoring rules/skills when adapting a product repo: [product-repo.md](./product-repo.md#authoring-rules-mdc).

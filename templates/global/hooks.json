@@ -4,6 +4,9 @@
     "beforeSubmitPrompt": [
       {
         "command": "hooks/route-skills-before-prompt.sh"
+      },
+      {
+        "command": "hooks/sdd-specify-preflight.sh"
       }
     ]
   }

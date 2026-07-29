@@ -29,6 +29,10 @@ Choose a **profile**, not model IDs — [orchestrator.md](./orchestrator.md).
 
 Flow: `sdd-entry` → `sdd-orchestrator` (`auto_chain`) → `speckit-*` worker.
 
+Expect two inject-only agent messages on Start/Continue: `MANDATORY SKILL ROUTING` then `MANDATORY SDD PREFLIGHT` (machine hooks — [../hooks.md](../hooks.md)).
+
+On swarm phases (analyze / confidence), experts must dispatch **concurrently** in one message; recorded verdicts need `attempt_kind`, second-precision `wall_s`, and swarm `dispatch_mode` — [orchestrator.md](./orchestrator.md).
+
 ---
 
 ## Three CLI recipes
@@ -48,6 +52,40 @@ specify workflow run sdd -i spec="..." -i stop_at=plan
 specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
 ```
 
-Flags, deprecated aliases, headless `sdd-run`: [workflows.md](./workflows.md) · [orchestrator.md](./orchestrator.md) · [remote-handoff.md](./remote-handoff.md).
+Headless Continue: [orchestrator.md](./orchestrator.md). Laptop → mini: [remote-handoff.md](./remote-handoff.md).
 
-Upstream workflow **`speckit`**: installed, not for daily use.
+Upstream workflow **`speckit`**: installed, not for daily use. Deprecated aliases: [deprecated-aliases.md](../../templates/spec-kit/deprecated-aliases.md).
+
+---
+
+## Workflow control-flow (essentials)
+
+Definitions live in `.specify/workflows/<id>/workflow.yml`. Org templates: [sdd-workflow.yml](../../templates/spec-kit/sdd-workflow.yml), [sdd-remote-workflow.yml](../../templates/spec-kit/sdd-remote-workflow.yml).
+
+### `sdd` (local)
+
+Each named phase invokes the orchestrator in **`single_phase`** mode; this workflow owns sequencing and `stop_at`. Exhausted repair caps stop the run.
+
+**Full path (`mode=full`):** specify → clarify → plan → (optional `stop_at=plan`) → tasks → analyze → (optional `issues=true` / `stop_at=tasks`) → implement → converge → confidence → `sdd-ctl report`.
+
+**Test-fix (`mode=test-fix`):** implement → test retry → confidence → report.
+
+### `sdd-remote`
+
+| Branch | Behavior |
+|--------|----------|
+| `transfer_only=false` | Laptop through tasks, then handoff to Mac mini |
+| `transfer_only=true` | Skip laptop phases; handoff only |
+
+Inputs: `remote_phase`, `interval`, `model`, `scope`, optional `spec`. Details: [remote-handoff.md](./remote-handoff.md).
+
+### Gates vs resume
+
+| Gate | Resume |
+|------|--------|
+| Spec Kit `type: gate` in YAML | `specify workflow resume <run_id>` |
+| Orchestrator pass (`automatic`) | Continues |
+| Orchestrator fail at repair cap | Human fix + Continue / re-run |
+| `gate_mode: interactive` | Human Continue after pause |
+
+Run state (gitignored): `.specify/workflows/runs/`, `.specify/orchestrator-runs/`.

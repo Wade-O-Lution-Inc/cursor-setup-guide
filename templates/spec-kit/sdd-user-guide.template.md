@@ -223,7 +223,7 @@ Architecture boundaries: [SPEC_DRIVEN_DEVELOPMENT.md](./SPEC_DRIVEN_DEVELOPMENT.
 | Wrong branch | `git checkout NNN-feature-name` |
 | Skipped clarify | Continue SDD → clarify before plan |
 | Interactive workflow paused | `specify workflow resume <run_id>` |
-| Repair cap exhausted | Fix the failing artifact, then `Continue SDD` — retries the **same** failing phase (do not implement off-chain). Early phases use `repair_cap: 2` in `.specify/orchestrator.json` so the escalated attempt runs before stop. |
+| Repair cap exhausted | Fix the failing artifact, then `Continue SDD` — retries the **same** failing phase (do not implement off-chain). Template overlays: early phases `repair_cap: 2`; **analyze/converge stay at 1** (late-phase pin — do not raise). Implement/confidence inherit ctl defaults (2). |
 | Ctl preflight fails | `sdd-ctl sync` — install must be clean `origin/main` (not a feature branch) |
 | Tests fail | `sdd -i mode=test-fix` or fix in chat |
 | Context full | `compact` |

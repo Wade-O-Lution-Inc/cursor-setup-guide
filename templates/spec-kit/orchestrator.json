@@ -27,10 +27,10 @@
       "repair_cap": 2
     },
     "analyze": {
-      "repair_cap": 2
+      "repair_cap": 1
     },
     "converge": {
-      "repair_cap": 2
+      "repair_cap": 1
     }
   }
 }

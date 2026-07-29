@@ -3,13 +3,13 @@
 ```bash
 cd /path/to/cursor-setup-guide
 ./bin/cursor-setup install-global
-./bin/cursor-setup refresh-global   # after router PRs
+./bin/cursor-setup refresh-global   # after router / global-hook PRs
 ./bin/cursor-setup doctor
 ```
 
 | Source | Destination |
 |--------|-------------|
-| `hooks.json` | `~/.cursor/hooks.json` |
+| `hooks.json` | `~/.cursor/hooks.json` (router + `sdd-specify-preflight`) |
 | `hooks/*.sh` | `~/.cursor/hooks/` (executable) |
 | `rules/*.mdc` | `~/.cursor/rules/` |
 

@@ -69,3 +69,68 @@ Maintainers / curious adopters:
 ```
 
 MNW is the mature reference for SDD + Company MCP — not a day-1 dependency. Ops skills (Doppler, Fireflies, …) live in gold; copy from MNW into your repo only if you need them.
+
+---
+
+## Authoring rules (`.mdc`)
+
+Prefer **short**, **scoped**, **one concern per file**.
+
+```markdown
+---
+description: One line for when this applies
+alwaysApply: true          # or use globs: instead
+# globs:
+#   - "specs/**"
+#   - ".specify/**"
+---
+
+# Title
+
+When … do …
+```
+
+| Do | Don’t |
+|----|--------|
+| Trigger + policy in ~30–80 lines | Novel-length architecture essays |
+| Point to a skill for multi-step ops | Embed secrets, host IPs, tokens |
+| Glob-gate Spec Kit phase rules | `alwaysApply: true` for SDD phase order |
+| One concern per file / PR | Bundle unrelated policies |
+
+| Kind | Path | Install |
+|------|------|---------|
+| Product starters | `templates/product/*.mdc` → `repo/.cursor/rules/` | `scaffold-repo` |
+| SDD snippet / specify override | `templates/product/rules/`, `templates/spec-kit/` | `adopt-sdd` |
+| Machine always-on + on-demand | `templates/global/rules/` → `~/.cursor/rules/` | `install-global` / `refresh-global` |
+
+Starter pedagogy ≠ MNW gold names — [ownership.md](./ownership.md#starter-pack-vs-gold-important). After changing global rules in this guide, teammates run `refresh-global`.
+
+---
+
+## Authoring skills
+
+Rules = policy; skills = how (`SKILL.md`).
+
+| | Rules | Skills |
+|---|-------|--------|
+| Load | Always / glob | When routed or invoked |
+| Size | Short | Can be long playbooks |
+
+```
+.cursor/skills/my-skill/
+└── SKILL.md    # name, description (+ optional disable-model-invocation for stubs)
+```
+
+- Full bodies for shared Spec Kit / ops skills are **repo-canonical** (gold: meeting_notes for many).
+- `~/.cursor/skills/<name>/` for those names should be **pointer stubs** — never a second SSOT.
+- Personal skills stay full on the machine; `install-global` will not overwrite them.
+- Pedagogy under `templates/product/example-skill/` — teaching only.
+
+| Skill | Scope | Role |
+|-------|-------|------|
+| `sdd-entry` | Product | Chat Start/Continue SDD |
+| `speckit-*` | Product (+ global stubs) | Phase workers |
+| `sdd-orchestrator` | Global (ctl symlink) | Phase gating |
+| `company-mcp` | Product | [company-mcp.md](./company-mcp.md) |
+
+After `specify integration upgrade`, re-apply org deltas (`templates/skills/speckit-managed-deltas.md`). Safe-to-edit matrix: [specify/bootstrap.md](./specify/bootstrap.md#what-you-can-change).

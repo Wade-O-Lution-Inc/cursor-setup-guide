@@ -35,15 +35,15 @@ python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight
 
 `sync` keeps ctl on clean `origin/main` and refreshes `~/.cursor/skills/sdd-orchestrator`. Never leave a feature branch checked out in the runtime clone.
 
-After team router PRs land: `./bin/cursor-setup refresh-global` on **each** machine.
+After team router / global-hook PRs land: `./bin/cursor-setup refresh-global` on **each** machine (overwrites `~/.cursor/hooks.json` + `hooks/*.sh` from templates).
 
 ### What the CLI does
 
 | Command | Touches | When |
 |---------|---------|------|
 | `install-global` | `~/.cursor/hooks*`, `rules/`, pointer stubs under `skills/` | First machine setup |
-| `refresh-global` | Overwrites router + global rules from templates | After guide router/rule PRs |
-| `doctor` | Read-only checks (+ router unit test) | Anytime |
+| `refresh-global` | Overwrites skill router, SDD specify preflight, `hooks.json`, global rules | After guide router/hook/rule PRs |
+| `doctor` | Read-only checks (+ router unit test; expects both `beforeSubmitPrompt` hooks) | Anytime |
 | `scaffold-repo` | `repo/.cursor/` from `templates/product/` | Bare product repo — [product-repo](./product-repo.md) |
 | `adopt-sdd` | `.specify/` + SDD skills (can run `specify init --force`) | Opt-in SDD — [bootstrap](./specify/bootstrap.md) |
 | `sync-check` | Compares templates ↔ MNW / `~/.cursor` | **Maintainers** — [SYNC.md](../templates/SYNC.md) |
@@ -52,9 +52,10 @@ After team router PRs land: `./bin/cursor-setup refresh-global` on **each** mach
 
 ## 2. Smoke
 
-- [ ] `./bin/cursor-setup doctor` exits 0 (WARN on stub skills is OK)
+- [ ] `./bin/cursor-setup doctor` exits 0 (WARN on stub skills is OK; both skill-router and `sdd-specify-preflight` hooks OK)
 - [ ] `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl preflight` exits 0
 - [ ] A Cursor chat that triggers skill routing shows an agent message starting with `MANDATORY SKILL ROUTING`
+- [ ] In an adopted Spec Kit repo, chat `Continue SDD` shows an agent message starting with `MANDATORY SDD PREFLIGHT` (inject-only; never blocks the prompt)
 
 ---
 

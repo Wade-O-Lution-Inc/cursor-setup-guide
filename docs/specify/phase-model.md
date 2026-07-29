@@ -21,10 +21,10 @@ constitution (once per repo)
 | clarify | Updates `spec.md` | Binary |
 | plan | `plan.md`, `research.md`, drafts `confidence-checks.md` | Binary |
 | tasks | `tasks.md` | Binary |
-| analyze | Consistency report | Binary + optional expert swarm |
-| implement | App code + `[X]` in `tasks.md` | Binary (higher `repair_cap`) |
-| converge | Gap assessment; may append `tasks.md` | Binary; may loop implement |
-| confidence | `confidence.md`; re-compile checks | **1–5 axes** + effort checks; swarm + advocate |
+| analyze | Consistency report | Binary + optional expert swarm; **`repair_cap` 1** (late-phase pin) |
+| implement | App code + `[X]` in `tasks.md` | Binary (ctl `repair_cap` 2) |
+| converge | Gap assessment; may append `tasks.md` | Binary; may loop implement; **`repair_cap` 1** (late-phase pin) |
+| confidence | `confidence.md`; re-compile checks | **1–5 axes** + effort checks; swarm + advocate (ctl `repair_cap` 2) |
 
 Also: `.cursor/auto-context.md` Spec Progress on `NNN-*` branches (optional hook). Runlog: `.specify/orchestrator-runs/` (gitignored).
 
@@ -39,6 +39,25 @@ Also: `.cursor/auto-context.md` Spec Progress on `NNN-*` branches (optional hook
 
 Complexity is **inverted**: over-engineering lowers the score.
 
+## Confidence contract (terminal phase)
+
+Worker: **`speckit-confidence`** (org-owned). Orchestration: confidence swarm + advocate — [orchestrator.md](./orchestrator.md). Optional follow-up: **`speckit-confidence-improve`** (proposal only; human review; never auto-edits skills).
+
+1. **Plan** — draft `specs/NNN-*/confidence-checks.md` from FRs / success criteria  
+2. **Tasks** — every `in_authority` check maps to ≥1 task  
+3. **Confidence** — re-compile checks against the final diff; score:
+
+| Axis | Scale | Note |
+|------|-------|------|
+| Accuracy | 1–5 | Spec / FR coverage |
+| Complexity | 1–5 | **Inverted** — leaner wins |
+| Performance | 1–5 | Hot-path / cost |
+| Effort checks | pass/fail | `in_authority` must pass; `escalate` → residual only |
+
+Default exit bar: axes meet repo policy (often all at 5), `in_authority` checks pass, lint/test green. Else loop findings back — **max 3 iterations**, then residual risk in `confidence.md`. Passing verdicts include `HIGHLY_CONFIDENT` or `RESIDUAL_RISK_ACCEPTED` (CF-05 shape — `templates/spec-kit/`). End of run: **`sdd-ctl report`**.
+
+Recurring findings belong in **each product’s** docs convention (do not hardcode MNW learning-log paths here).
+
 ## Who runs each phase
 
 | Driver | Worker skill |
@@ -46,4 +65,4 @@ Complexity is **inverted**: over-engineering lowers the score.
 | Chat `sdd-orchestrator` phase=X | `speckit-X` (or `speckit-converge` / `speckit-confidence`) |
 | CLI `sdd` / `sdd-remote` | Same via workflow args |
 
-Next: [quick-start.md](./quick-start.md) · [orchestrator.md](./orchestrator.md) · [confidence-loop.md](./confidence-loop.md)
+Next: [quick-start.md](./quick-start.md) · [orchestrator.md](./orchestrator.md)
