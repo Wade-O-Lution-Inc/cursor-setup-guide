@@ -1,0 +1,9 @@
+{
+  "name": "integrity-safety",
+  "displayName": "Integrity Safety",
+  "version": "0.1.0",
+  "description": "git-safety, supply-chain-defense, skill router hook",
+  "author": {
+    "name": "Integrity Systems"
+  }
+}

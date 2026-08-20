@@ -6,6 +6,7 @@
 |------|-------------|
 | Product harness | [meeting_notes_workflow](https://github.com/Wade-O-Lution-Inc/meeting_notes_workflow) (`main` / `staging`) |
 | Orchestrator runtime | [sdd-orchestrator](https://github.com/Wade-O-Lution-Inc/sdd-orchestrator) — **not** vendored here; document install only |
+| **sdd-entry skill** | **sdd-orchestrator** `main` (includes Start SDD Lite / Start SDD Review) — **not** meeting_notes until MNW catches up |
 | Machine router | `~/.cursor/hooks/workspace-skill-router*.sh` after local improvements |
 
 **This guide:** adoption copies under `templates/`. Machine-readable map: [sync-manifest.json](./sync-manifest.json).
@@ -27,7 +28,8 @@ See `sync-manifest.json` `paths` array (authoritative for `sync-check`). Human s
 |---------------|-----------|
 | `spec-kit/sdd*.yml`, registry, orchestrator.json, confidence template | MNW `.specify/…` |
 | `spec-kit/sdd-user-guide.template.md` | MNW `docs/agents/SDD_USER_GUIDE.md` |
-| `skills/sdd-entry`, confidence*, company-mcp | MNW `.cursor/skills/…` |
+| `skills/sdd-entry` | **sdd-orchestrator** `.cursor/skills/sdd-entry` (gold until MNW catches up on Lite/Review) |
+| confidence*, company-mcp | MNW `.cursor/skills/…` |
 | `product/hooks/orchestrator-*.sh` | MNW `.cursor/hooks/…` |
 | `global/hooks/workspace-skill-router*.sh` | `~/.cursor/hooks/…` |
 
@@ -44,7 +46,9 @@ cp "$MNW/.specify/workflows/sdd-remote/workflow.yml" "$GUIDE/templates/spec-kit/
 cp "$MNW/.specify/workflows/workflow-registry.json" "$GUIDE/templates/spec-kit/workflow-registry.template.json"
 cp "$MNW/.specify/orchestrator.json" "$GUIDE/templates/spec-kit/orchestrator.json"
 cp "$MNW/docs/agents/SDD_USER_GUIDE.md" "$GUIDE/templates/spec-kit/sdd-user-guide.template.md"
-cp "$MNW/.cursor/skills/sdd-entry/SKILL.md" "$GUIDE/templates/skills/sdd-entry/SKILL.md"
+# sdd-entry gold is sdd-orchestrator (Lite/Review) until MNW catches up — not MNW:
+# gh api "repos/Wade-O-Lution-Inc/sdd-orchestrator/contents/.cursor/skills/sdd-entry/SKILL.md?ref=main" --jq .content | base64 -d \
+#   > "$GUIDE/templates/skills/sdd-entry/SKILL.md"
 # …other skill rows from sync-manifest.json
 
 mkdir -p "$GUIDE/templates/skills/company-mcp"

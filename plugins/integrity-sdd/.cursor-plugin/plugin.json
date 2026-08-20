@@ -1,0 +1,9 @@
+{
+  "name": "integrity-sdd",
+  "displayName": "Integrity SDD",
+  "version": "0.1.0",
+  "description": "Start SDD / Start SDD Lite / Start SDD Review, bootstrap skill, SDD preflight hook, front-door rule",
+  "author": {
+    "name": "Integrity Systems"
+  }
+}
