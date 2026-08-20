@@ -16,6 +16,7 @@ Adoption hub for Wade-O-Lution Cursor setup: machine harness, product `.cursor/`
 
 | I want to… | Go |
 |------------|-----|
+| **Integrity Team marketplace (SDD Full/Lite/Review)** | [docs/team-marketplace.md](./docs/team-marketplace.md) |
 | **Set up a new machine** | [docs/day1.md](./docs/day1.md) |
 | **Add / adapt harness on a product repo** | [docs/product-repo.md](./docs/product-repo.md) |
 | **Adopt Spec Kit / SDD** | [docs/specify/bootstrap.md](./docs/specify/bootstrap.md) → [quick-start](./docs/specify/quick-start.md) |

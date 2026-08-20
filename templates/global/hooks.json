@@ -2,12 +2,8 @@
   "version": 1,
   "hooks": {
     "beforeSubmitPrompt": [
-      {
-        "command": "hooks/route-skills-before-prompt.sh"
-      },
-      {
-        "command": "hooks/sdd-specify-preflight.sh"
-      }
+      { "command": "hooks/route-skills-before-prompt.sh" },
+      { "command": "hooks/sdd-specify-preflight.sh" }
     ]
   }
 }

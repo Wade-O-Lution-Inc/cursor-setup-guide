@@ -1,0 +1,15 @@
+---
+description: Mandatory execution of hook-injected skill routing on every agent turn
+alwaysApply: true
+---
+
+# Skill routing mandate
+
+When the session includes an **agent_message** starting with **MANDATORY SKILL ROUTING** (from `beforeSubmitPrompt` hooks):
+
+1. **Read every listed skill or rule path** before editing files or running implementation commands.
+2. Do not guess procedures that are covered by a listed skill.
+3. If multiple repos are listed, read skills for each repo touched by the task.
+4. If no routing message appears, use the active repo’s `.cursor/rules/agent-orchestrator.mdc` and `~/.cursor/rules/multi-repo-workspace.mdc`.
+
+Hooks: per-repo `.cursor/hooks/suggest-agent-skills.sh` (repo-side wrapper; some repos use `route-skills-before-prompt.sh`) plus user `~/.cursor/hooks/route-skills-before-prompt.sh` (shared `workspace-skill-router.sh`).

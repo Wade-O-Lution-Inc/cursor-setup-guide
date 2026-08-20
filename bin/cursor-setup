@@ -178,6 +178,38 @@ def cmd_doctor(_: argparse.Namespace) -> int:
                     "(expected pointer stub; repo-canonical in meeting_notes_workflow)"
                 )
 
+    # Optional Team marketplace packaging WARN (never FAIL)
+    marketplace = GUIDE_ROOT / ".cursor-plugin" / "marketplace.json"
+    if not marketplace.is_file():
+        print("[WARN] .cursor-plugin/marketplace.json missing (Team marketplace packaging)")
+    else:
+        try:
+            mp = json.loads(marketplace.read_text(encoding="utf-8"))
+            plugin_root_name = (mp.get("metadata") or {}).get("pluginRoot") or "plugins"
+            plugin_root = GUIDE_ROOT / plugin_root_name
+            for entry in mp.get("plugins") or []:
+                name = entry.get("name") or ""
+                source = entry.get("source") or name
+                src_dir = plugin_root / source
+                plugin_json = src_dir / ".cursor-plugin" / "plugin.json"
+                if not src_dir.is_dir() or not plugin_json.is_file():
+                    print(
+                        f"[WARN] marketplace plugin {name!r} source "
+                        f"{plugin_root_name}/{source} missing or incomplete"
+                    )
+                else:
+                    try:
+                        pj = json.loads(plugin_json.read_text(encoding="utf-8"))
+                        if pj.get("name") and name and pj.get("name") != name:
+                            print(
+                                f"[WARN] marketplace plugins[] name {name!r} "
+                                f"!= plugin.json name {pj.get('name')!r}"
+                            )
+                    except (json.JSONDecodeError, OSError) as exc:
+                        print(f"[WARN] cannot read {plugin_json}: {exc}")
+        except Exception as exc:  # noqa: BLE001 — doctor WARN only
+            print(f"[WARN] marketplace.json check skipped: {exc}")
+
     print()
     print("Next: ./bin/cursor-setup install-global   # if harness missing")
     print("      open your product repo in Cursor (MNW clone optional)")

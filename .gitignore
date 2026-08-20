@@ -1,0 +1,6 @@
+# Spec Kit / SDD runtime artifacts (not packaging)
+.specify/orchestrator-runs/
+.specify/reviews/
+
+__pycache__/
+*.pyc

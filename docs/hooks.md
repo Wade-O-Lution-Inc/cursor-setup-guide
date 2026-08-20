@@ -8,10 +8,16 @@ Hard stops and side-effects. Prefer **fail-open** observation for non-security h
 
 | Layer | Install | Events |
 |-------|---------|--------|
+| **Team plugin** skill router | `integrity-safety` marketplace plugin | `beforeSubmitPrompt` → `./hooks/workspace-skill-router.sh` (sibling; not HOME wrapper) |
+| **Team plugin** SDD specify preflight | `integrity-sdd` marketplace plugin | `beforeSubmitPrompt` → `./hooks/sdd-specify-preflight.sh` |
 | **Global** skill router | `install-global` / `refresh-global` | `beforeSubmitPrompt` → `workspace-skill-router.sh` |
 | **Global** SDD specify preflight | `install-global` / `refresh-global` | `beforeSubmitPrompt` → `sdd-specify-preflight.sh` (**inject-only**) |
 | **Product** security + compact context | `scaffold-repo` | prompt / shell / tab read / afterFileEdit / stop |
 | **Optional product** orchestrator | scripts in `templates/product/hooks/`; wire yourself | `beforeShellExecution`, `subagentStop` |
+
+**One router, two distribution paths:** the same `workspace-skill-router.sh` ships under `plugins/integrity-safety/hooks/` (Team scope after Required) and `templates/global/hooks/` (CLI → `~/.cursor/hooks/`). After plugins are Required, prefer Team plugin scope as primary; `install-global` user hooks are the fallback. **Do not double-inject** the same `beforeSubmitPrompt` router from both paths on one Desktop seat. Cloud Agents do **not** load `~/.cursor/hooks.json` — use Team plugins there.
+
+See [team-marketplace.md](./team-marketplace.md) for plugin hook layout (`hooks/hooks.json` official path) and why the safety plugin must invoke the sibling router, not `route-skills-before-prompt.sh`.
 
 ## Security baseline
 

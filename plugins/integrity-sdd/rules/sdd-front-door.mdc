@@ -1,0 +1,15 @@
+---
+description: SDD front door — Start SDD / Lite / Review; never bare speckit-* as top-level
+alwaysApply: true
+---
+
+# SDD front door
+
+In product repos that have `.specify/`, new multi-file work starts with **Start SDD**, **Start SDD Lite**, or **Start SDD Review**. Continue with **Continue SDD**.
+
+1. Read and follow the `sdd-entry` skill (plugin or `~/.cursor/skills/sdd-entry`), then the `sdd-orchestrator` skill — never bare `speckit-*` as the top-level skill.
+2. **Continue SDD** is profile-aware: resume the pinned `workflow_profile` (`full` | `lite` | `review`) from the feature runlog / pin.
+3. **Review** never implements — inspect → verdict only. Scratch dir `.specify/reviews/pr-<n>/`.
+4. **Full** and **Lite** never merge a PR.
+5. **Suggest SDD route** is advisory only (`sdd-ctl advise-route`); never auto-pins a profile; never recommends review.
+6. If preflight reports missing ctl, run `/sdd-bootstrap` (or the `sdd-bootstrap` skill) once before continuing.

@@ -1,0 +1,13 @@
+{
+  "gate_mode": "automatic",
+  "allow_repo_commands": true,
+  "implement_hooks": [
+    "python3 -m py_compile bin/cursor-setup",
+    "bash templates/global/hooks/workspace-skill-router.test.sh"
+  ],
+  "persona_comms": {
+    "dissent_resolution": { "enabled": false, "dissent_rounds": 1 },
+    "repair_dialogue": { "enabled": false, "repair_questions": 1 },
+    "carry_forward": { "enabled": false, "phases": [] }
+  }
+}

@@ -1,0 +1,283 @@
+schema_version: "1.0"
+workflow:
+  id: "sdd"
+  name: "SDD"
+  version: "3.1.0"
+  author: "Integrity"
+  description: >-
+    Canonical local SDD cycle. Flags: scope, stop_at, issues, mode, model_profile.
+    Passing phases auto-continue via sdd-orchestrator; exhausted repair caps stop
+    the run. Each named workflow phase uses orchestrator single_phase mode so
+    this workflow alone owns sequencing and stop_at. The final step produces an
+    end report.
+
+requires:
+  speckit_version: ">=0.13.0"
+  integrations:
+    any:
+      - "cursor-agent"
+      - "claude"
+      - "copilot"
+
+inputs:
+  spec:
+    type: string
+    required: true
+    prompt: "Describe what you want to build (what/why, not tech stack)"
+  integration:
+    type: string
+    default: "auto"
+    prompt: "Integration (auto uses project default, e.g. cursor-agent)"
+  scope:
+    type: string
+    default: "full"
+    enum: ["full", "api-only", "frontend-only"]
+    prompt: "Scope: full, api-only, or frontend-only"
+  stop_at:
+    type: string
+    default: "confidence"
+    enum: ["confidence", "tasks", "plan"]
+    prompt: "Stop after: confidence (full), tasks, or plan"
+  issues:
+    type: string
+    default: "false"
+    enum: ["true", "false"]
+    prompt: "After tasks, emit GitHub issues and stop? (true/false)"
+  mode:
+    type: string
+    default: "full"
+    enum: ["full", "test-fix"]
+    prompt: "full = new/continue cycle; test-fix = implement + pytest retry + confidence"
+  model_profile:
+    type: string
+    default: "balanced"
+    enum: ["lean", "balanced", "frontier", "legacy"]
+    prompt: "Model profile: lean (cheap), balanced (default), frontier (max reliability)"
+
+# Shared instruction baked into every agent step (always-on orchestrator).
+# Workers follow the matching speckit-* skill; the orchestrator owns gates/exits.
+
+steps:
+  - id: route-mode
+    type: switch
+    expression: "inputs.mode"
+    cases:
+      test-fix:
+        - id: implement-tf
+          command: speckit.implement
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+              and run phase=implement through sdd-orchestrator (worker Task + D-hooks +
+              judge + phase-exits.md). Do not skip the orchestrator. Worker follows
+              .cursor/skills/speckit-implement/SKILL.md.
+              Context: {{ inputs.spec }}
+              model_profile={{ inputs.model_profile }}.
+
+        - id: test-tf
+          type: shell
+          run: "doppler run -- uv run python -m pytest tests/ -x -q"
+
+        - id: retry-tf
+          type: while
+          condition: "{{ steps.test-tf.output.exit_code != 0 }}"
+          max_iterations: 5
+          steps:
+            - id: fix-tf
+              type: prompt
+              integration: "{{ inputs.integration }}"
+              prompt: >-
+                Tests failed (exit {{ steps.test-tf.output.exit_code }}).
+                Fix failing tests per .specify/memory/constitution.md and tasks.md.
+                Run ruff if needed.
+
+            - id: retest-tf
+              type: shell
+              run: "doppler run -- uv run python -m pytest tests/ -x -q"
+
+        - id: converge-tf
+          command: speckit.converge
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+              and run phase=converge through sdd-orchestrator. Worker follows
+              .cursor/skills/speckit-converge/SKILL.md. Obey next_phase from
+              sdd-ctl record (implement if gaps under round cap, else confidence).
+              Context: {{ inputs.spec }}
+              model_profile={{ inputs.model_profile }}.
+
+        - id: confidence-tf
+          command: speckit.confidence
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+              and run phase=confidence through sdd-orchestrator. Worker follows
+              .cursor/skills/speckit-confidence/SKILL.md.
+              Context: {{ inputs.spec }}
+              model_profile={{ inputs.model_profile }}.
+
+        - id: end-report-tf
+          type: prompt
+          integration: "{{ inputs.integration }}"
+          prompt: >-
+            Run `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl report`
+            for the active feature and present the SDD end report:
+            branch, specs path, phase outcomes, tasks.md progress, test result,
+            residual risks, and Next Exact Steps.
+
+    default:
+      - id: specify
+        command: speckit.specify
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=specify through sdd-orchestrator (worker Task + D-hooks +
+            judge + phase-exits.md). Do not skip the orchestrator. Worker follows
+            .cursor/skills/speckit-specify/SKILL.md.
+            Feature: {{ inputs.spec }}
+            model_profile={{ inputs.model_profile }}.
+
+      - id: clarify
+        command: speckit.clarify
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=clarify through sdd-orchestrator. Worker follows
+            .cursor/skills/speckit-clarify/SKILL.md.
+            Context: {{ inputs.spec }}
+            model_profile={{ inputs.model_profile }}.
+
+      - id: plan
+        command: speckit.plan
+        integration: "{{ inputs.integration }}"
+        input:
+          args: >-
+            ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+            and run phase=plan through sdd-orchestrator. Worker follows
+            .cursor/skills/speckit-plan/SKILL.md.
+            Scope: {{ inputs.scope }}. {{ inputs.spec }}
+            model_profile={{ inputs.model_profile }}.
+
+      - id: after-plan
+        type: if
+        condition: "inputs.stop_at == 'plan'"
+        then:
+          - id: done-at-plan
+            type: prompt
+            integration: "{{ inputs.integration }}"
+            prompt: >-
+              stop_at=plan — run the absolute-path sdd-ctl report command from
+              ~/.cursor/sdd-orchestrator-ctl and present the end report with
+              specs path, phase outcomes, open questions, and Next Exact Steps.
+              Do not implement.
+        else:
+          - id: tasks
+            command: speckit.tasks
+            integration: "{{ inputs.integration }}"
+            input:
+              args: >-
+                ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+                and run phase=tasks through sdd-orchestrator. Worker follows
+                .cursor/skills/speckit-tasks/SKILL.md.
+                Scope: {{ inputs.scope }}. {{ inputs.spec }}
+                model_profile={{ inputs.model_profile }}.
+
+          - id: analyze
+            command: speckit.analyze
+            integration: "{{ inputs.integration }}"
+            input:
+              args: >-
+                ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+                and run phase=analyze through sdd-orchestrator. Worker follows
+                .cursor/skills/speckit-analyze/SKILL.md.
+                Context: {{ inputs.spec }}
+                model_profile={{ inputs.model_profile }}.
+
+          - id: maybe-issues
+            type: if
+            condition: "inputs.issues == 'true'"
+            then:
+              - id: to-issues
+                command: speckit.taskstoissues
+                integration: "{{ inputs.integration }}"
+                input:
+                  args: "{{ inputs.spec }}"
+
+              - id: done-issues
+                type: prompt
+                integration: "{{ inputs.integration }}"
+                prompt: >-
+                  issues=true — emitted GitHub issues from tasks.md. Run sdd-ctl
+                  report, include issue URLs in the end report, and stop. Do not
+                  implement.
+
+            else:
+              - id: after-tasks
+                type: if
+                condition: "inputs.stop_at == 'tasks'"
+                then:
+                  - id: done-at-tasks
+                    type: prompt
+                    integration: "{{ inputs.integration }}"
+                    prompt: >-
+                      stop_at=tasks — run the absolute-path sdd-ctl report command
+                      from ~/.cursor/sdd-orchestrator-ctl and present the end report
+                      with tasks.md progress, phase outcomes, and Next Exact Steps.
+                      Do not implement.
+                else:
+                  - id: lint-check
+                    type: shell
+                    run: "uv run ruff check"
+                    continue_on_error: true
+
+                  - id: implement
+                    command: speckit.implement
+                    integration: "{{ inputs.integration }}"
+                    input:
+                      args: >-
+                        ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+                        and run phase=implement through sdd-orchestrator. Worker follows
+                        .cursor/skills/speckit-implement/SKILL.md.
+                        Scope: {{ inputs.scope }}. {{ inputs.spec }}
+                        model_profile={{ inputs.model_profile }}.
+
+                  - id: test-suite
+                    type: shell
+                    run: "doppler run -- uv run python -m pytest tests/ -x -q"
+
+                  - id: converge
+                    command: speckit.converge
+                    integration: "{{ inputs.integration }}"
+                    input:
+                      args: >-
+                        ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+                        and run phase=converge through sdd-orchestrator. Worker follows
+                        .cursor/skills/speckit-converge/SKILL.md. Obey next_phase from
+                        sdd-ctl record (implement if gaps under round cap max 2, else
+                        confidence). Context: {{ inputs.spec }}
+                        model_profile={{ inputs.model_profile }}.
+
+                  - id: confidence
+                    command: speckit.confidence
+                    integration: "{{ inputs.integration }}"
+                    input:
+                      args: >-
+                        ALWAYS-ON ORCHESTRATOR: Read ~/.cursor/skills/sdd-orchestrator/SKILL.md
+                        and run phase=confidence through sdd-orchestrator. Worker follows
+                        .cursor/skills/speckit-confidence/SKILL.md.
+                        Context: {{ inputs.spec }}
+                        model_profile={{ inputs.model_profile }}.
+
+                  - id: end-report
+                    type: prompt
+                    integration: "{{ inputs.integration }}"
+                    prompt: >-
+                      Run the absolute-path sdd-ctl report command from
+                      ~/.cursor/sdd-orchestrator-ctl for the active feature and present the SDD
+                      end report: branch, specs path, phase outcomes, tasks.md progress
+                      (completed/total), test result, residual risks, and Next Exact Steps.

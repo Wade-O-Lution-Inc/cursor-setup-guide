@@ -40,7 +40,8 @@
     {
       "template": "skills/sdd-entry/SKILL.md",
       "gold": ".cursor/skills/sdd-entry/SKILL.md",
-      "source": "mnw"
+      "source": "sdd-orchestrator",
+      "note": "Gold is sdd-orchestrator main (Lite/Review) until MNW catches up; do not overwrite from MNW yet"
     },
     {
       "template": "skills/speckit-confidence/SKILL.md",

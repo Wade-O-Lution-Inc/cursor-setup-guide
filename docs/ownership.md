@@ -24,12 +24,14 @@ Is this specific to one codebase?
 
 | Repo | Owns | Spec Kit / SDD? |
 |------|------|-----------------|
-| **cursor-setup-guide** | Adoption docs + templates + install CLI | Documents only |
+| **cursor-setup-guide** | Adoption docs + templates + install CLI + **Integrity Team marketplace** (`plugins/`, `.cursor-plugin/`) | Documents + packaging; SDD engine stays sdd-orchestrator |
 | **sdd-orchestrator** | Portable ctl (`sdd-ctl`, phase models) | Runtime SSOT |
 | **meeting_notes_workflow** | Gold product harness, SDD user guide, Company MCP skill/deep guide | Yes — primary reference |
 | **Integrity_Lab** | Mac mini platform skills/gates | **No** Spec Kit product features |
 | **repo-index** | Swarm composition | Swarm protocol |
 | Platform (`data-api`, `integrity-ts`, …) | Product APIs / UI harness | Adopt SDD when needed via [product-repo](./product-repo.md) |
+
+**Marketplace layer:** named seats get `integrity-sdd` / `integrity-safety` / `integrity-company-context` from the Team marketplace ([team-marketplace.md](./team-marketplace.md)). Machine CLI path (`~/.cursor/` via `install-global`) remains the dual-path fallback. Do not treat marketplace and CLI as mutually exclusive.
 
 Each repo has its own `.cursor/`. The **global skill router** (`~/.cursor/hooks/workspace-skill-router.sh`) detects the active repo.
 

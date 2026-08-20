@@ -1,0 +1,30 @@
+{
+  "name": "integrity-cursor",
+  "displayName": "Integrity Cursor",
+  "owner": {
+    "name": "Integrity Systems",
+    "email": "cwooley@integrityus.ai"
+  },
+  "metadata": {
+    "description": "SDD Full/Lite/Review chat surface, safety hooks, and company-context skill. Engine remains sdd-ctl on origin/main.",
+    "version": "0.1.0",
+    "pluginRoot": "plugins"
+  },
+  "plugins": [
+    {
+      "name": "integrity-sdd",
+      "source": "integrity-sdd",
+      "description": "Start SDD / Start SDD Lite / Start SDD Review, bootstrap skill, SDD preflight hook, front-door rule"
+    },
+    {
+      "name": "integrity-safety",
+      "source": "integrity-safety",
+      "description": "git-safety, supply-chain-defense, skill router hook"
+    },
+    {
+      "name": "integrity-company-context",
+      "source": "integrity-company-context",
+      "description": "IntegrityKB company-mcp skill only. Auth stays Team MCP. No secrets."
+    }
+  ]
+}

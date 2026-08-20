@@ -2,7 +2,9 @@
 
 New laptop or Cloud Agent VM. Works for **any** Wade product repo — you do **not** need meeting_notes_workflow.
 
-Pair with: [ownership.md](./ownership.md) · [product-repo.md](./product-repo.md)
+**Integrity Cursor Team seats:** prefer Team marketplace plugins after admin import — [team-marketplace.md](./team-marketplace.md). Still run `/sdd-bootstrap` once if ctl is missing. This page is the **CLI dual-path** (`install-global`) fallback and machine harness path.
+
+Pair with: [ownership.md](./ownership.md) · [product-repo.md](./product-repo.md) · [team-marketplace.md](./team-marketplace.md)
 
 ---
 
