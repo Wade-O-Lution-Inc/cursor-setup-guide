@@ -70,6 +70,42 @@ Post-design re-check: same — no violations requiring Complexity Tracking rows.
 
 ## Project Structure
 
+### SDD Lite adopt prerequisite (not marketplace plugins)
+
+These paths exist because **Start SDD Lite** required `cursor-setup adopt-sdd` (`.specify/` + repo Spec Kit skills/rules) before specify. They are **in-scope as the Lite-adopt / dogfood harness** for this feature — not accidental drift and not part of the three Team marketplace plugins (`integrity-sdd` / `integrity-safety` / `integrity-company-context`).
+
+```text
+.specify/                               # adopt-sdd / Spec Kit harness (tracked)
+├── memory/constitution.md
+├── scripts/bash/
+├── templates/
+├── workflows/
+├── integrations/
+└── …                                   # feature.json, orchestrator.json, etc.
+# gitignored scratch (do not commit):
+#   .specify/orchestrator-runs/
+#   .specify/reviews/
+
+specs/001-team-marketplace-plugins/     # this feature’s specify/plan artifacts
+├── plan.md
+├── spec.md
+├── confidence-checks.md
+├── phase-exits.md
+└── checklists/requirements.md
+
+.cursor/skills/
+├── sdd-entry/SKILL.md                  # from specify init / adopt-sdd
+└── speckit-*/                          # Spec Kit phase skills from specify init
+
+.cursor/rules/
+├── specify-rules.mdc                   # SPECKIT START block for specs/.specify
+└── sdd-orchestrator-snippet.mdc
+
+.gitignore                              # ignores orchestrator-runs / specify scratch
+```
+
+**Lite note:** Do **not** create `tasks.md` on the happy path. Implement executes **## Implementation Worklist** below. Template mentions of `tasks.md` / Phase 2 tasks are Full-profile only. Do **not** delete adopt-sdd files — they are required to run SDD in this repo.
+
 ### Documentation (this feature)
 
 ```text
@@ -80,8 +116,6 @@ specs/001-team-marketplace-plugins/
 ├── phase-exits.md          # Gate log
 └── checklists/requirements.md
 ```
-
-**Lite note:** Do **not** create `tasks.md` on the happy path. Implement executes **## Implementation Worklist** below. Template mentions of `tasks.md` / Phase 2 tasks are Full-profile only.
 
 ### Source Code (repository root)
 
@@ -145,7 +179,7 @@ docs/
 README.md                               # patch: Start-here → team marketplace
 ```
 
-**Structure Decision**: Multi-plugin marketplace living in this adoption repo (Cursor official layout). Dual-path keeps machine CLI templates under `templates/global/` and `bin/cursor-setup`. No application `src/` tree; no separate marketplace repo.
+**Structure Decision**: Multi-plugin marketplace living in this adoption repo (Cursor official layout). Dual-path keeps machine CLI templates under `templates/global/` and `bin/cursor-setup`. No application `src/` tree; no separate marketplace repo. Branch also carries **SDD Lite adopt-sdd** paths (`.specify/**`, repo `.cursor/skills/sdd-entry/` + `speckit-*/`, `.cursor/rules/specify-rules.mdc` + `sdd-orchestrator-snippet.mdc`, `.gitignore` scratch ignores) so this repo can dogfood Start SDD Lite — those are harness prerequisite, not marketplace plugin content.
 
 ## FR → file / module mapping (PL-01)
 
