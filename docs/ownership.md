@@ -31,7 +31,7 @@ Is this specific to one codebase?
 | **repo-index** | Swarm composition | Swarm protocol |
 | Platform (`data-api`, `integrity-ts`, …) | Product APIs / UI harness | Adopt SDD when needed via [product-repo](./product-repo.md) |
 
-**Marketplace layer:** named seats get `integrity-sdd` / `integrity-safety` / `integrity-company-context` from the Team marketplace ([team-marketplace.md](./team-marketplace.md)). Machine CLI path (`~/.cursor/` via `install-global`) remains the dual-path fallback. Do not treat marketplace and CLI as mutually exclusive.
+**Marketplace layer:** intended path is Team marketplace plugins ([team-marketplace.md](./team-marketplace.md)). **Until Cursor fixes Default import**, named seats use `./bin/cursor-setup install-global` team-wide. IntegrityKB stays on Default Team MCP. Do not treat marketplace and CLI as mutually exclusive.
 
 Each repo has its own `.cursor/`. The **global skill router** (`~/.cursor/hooks/workspace-skill-router.sh`) detects the active repo.
 

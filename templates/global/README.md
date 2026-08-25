@@ -20,4 +20,6 @@ gh repo clone Wade-O-Lution-Inc/sdd-orchestrator ~/.cursor/sdd-orchestrator-ctl
 python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl sync
 ```
 
+**Team-wide until Cursor fixes Default marketplace import:** every named seat runs `install-global` from this guide — [team-marketplace.md](../../docs/team-marketplace.md#team-wide-path-until-cursor-fixes-default).
+
 Docs: [../../docs/day1.md](../../docs/day1.md) · [../../docs/ownership.md](../../docs/ownership.md#machine-scope-cursor)
