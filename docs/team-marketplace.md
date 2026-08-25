@@ -48,10 +48,44 @@ plugins/
 
 | Path | What it delivers |
 |------|------------------|
-| **Team marketplace** `plugins/**` | Primary for named seats after Dashboard Required / Default On |
-| **CLI** `templates/global/**` + `bin/cursor-setup` | Fallback / machine harness (`install-global`, `refresh-global`) |
+| **Team marketplace** `plugins/**` | Intended primary after Dashboard Required / Default On — **blocked on Teams Default** (see below) |
+| **CLI** `templates/global/**` + `bin/cursor-setup` | **Team-wide path until Cursor fixes Default** (`install-global`, `refresh-global`) |
 
 Keep both. Do not remove `install-global`.
+
+## Team-wide path until Cursor fixes Default
+
+Cursor Teams auto-creates a **Default** marketplace when IntegrityKB (or any Team MCP) is linked via Integrations & MCP → Add to Team Marketplace. That slot cannot be renamed or deleted. Importing this repo’s plugins onto Default fails:
+
+```text
+POST /api/dashboard/register-marketplace-and-plugins → 400
+marketplaceName: "__DEFAULT__"
+detail: Marketplace name must be kebab-case (lowercase alphanumeric with hyphens)
+```
+
+Do **not** uninstall Default to make room. Delete is rejected (`The default team marketplace cannot be deleted`). If it succeeded, Cursor can also delete the linked Team MCP (IntegrityKB) for local seats and Cloud Agents. Default also occupies the only Teams marketplace slot, so a second git-backed marketplace is not available.
+
+**Until Cursor accepts `__DEFAULT__` on that API, every named seat uses the CLI path.**
+
+```bash
+gh repo clone Wade-O-Lution-Inc/cursor-setup-guide
+cd cursor-setup-guide
+git checkout main
+git pull --ff-only
+./bin/cursor-setup install-global
+./bin/cursor-setup doctor
+```
+
+If `doctor` reports missing `sdd-ctl`, finish [day1.md](./day1.md) (clone `sdd-orchestrator` → `sdd-ctl sync`). After harness / router / hook PRs land on `main`, each machine runs `./bin/cursor-setup refresh-global`.
+
+| Still on Dashboard (leave it) | Not available until Cursor fixes Default |
+|-------------------------------|------------------------------------------|
+| `integrity-kb-company` Team MCP on Default | Import `cursor-setup-guide` plugins onto Default |
+| IntegrityKB auth in Integrations & MCP | Required / Default On for `integrity-sdd` / `integrity-safety` / `integrity-company-context` |
+
+Optional per-seat (does not use the Team slot): Cursor → Customize → Add Marketplace → `https://github.com/Wade-O-Lution-Inc/cursor-setup-guide`. That is not team-wide. Cloud Agents do **not** load `~/.cursor/hooks.json` — they stay on Team plugins / Team MCP once Default import works.
+
+When Cursor fixes Default: import this repo onto the existing marketplace, smoke, then Required / Default On. Seats that already ran `install-global` must drop the duplicate `beforeSubmitPrompt` router from `~/.cursor/hooks.json` so only the safety plugin injects it.
 
 ### Official hook path deviation
 
@@ -65,9 +99,9 @@ Do **not** double-inject the same `beforeSubmitPrompt` handler from both Team pl
 
 ## Human Dashboard steps (leftover — agent cannot click)
 
-Do these in Cursor Team Dashboard, in order:
+**Blocked on Teams Default** until Cursor fixes the kebab-case `400` above. Use [Team-wide path until Cursor fixes Default](#team-wide-path-until-cursor-fixes-default) now. When import works, do these in Cursor Team Dashboard, in order:
 
-1. **Import** this repo (`cursor-setup-guide`) as the Integrity Team marketplace source.
+1. **Import** this repo (`cursor-setup-guide`) onto the **existing** Default marketplace (do not delete Default; do not create a second marketplace).
 2. Set **marketplace access** for named Integrity Cursor Team seats.
 3. Keep **Auto Refresh OFF** until Standard-seat smoke passes.
 4. After smoke: set `integrity-sdd` and `integrity-safety` to **Required**; set `integrity-company-context` to **Default On**.
@@ -83,13 +117,17 @@ Never invoke bare speckit-* as the top-level skill. Never use Review to implemen
 and never use Full/Lite to merge a PR. Suggest SDD route is advisory only.
 ```
 
-## New-hire path (after import)
+## New-hire path (until Default import works)
 
-1. Join Integrity Cursor Team → plugins appear from Team marketplace.
-2. Still run **`/sdd-bootstrap` once** (ctl + Spec Kit 0.13.0) if preflight reports missing ctl.
-3. Fallback if marketplace delayed: `./bin/cursor-setup install-global` from this guide clone.
+1. Join Integrity Cursor Team (IntegrityKB MCP still comes from Default / Team MCP).
+2. Clone this guide and run **`./bin/cursor-setup install-global`** then **`./bin/cursor-setup doctor`** (commands above).
+3. Still run **`/sdd-bootstrap` once** (ctl + Spec Kit 0.13.0) if preflight reports missing ctl.
+
+After Cursor fixes Default import: plugins appear from the Team marketplace; keep `install-global` as the machine-harness fallback only.
 
 ## Smoke test (Standard seat)
+
+While Default import is blocked, use the CLI path: `install-global` + `doctor`, then the routing / preflight checks below (skip “three plugins visible”).
 
 - [ ] Three plugins visible; enable SDD + safety (+ company-context).
 - [ ] Chat **Start SDD Lite:** … enters Lite workflow (or Continue SDD resumes pin).
@@ -100,6 +138,7 @@ and never use Full/Lite to merge a PR. Suggest SDD route is advisory only.
 
 ## Do-not list
 
+- No deleting or renaming the Default team marketplace
 - No second marketplace repository
 - No secrets / URLs / tokens in `mcp.json` in this repo
 - No wrapping `sdd-ctl` as MCP

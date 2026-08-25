@@ -2,7 +2,7 @@
 
 New laptop or Cloud Agent VM. Works for **any** Wade product repo — you do **not** need meeting_notes_workflow.
 
-**Integrity Cursor Team seats:** prefer Team marketplace plugins after admin import — [team-marketplace.md](./team-marketplace.md). Still run `/sdd-bootstrap` once if ctl is missing. This page is the **CLI dual-path** (`install-global`) fallback and machine harness path.
+**Integrity Cursor Team seats:** Team marketplace import onto Default is **blocked** until Cursor fixes the kebab-case `400` (`marketplaceName: "__DEFAULT__"`). **Team-wide path now:** `./bin/cursor-setup install-global` (this page). Do not delete Default — that can remove IntegrityKB Team MCP. Details: [team-marketplace.md](./team-marketplace.md#team-wide-path-until-cursor-fixes-default). Still run `/sdd-bootstrap` once if ctl is missing.
 
 Pair with: [ownership.md](./ownership.md) · [product-repo.md](./product-repo.md) · [team-marketplace.md](./team-marketplace.md)
 
