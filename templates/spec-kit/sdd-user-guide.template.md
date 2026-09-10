@@ -12,7 +12,9 @@ SDD turns multi-step features into reviewable markdown (`spec.md` → `plan.md` 
 
 | Surface | Verb / ID | What it does |
 |---------|-----------|--------------|
-| **Chat** | `Start SDD: <what/why>` | New feature → `sdd-entry` → orchestrator **specify** |
+| **Chat** | `Start SDD: <what/why>` | New feature → `sdd-entry` → orchestrator **specify** (Full) |
+| **Chat** | `Start SDD Lite: <what/why>` | Contained work → `specify → plan → implement → light_gate` (lean when unset) |
+| **Chat** | `Start SDD Review` | PR inspect → verdict (not a build loop) |
 | **Chat** | `Continue SDD` | Resume feature dir → next ungated phase via orchestrator |
 | **CLI** | `specify workflow run sdd …` | Local auto-continuing cycle (flags below) |
 | **CLI** | `specify workflow run sdd-remote …` | Laptop through tasks, then Mac mini implement/confidence |
@@ -21,7 +23,8 @@ The standalone `Wade-O-Lution-Inc/sdd-orchestrator` engine is cloned at
 `~/.cursor/sdd-orchestrator-ctl`. In Cursor, the UI Task driver dispatches
 visible worker/judge tasks (and independent expert swarms when policy requests
 them); deterministic `bin/sdd-ctl` plans hooks, records verdicts, and is the
-sole writer of `phase-exits.md`. Bare `speckit-*` is the worker procedure only.
+sole logical writer of the SQLite commit (`phase-exits.md` / JSONL are
+exports). Bare `speckit-*` is the worker procedure only.
 Headless twin: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`.
 
 Passing phases auto-continue with no human phase pauses. A failed phase repairs
@@ -36,8 +39,8 @@ terminal phase, `sdd-ctl report` produces the end report.
 | `scope` | `full` \| `api-only` \| `frontend-only` | What layers the plan/tasks may touch |
 | `stop_at` | `confidence` \| `tasks` \| `plan` | Early exit (RFC ≈ `plan` or `tasks`) |
 | `issues` | `true` \| `false` | After tasks, emit GitHub issues and stop |
-| `mode` | `full` \| `test-fix` | `test-fix` = implement + pytest retry + confidence |
-| `model_profile` | `lean` \| `balanced` \| `frontier` | Cost/reliability intent (default `balanced`) |
+| `mode` | `full` \| `lite` \| `test-fix` | `lite` = specify → plan → implement → light_gate; `test-fix` = implement + pytest retry + confidence |
+| `model_profile` | `lean` \| `balanced` \| `frontier` | Cost/reliability intent. Full evaluated default `balanced`; Lite/Review **lean** when unset |
 | `transfer_only` | on `sdd-remote` | Skip laptop phases; handoff only |
 
 `persona_comms` (in `.specify/orchestrator.json`) is independent of
@@ -107,6 +110,8 @@ Constitution: `.specify/memory/constitution.md`. Mac mini handoff setup: [`.curs
 ```
 Start SDD: <what and why — no tech stack yet>
 Start SDD: <what and why>. Use balanced.
+Start SDD Lite: <contained what and why>
+Start SDD Review
 Continue SDD
 Continue SDD using frontier.
 Show SDD profile.
@@ -117,14 +122,14 @@ Stop SDD; switch to normal fix mode for <narrow bug>
 ```
 
 Optional: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`,
-`test-fix mode`, `Use lean|balanced|frontier`.
+`test-fix mode`, `lite`, `Use lean|balanced|frontier`.
 
 ### Model profiles
 
 | Profile | When to use |
 |---------|-------------|
-| `lean` | Cheap clarify/tasks-heavy exploration |
-| `balanced` | Default (evaluated ctl default; repo policy) |
+| `balanced` | Full evaluated default (repo policy often pins this) |
+| `lean` | Cheap exploration; **Lite and Review default when unset** |
 | `frontier` | Highest correctness priority |
 
 Choose a **profile**, not individual model IDs. Precedence: chat/CLI session →
@@ -138,6 +143,7 @@ need an explicit confirmation. Full matrix lives in
 
 ```bash
 specify workflow run sdd -i spec="..." -i integration=cursor-agent
+specify workflow run sdd -i spec="..." -i mode=lite
 specify workflow run sdd -i spec="..." -i stop_at=plan
 specify workflow run sdd -i spec="..." -i mode=test-fix
 specify workflow run sdd -i spec="..." -i issues=true -i stop_at=tasks
@@ -146,7 +152,9 @@ specify workflow status
 specify workflow resume <run_id>
 
 uv run ruff check
-doppler run -- uv run python -m pytest tests/ -x -q
+python3 -m pytest tests -q
+# Product repos that need secrets for *their* tests inject them locally
+# (Doppler, etc.). Do not copy that wrap into org SDD templates.
 
 specify workflow run sdd-remote -i spec="..." -i remote_phase=implement -i interval=600
 specify workflow run sdd-remote -i transfer_only=true -i remote_phase=confidence -i interval=600

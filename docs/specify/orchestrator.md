@@ -19,7 +19,7 @@ Every Spec Kit phase transition goes through the **global** multi-model orchestr
 
 | Mode | When | Sequencing |
 |------|------|------------|
-| `auto_chain` | Chat **Start / Continue SDD** | Advances on `continue` |
+| `auto_chain` | Chat **Start SDD**, **Start SDD Lite**, **Start SDD Review**, or **Continue SDD** | Advances on `continue` |
 | `single_phase` | Workflow names one phase | Returns; workflow owns `stop_at` |
 
 ## Loop (Task path)
@@ -30,7 +30,7 @@ Every Spec Kit phase transition goes through the **global** multi-model orchestr
 3. `hooks` — D-hooks + optional implement commands (**no LLM**)  
 4. **Judge or swarm** (+ optional advocate / shadow)  
 5. Optional **persona_comms** when enabled in repo policy  
-6. `record` — sole writer of `phase-exits.md` + run JSONL  
+6. `record` — sole logical writer of the SQLite commit; `phase-exits.md` and JSONL are exports  
 7. Action: `continue` \| `repair` \| `stop` \| `pause`  
 8. After confidence: `report`
 
@@ -38,8 +38,9 @@ Anti-patterns: pasting chat into judges; worker writing `phase-exits.md`; dirty 
 
 ## Model profiles
 
-`lean` · `balanced` (default) · `frontier` (+ `legacy`).  
-Precedence: session → feature pin → `.specify/orchestrator.json` `model_profile` → ctl default.  
+`lean` · `balanced` · `frontier` (+ `legacy`).  
+**Full** evaluated default is `balanced`. **Lite** and **Review** resolve **`lean`** when `model_profile` is unset.  
+Precedence: session → feature pin → `.specify/orchestrator.json` `model_profile` → workflow default → ctl default.  
 Live role matrix: ctl `phase-models.json` only.
 
 ## Repo policy
@@ -114,6 +115,6 @@ Every `sdd-ctl record` verdict **MUST** include:
 | Checklists / prompts | ctl `checklists/`, `prompts/` |
 | Engine version | `sdd-ctl sync` |
 
-Useful verbs: `plan-phase`, `hooks`, `record`, `report`, `messages` — `sdd-ctl --help`.
+Useful verbs: `plan-phase`, `hooks`, `record`, `report`, `messages`, `status`, `next`, `claim-dispatch`, `complete-dispatch`, `resume-plan`, `doctor` — `sdd-ctl --help`.
 
 Next: [bootstrap.md](./bootstrap.md#what-you-can-change) · [phase-model.md](./phase-model.md#confidence-contract-terminal-phase)

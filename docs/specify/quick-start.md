@@ -15,6 +15,8 @@ Machine once: [../day1.md](../day1.md) (optional Spec Kit section) · New repo: 
 ```
 Start SDD: <what and why — no tech stack yet>
 Start SDD: <what and why>. Use balanced.
+Start SDD Lite: <contained what and why>
+Start SDD Review
 Continue SDD
 Continue SDD using frontier.
 Show SDD profile.
@@ -24,8 +26,8 @@ compact
 Stop SDD; switch to normal fix mode for <narrow bug>
 ```
 
-Natural-language flags: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`, `test-fix mode`, `Use lean|balanced|frontier`.  
-Choose a **profile**, not model IDs — [orchestrator.md](./orchestrator.md).
+Natural-language flags: `scope=api`, `stop at plan`, `emit issues`, `remote after tasks`, `test-fix mode`, `lite`, `Use lean|balanced|frontier`.  
+Choose a **profile**, not model IDs — [orchestrator.md](./orchestrator.md). Full defaults to **balanced**; Lite and Review default to **lean** when unset.
 
 Flow: `sdd-entry` → `sdd-orchestrator` (`auto_chain`) → `speckit-*` worker.
 
@@ -44,6 +46,10 @@ specify workflow list          # expect sdd + sdd-remote
 # Full local cycle
 specify workflow run sdd -i spec="..." -i integration=cursor-agent \
   -i model_profile=balanced
+
+# Lite (specify → plan → implement → light_gate; lean when model_profile unset)
+specify workflow run sdd -i spec="..." -i integration=cursor-agent \
+  -i mode=lite
 
 # Stop early (RFC-style)
 specify workflow run sdd -i spec="..." -i stop_at=plan
@@ -68,7 +74,11 @@ Each named phase invokes the orchestrator in **`single_phase`** mode; this workf
 
 **Full path (`mode=full`):** specify → clarify → plan → (optional `stop_at=plan`) → tasks → analyze → (optional `issues=true` / `stop_at=tasks`) → implement → converge → confidence → `sdd-ctl report`.
 
+**Lite (`mode=lite`):** specify → plan → implement → light_gate → report. Chat: **Start SDD Lite**. Unset `model_profile` resolves **lean**.
+
 **Test-fix (`mode=test-fix`):** implement → test retry → confidence → report.
+
+Pytest wrappers in the org template use `python3 -m pytest tests -q` (no Doppler). Product repos inject secrets with their own tool when tests need them.
 
 ### `sdd-remote`
 
