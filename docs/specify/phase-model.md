@@ -8,9 +8,13 @@ constitution (once per repo)
   → analyze (when 3+ boundaries) → implement → converge → confidence
 ```
 
-- Do not skip **clarify** before plan on multi-boundary work.
-- Do not **implement** without `tasks.md`.
-- Run **analyze** before implement when 3+ boundaries are touched.
+**Lite** (`mode=lite` / **Start SDD Lite**): `specify → plan → implement → light_gate` (no tasks/analyze/converge/confidence). Default model **lean** when unset.
+
+**Review** (`workflow_profile=review` / **Start SDD Review**): `inspect → verdict` (not a build loop). Scratch `.specify/reviews/pr-<n>/`. Default model **lean**. Workers never publish GitHub reviews; Python computes `APPROVE` / `REQUEST_CHANGES`.
+
+- Do not skip **clarify** before plan on multi-boundary **Full** work.
+- Do not **implement** without `tasks.md` on Full (Lite has no tasks phase).
+- Run **analyze** before implement when 3+ boundaries are touched (Full).
 - **Converge** assesses remaining gaps vs spec/plan/tasks and may append tasks / re-enter implement (bounded rounds) before **confidence**.
 
 ## Artifacts per phase
@@ -24,9 +28,11 @@ constitution (once per repo)
 | analyze | Consistency report | Binary + optional expert swarm; **`repair_cap` 1** (late-phase pin) |
 | implement | App code + `[X]` in `tasks.md` | Binary (ctl `repair_cap` 2) |
 | converge | Gap assessment; may append `tasks.md` | Binary; may loop implement; **`repair_cap` 1** (late-phase pin) |
-| confidence | `confidence.md`; re-compile checks | **1–5 axes** + effort checks; swarm + advocate (ctl `repair_cap` 2) |
+| light_gate | Lite terminal checklist | Binary |
+| inspect | `.specify/reviews/pr-<n>/review.json` | Binary; never publish |
+| verdict | `review-verdict.md` (comment body) | Python `APPROVE` / `REQUEST_CHANGES`; post-gate publisher only |
 
-Also: `.cursor/auto-context.md` Spec Progress on `NNN-*` branches (optional hook). Runlog: `.specify/orchestrator-runs/` (gitignored).
+Also: `.cursor/auto-context.md` Spec Progress on `NNN-*` branches (optional hook). Commit store: `.specify/orchestrator-runs/` SQLite (gitignored); JSONL and `phase-exits.md` are exports.
 
 ## Gate kinds
 

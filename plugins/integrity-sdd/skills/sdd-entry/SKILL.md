@@ -131,6 +131,9 @@ specify workflow run sdd -i spec="..." -i integration=cursor-agent \
   -i mode=full|lite|test-fix \
   -i model_profile=balanced
 
+# Lite: omit model_profile to resolve lean
+specify workflow run sdd -i spec="..." -i integration=cursor-agent -i mode=lite
+
 specify workflow run sdd-remote -i spec="..." -i remote_phase=implement \
   -i interval=600 -i model_profile=lean
 # transfer only: -i transfer_only=true

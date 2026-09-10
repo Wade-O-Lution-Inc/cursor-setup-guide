@@ -113,7 +113,11 @@ Are there performance concerns or unvalidated hot paths?
 Exit the loop and finalize when **ALL** of the following hold:
 
 1. **Accuracy = 5**, **Complexity = 5**, **Performance = 5**.
-2. Quality gates green: `uv run ruff check` passes **and** `doppler run -- uv run python -m pytest tests/ -x -q` passes.
+2. Quality gates green: lint and the repo test runner pass. For Python repos
+   that is typically `uv run ruff check` and `python3 -m pytest tests -q` (or
+   `uv run python -m pytest tests -q`). Do **not** require `doppler run` for
+   the gate; inject secrets with the product repo’s own tool only when tests
+   need them.
 3. No open CRITICAL/HIGH findings remain in the current iteration.
 4. Every `in_authority` check in `confidence-checks.md` (if present) is `pass`. **`escalate`-tagged checks never block this bar** — they are recorded as residual risk immediately (see Step 2) and do not enter the loop-back table.
 
@@ -143,7 +147,7 @@ If `confidence-checks.md` does not exist (older feature, or plan predates this m
 Run both gates and capture pass/fail + key output:
 
 - `uv run ruff check`
-- `doppler run -- uv run python -m pytest tests/ -x -q`
+- `python3 -m pytest tests -q` (or `uv run python -m pytest tests -q`; inject secrets only if this product's tests need them)
 
 (If Python was not touched this cycle, ruff/pytest should be unaffected — still run them to confirm.)
 
@@ -247,7 +251,7 @@ Report final status: number of iterations run, final per-axis scores, the final 
 
 - [ ] `confidence-checks.md` re-compiled (orphans dropped/escalated, diff-derived checks added, every check classified `in_authority`/`escalate`) — when the file exists
 - [ ] All three axes scored 1–5 for the final iteration with evidence
-- [ ] Quality gates run (`uv run ruff check` + `doppler run -- uv run python -m pytest tests/ -x -q`)
+- [ ] Quality gates run (`uv run ruff check` + `python3 -m pytest tests -q`)
 - [ ] Least-confident items captured as findings (location + why + action + loop-back target); `escalate`-tagged effort checks recorded as residual directly, never as loop-back findings
 - [ ] Loop-back performed for sub-bar iterations, or escape taken at the cap / on diminishing returns / on escalation-only remaining items
 - [ ] `confidence.md` written with per-iteration history, effort-checks results, and a Final Decision

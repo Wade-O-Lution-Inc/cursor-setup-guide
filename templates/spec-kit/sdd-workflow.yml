@@ -48,13 +48,12 @@ inputs:
   mode:
     type: string
     default: "full"
-    enum: ["full", "test-fix"]
-    prompt: "full = new/continue cycle; test-fix = implement + pytest retry + confidence"
+    enum: ["full", "lite", "test-fix"]
+    prompt: "full = eight-phase SDD; lite = specify→plan→implement→light_gate; test-fix = implement + pytest retry + confidence"
   model_profile:
     type: string
-    default: "balanced"
     enum: ["lean", "balanced", "frontier", "legacy"]
-    prompt: "Model profile: lean (cheap), balanced (default), frontier (max reliability)"
+    prompt: "Optional model profile: Full defaults balanced; Lite/Review default lean"
 
 # Shared instruction baked into every agent step (always-on orchestrator).
 # Workers follow the matching speckit-* skill; the orchestrator owns gates/exits.
@@ -64,6 +63,47 @@ steps:
     type: switch
     expression: "inputs.mode"
     cases:
+      lite:
+        - id: specify-lite
+          command: speckit.specify
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              SDD Lite (workflow_profile=lite): pin via --workflow-profile lite.
+              Run phase=specify through sdd-orchestrator. Feature: {{ inputs.spec }}
+              model_profile={{ inputs.model_profile }} (defaults lean when unset).
+
+        - id: plan-lite
+          command: speckit.plan
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              SDD Lite plan MUST include ## Implementation Worklist (no tasks.md on happy path).
+              Run phase=plan through sdd-orchestrator. Context: {{ inputs.spec }}
+
+        - id: implement-lite
+          command: speckit.implement
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              SDD Lite implement reads worklist from plan.md (not tasks.md).
+              Run phase=implement through sdd-orchestrator.
+
+        - id: light-gate-lite
+          command: speckit.implement
+          integration: "{{ inputs.integration }}"
+          input:
+            args: >-
+              SDD Lite terminal phase=light_gate. Single judge, no swarm.
+              Produce light-gate.md. Run through sdd-orchestrator.
+
+        - id: end-report-lite
+          type: prompt
+          integration: "{{ inputs.integration }}"
+          prompt: >-
+            Run `python3 ~/.cursor/sdd-orchestrator-ctl/bin/sdd-ctl report` for the active feature.
+            Present Lite terminal summary: four phases, light-gate.md path, residual risks, next steps.
+
       test-fix:
         - id: implement-tf
           command: speckit.implement
@@ -79,7 +119,7 @@ steps:
 
         - id: test-tf
           type: shell
-          run: "doppler run -- uv run python -m pytest tests/ -x -q"
+          run: "python3 -m pytest tests -q"
 
         - id: retry-tf
           type: while
@@ -96,7 +136,7 @@ steps:
 
             - id: retest-tf
               type: shell
-              run: "doppler run -- uv run python -m pytest tests/ -x -q"
+              run: "python3 -m pytest tests -q"
 
         - id: converge-tf
           command: speckit.converge
@@ -250,7 +290,7 @@ steps:
 
                   - id: test-suite
                     type: shell
-                    run: "doppler run -- uv run python -m pytest tests/ -x -q"
+                    run: "python3 -m pytest tests -q"
 
                   - id: converge
                     command: speckit.converge

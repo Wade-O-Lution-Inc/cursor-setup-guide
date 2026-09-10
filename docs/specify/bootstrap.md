@@ -20,6 +20,7 @@ cd /path/to/your-repo
 specify workflow list    # expect sdd + sdd-remote
 specify integration status
 # Chat: Start SDD: smoke adopt …
+# Chat: Start SDD Lite: contained smoke (lean when model_profile unset)
 ```
 
 Also confirm the machine hook chain (day-1 global install):
