@@ -10,7 +10,8 @@ disable-model-invocation: true
 
 # SDD Entry
 
-**Read first:** [docs/agents/SDD_USER_GUIDE.md](../../docs/agents/SDD_USER_GUIDE.md).
+**Read first:** [docs/WORKFLOW-STAGES.md](../../docs/WORKFLOW-STAGES.md) and
+[docs/ADOPTION.md](../../docs/ADOPTION.md).
 
 Every phase transition goes through **`sdd-orchestrator`** (worker → D-hooks →
 judge → gate). Bare `speckit-*` skills are the **worker procedure** the
@@ -131,9 +132,6 @@ specify workflow run sdd -i spec="..." -i integration=cursor-agent \
   -i mode=full|lite|test-fix \
   -i model_profile=balanced
 
-# Lite: omit model_profile to resolve lean
-specify workflow run sdd -i spec="..." -i integration=cursor-agent -i mode=lite
-
 specify workflow run sdd-remote -i spec="..." -i remote_phase=implement \
   -i interval=600 -i model_profile=lean
 # transfer only: -i transfer_only=true
@@ -156,5 +154,3 @@ Spec Progress on resume.
 Project hook `.cursor/hooks/route-sdd-advise-before-prompt.sh` (see `.cursor/hooks/README.md`)
 offers a **non-blocking** hint when the operator asks **Suggest SDD route** — complements
 this skill; does not replace explicit **Start SDD Lite** entry.
-
-Deep reference: [docs/agents/SPEC_DRIVEN_DEVELOPMENT.md](../../docs/agents/SPEC_DRIVEN_DEVELOPMENT.md)

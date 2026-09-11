@@ -41,7 +41,7 @@
       "template": "skills/sdd-entry/SKILL.md",
       "gold": ".cursor/skills/sdd-entry/SKILL.md",
       "source": "sdd-orchestrator",
-      "note": "Gold is sdd-orchestrator main (Lite/Review) until MNW catches up; do not overwrite from MNW yet"
+      "note": "Gold is sdd-orchestrator chore/sdd-graph-ssot SHA 63c528257b98a21bdd6ac2fc7103d51d627654fe (post-A Lite/Review + analyze-always-on). Do not overwrite from MNW."
     },
     {
       "template": "skills/speckit-confidence/SKILL.md",
