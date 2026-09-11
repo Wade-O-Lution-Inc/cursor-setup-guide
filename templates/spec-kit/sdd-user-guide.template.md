@@ -17,7 +17,7 @@ SDD turns multi-step features into reviewable markdown (`spec.md` → `plan.md` 
 | **Chat** | `Start SDD Review` | PR inspect → verdict (not a build loop) |
 | **Chat** | `Continue SDD` | Resume feature dir → next ungated phase via orchestrator |
 | **CLI** | `specify workflow run sdd …` | Local auto-continuing cycle (flags below) |
-| **CLI** | `specify workflow run sdd-remote …` | Laptop through tasks, then Mac mini implement/confidence |
+| **CLI** | `specify workflow run sdd-remote …` | Laptop through tasks, then Mac mini `analyze → implement → converge → confidence` |
 
 The standalone `Wade-O-Lution-Inc/sdd-orchestrator` engine is cloned at
 `~/.cursor/sdd-orchestrator-ctl`. In Cursor, the UI Task driver dispatches
@@ -26,6 +26,7 @@ them); deterministic `bin/sdd-ctl` plans hooks, records verdicts, and is the
 sole logical writer of the SQLite commit (`phase-exits.md` / JSONL are
 exports). Bare `speckit-*` is the worker procedure only.
 Headless twin: `~/.cursor/sdd-orchestrator-ctl/bin/sdd-run`.
+Cloud Agents do **not** load `~/.cursor/hooks.json` (see cursor-setup-guide `docs/hooks.md`).
 
 Passing phases auto-continue with no human phase pauses. A failed phase repairs
 up to its configured cap, then stops and reports. To pause after passing phases,
@@ -168,11 +169,11 @@ bash scripts/handoff_to_mac_mini.sh --status
 
 ## Long runs / close laptop
 
-Laptop: specify → clarify → plan → tasks auto-continue through the orchestrator. Mini: implement → converge → confidence via `sdd-remote` / handoff scripts (specify-cli ≥ 0.13.0 on the mini).
+Laptop: specify → clarify → plan → tasks auto-continue through the orchestrator. Mini: start at `analyze` when the laptop stopped at `tasks`, then implement → converge → confidence via `sdd-remote` / handoff scripts (specify-cli ≥ 0.13.0 on the mini). Do not jump from a recorded `tasks` pass straight to `implement`. Analyze always runs.
 
 | Step | Where | Action |
 |------|-------|--------|
-| 1 | Laptop | `sdd-remote` through tasks/analyze (or chat through tasks) |
+| 1 | Laptop | `sdd-remote` through tasks (analyze always runs on the mini if the laptop stopped at tasks) |
 | 2 | Laptop | Preflight runs and starts the requested remote handoff |
 | 3 | Anywhere | Close laptop — loop on mini |
 | 4 | Anywhere | `bash scripts/handoff_to_mac_mini.sh --status` |
@@ -186,7 +187,7 @@ Runtime on mini (gitignored): `.cursor/remote-agent.pid`, `.cursor/remote-agent-
 
 1. **Specify** — branch `NNN-*`, `spec.md`. No stack, no code.
 2. **Clarify** — before plan on multi-boundary work.
-3. **Plan / tasks / analyze** — `plan.md`, `tasks.md`, consistency check. Honor `stop_at`.
+3. **Plan / tasks / analyze** — `plan.md`, `tasks.md`, consistency check. Analyze always runs. Honor `stop_at`.
 4. **Implement** — only with `tasks.md`; mark `[X]`; ruff + pytest.
 5. **Converge** — assess code vs spec/plan/tasks; append-only Convergence tasks if gaps remain. May re-enter implement up to **2** rounds, then advances to confidence (residual gaps named).
 6. **Confidence** — scores 1–5 (complexity inverted); loops ≤3; writes `confidence.md`.
